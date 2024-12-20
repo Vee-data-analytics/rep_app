@@ -15,9 +15,9 @@ CORE_ASSETS =  BASE_DIR/'core/'
 SECRET_KEY = 'django-insecure-6b5_3h*ky_aibfn)bfgx!vqwovnkgx43b(341v!!t6f##q7nmx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['172.17.47.246', '127.0.0.1']
+ALLOWED_HOSTS = ['172.28.46.126', '127.0.0.1']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 
     #third party 
     'corsheaders',
+    'django_extensions'
 
     # developer apps
     'users',
@@ -55,7 +56,7 @@ PWA_APP_SCOPE = '/'
 PWA_APP_START_URL = '/'
 PWA_APP_ICONS = [
     {
-        'src': '/static/images/icon-192x192.png',
+        'src': '/static/images/logo.png',
         'sizes': '192x192',
         'type': 'image/png'
     },
@@ -71,6 +72,7 @@ AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -102,6 +104,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
 
 WSGI_APPLICATION = 'main_conf.wsgi.application'
 
@@ -154,9 +158,12 @@ USE_I18N = True
 USE_TZ = True
 
 
-LOGIN_URL = reverse_lazy('reptrack_trace:login')  # URL for unauthenticated users
-LOGOUT_REDIRECT_URL = reverse_lazy('reptrack_trace:logout')  # URL after logout
+LOGIN_URL = reverse_lazy('reptrack_trace:login')
+LOGOUT_REDIRECT_URL = reverse_lazy('reptrack_trace:logout')
 LOGIN_REDIRECT_URL = reverse_lazy('reptrack_trace:home')
+
+
+
 
 # The URL to access static files
 STATIC_URL = '/static/'
@@ -171,6 +178,10 @@ STATIC_ROOT = CORE_ASSETS / "staticfiles"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = CORE_ASSETS / 'media' 
+
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
