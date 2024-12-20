@@ -1,0 +1,255 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Overview Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-symbols-rounded opacity-10">store</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-dark">Total Shops</p>
+                        <h4 class="mb-0 text-dark">{{ total_shops }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-symbols-rounded opacity-10">inventory</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-dark">Total Stores</p>
+                        <h4 class="mb-0 text-dark">{{ total_stores }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-info shadow-info text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-symbols-rounded opacity-10">warehouse</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-dark">Main Stores</p>
+                        <h4 class="mb-0 text-dark">{{ total_main_stores }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collapsible Sections -->
+    <!-- Reports Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header p-3" data-bs-toggle="collapse" href="#reportsSection" role="button" aria-expanded="true">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-dark">Reports Overview</h5>
+                        <i class="material-symbols-rounded">expand_more</i>
+                    </div>
+                </div>
+                <div class="collapse show" id="reportsSection">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <tbody class="text-dark">
+                                            <tr>
+                                                <td>Total Reports</td>
+                                                <td>{{ report_stats.total_reports }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Reports Today</td>
+                                                <td>{{ report_stats.reports_today }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Pending Reports</td>
+                                                <td>{{ report_stats.pending_reports }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="reportsChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Representatives Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header p-3" data-bs-toggle="collapse" href="#representativesSection" role="button" aria-expanded="false">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-dark">Representatives Performance</h5>
+                        <i class="material-symbols-rounded">expand_more</i>
+                    </div>
+                </div>
+                <div class="collapse" id="representativesSection">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-dark">Representative</th>
+                                        <th class="text-dark">Total Reports</th>
+                                        <th class="text-dark">Completion Rate</th>
+                                        <th class="text-dark">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rep in rep_performance %}
+                                    <tr>
+                                        <td class="text-dark">{{ rep.representative.get_full_name }}</td>
+                                        <td class="text-dark">{{ rep.total_reports }}</td>
+                                        <td class="text-dark">
+                                            <div class="progress">
+                                                <div class="progress-bar bg-gradient-success" 
+                                                     role="progressbar" 
+                                                     style="width: {{ rep.completion_rate }}%" 
+                                                     aria-valuenow="{{ rep.completion_rate }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    {{ rep.completion_rate }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if rep.completion_rate >= 80 %}success{% elif rep.completion_rate >= 50 %}warning{% else %}danger{% endif %}">
+                                                {% if rep.completion_rate >= 80 %}Good{% elif rep.completion_rate >= 50 %}Average{% else %}Needs Improvement{% endif %}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Alerts Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header p-3" data-bs-toggle="collapse" href="#stockAlertsSection" role="button" aria-expanded="false">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-dark">Stock Alerts</h5>
+                        <i class="material-symbols-rounded">expand_more</i>
+                    </div>
+                </div>
+                <div class="collapse" id="stockAlertsSection">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-dark">Location</th>
+                                        <th class="text-dark">Product</th>
+                                        <th class="text-dark">Current Stock</th>
+                                        <th class="text-dark">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for alert in low_stock_alerts %}
+                                    <tr>
+                                        <td class="text-dark">{{ alert.location_name }}</td>
+                                        <td class="text-dark">{{ alert.product.name }}</td>
+                                        <td class="text-dark">{{ alert.quantity }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if alert.alert_status == 'critical' %}danger{% else %}warning{% endif %}">
+                                                {{ alert.alert_status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts
+    var ctx = document.getElementById('reportsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_data.labels|safe }},
+            datasets: [{
+                label: 'Submitted Reports',
+                data: {{ chart_data.submitted|safe }},
+                borderColor: '#2196F3',
+                tension: 0.4
+            }, {
+                label: 'Draft Reports',
+                data: {{ chart_data.drafts|safe }},
+                borderColor: '#FFA726',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#344767'  // Dark color for legend text
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#344767'  // Dark color for y-axis labels
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#344767'  // Dark color for x-axis labels
+                    }
+                }
+            }
+        }
+    });
+
+    // Add click handlers for collapse toggles
+    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function(element) {
+        element.addEventListener('click', function() {
+            const icon = this.querySelector('.material-symbols-rounded');
+            if (icon) {
+                icon.style.transform = icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
+        });
+    });
+});
+
+{%endblock extra_js%}
+</script>

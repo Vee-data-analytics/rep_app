@@ -1,0 +1,141 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header p-3">
+                    <h5 class="mb-0">Shop Store Reports</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Select Shop</label>
+                            <select name="shop" class="form-select">
+                                <option value="">All Shops</option>
+                                {% for shop in shops %}
+                                <option value="{{ shop.id }}" {% if shop.id|stringformat:"s" == selected_shop %}selected{% endif %}>
+                                    {{ shop.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Select Store</label>
+                            <select name="store" class="form-select">
+                                <option value="">All Stores</option>
+                                {% for store in stores %}
+                                <option value="{{ store.id }}" {% if store.id|stringformat:"s" == selected_store %}selected{% endif %}>
+                                    {{ store.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary d-block w-100">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Movement Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header p-3">
+                    <h5 class="mb-0">Stock Movement Summary</h5>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Initial Stock</th>
+                                    <th>Stock Taken</th>
+                                    <th>Current Stock</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in stock_summary %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.initial_stock }}</td>
+                                    <td>{{ item.stock_taken }}</td>
+                                    <td>{{ item.current_stock }}</td>
+                                    <td>
+                                        <span class="badge badge-sm bg-gradient-{% if item.status == 'Low' %}warning{% elif item.status == 'Critical' %}danger{% else %}success{% endif %}">
+                                            {{ item.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                    <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                        <h6 class="text-white text-capitalize ps-3">Recent Transactions</h6>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shop</th>
+                                    <th>Store</th>
+                                    <th>Product</th>
+                                    <th>Quantity Taken</th>
+                                    <th>Remaining Quantity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr>
+                                    <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ report.shop.name }}</td>
+                                    <td>{{ report.store.name }}</td>
+                                    <td>{{ report.product.name }}</td>
+                                    <td>{{ report.quantity_taken_from_shop_store }}</td>
+                                    <td>{{ report.remaining_shop_store_quantity }}</td>
+                                    <td>
+                                        <a href="{% url 'reptrack_trace:report-detail' report.pk %}" 
+                                           class="btn btn-info btn-sm">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

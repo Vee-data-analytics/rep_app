@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Report Details</h1>
+<h2>General Information</h2>
+<ul>
+    <li>Report ID: {{ report.id }}</li>
+    <li>Date: {{ report.created_at }}</li>
+    <li>Representative: {{ report.representative.get_full_name }}</li>
+    <li>Status: {{ report.get_status_display }}</li>
+</ul>
+
+<h2>Shop Details</h2>
+<ul>
+    <li>Name: {{ report.shop.name }}</li>
+    <li>Current Quantity: {{ report.shop_current_quantity }}</li>
+    <li>Needs Top-up: {{ report.needs_topup }}</li>
+    <li>Desired Quantity: {{ report.desired_quantity }}</li>
+    <li>Top-up Quantity: {{ report.topup_quantity }}</li>
+    <li>Comments: {{ report.shop_comments }}</li>
+</ul>
+
+<!-- Add similar sections for Shop-Stores, Stores, and Main Stores -->
+
+<a href="{% url 'reptrack_trace:download-report' report.id %}" class="btn btn-primary">Download PDF</a>
+{% endblock %}

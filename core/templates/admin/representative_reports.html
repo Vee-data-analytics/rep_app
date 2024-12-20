@@ -1,0 +1,109 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header p-3">
+                    <h5 class="mb-0">Report Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Representative</label>
+                            <select name="representative" class="form-select">
+                                <option value="">All Representatives</option>
+                                {% for rep in representatives %}
+                                <option value="{{ rep.id }}" {% if rep.id|stringformat:"s" == request.GET.representative %}selected{% endif %}>
+                                    {{ rep.get_full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary d-block w-100">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-dark shadow-dark text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-symbols-rounded opacity-10">assignment</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Total Reports</p>
+                        <h4 class="mb-0">{{ stats.total_reports }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Add more statistics cards -->
+    </div>
+
+    <!-- Reports Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                    <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                        <h6 class="text-white text-capitalize ps-3">Reports</h6>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Representative</th>
+                                    <th>Shop</th>
+                                    <th>Product</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr>
+                                    <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ report.representative.get_full_name }}</td>
+                                    <td>{{ report.shop.name }}</td>
+                                    <td>{{ report.product.name }}</td>
+                                    <td>
+                                        <span class="badge badge-sm bg-gradient-{% if report.status == 'submitted' %}success{% else %}warning{% endif %}">
+                                            {{ report.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'reptrack_trace:report-detail' report.pk %}" 
+                                           class="btn btn-info btn-sm">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

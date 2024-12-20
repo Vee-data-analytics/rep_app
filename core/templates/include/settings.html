@@ -1,0 +1,38 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Settings - Theme Switcher{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/mobile-app.css' %}">
+</head>
+
+<body class="bg-light" id="themeBody">
+    <div class="container my-4">
+        <h1>Theme Settings</h1>
+        
+        <!-- Theme Switcher -->
+        <div class="d-flex align-items-center mt-4">
+            <i class="bi bi-sun me-2"></i>
+            <label class="theme-switch mb-0">
+                <input type="checkbox" id="themeSwitch">
+                <span class="slider round"></span>
+            </label>
+            <i class="bi bi-moon ms-2"></i>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script type="text/javascript" src="{% static 'assets/js/mobile-main.js' %}"></script>
+</body>
+
+</html>

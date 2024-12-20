@@ -1,0 +1,83 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Rep Dashboard{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/mobile-app.css' %}">
+</head>
+<body class="bg-light">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container-fluid py-3">
+            <div class="row align-items-center">
+                <!-- User Info -->
+                <div class="col-auto">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-circle fs-5 me-2"></i>
+                        <span class="fw-medium">
+                            {% if user.is_authenticated %}
+                                {% if user.get_full_name %}
+                                    {{ user.get_full_name }}
+                                {% else %}
+                                    {{ user.username }}
+                                {% endif %}
+                            {% else %}
+                                Guest
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <!-- Navigation and Theme Switch -->
+                <div class="col text-end d-flex justify-content-end align-items-center gap-3">
+                    <!-- Navigation Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="navDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Menu
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navDropdown">
+                        
+                            <li><a class="dropdown-item" href="{% url 'reptrack_trace:settings' %}">
+                                <i class="bi bi-gear me-2"></i>Settings
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'reptrack_trace:logout' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Current Date/Time -->
+                    <div>
+                        <div class="fw-medium" id="currentTime">14:30</div>
+                        <div class="text-muted small" id="currentDate">November 24, 2024</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <main class="container py-4">
+        {% block content %}
+        <!-- Child templates will provide content here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white text-center py-3 shadow-sm mt-auto">
+        <p class="mb-0">&copy; 2024 Rep Dashboard</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    
+</body>
+</html>

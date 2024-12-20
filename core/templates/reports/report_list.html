@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4 mt-3">
+    <div class="card">
+        <div class="card-header">
+            <!-- Stack elements vertically on mobile -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <h2 class="h5 mb-0">Previous Reports</h2>
+                
+                <!-- Date Range Selector - Full width on mobile -->
+                <form id="dateRangeForm" method="get" class="w-100 w-md-auto">
+                    <div class="input-group flex-nowrap">
+                        <span class="input-group-text d-none d-md-block">
+                            <i class="bi bi-calendar3"></i>
+                        </span>
+                        <!-- Stack date inputs vertically on mobile -->
+                        <div class="d-flex flex-column flex-md-row w-100 gap-2">
+                            <input type="date" 
+                                   name="start_date" 
+                                   class="form-control"
+                                   value="{{ start_date }}"
+                                   max="{{ default_end_date }}"
+                                   aria-label="Start date">
+                            <span class="input-group-text d-none d-md-block">to</span>
+                            <input type="date" 
+                                   name="end_date" 
+                                   class="form-control"
+                                   value="{{ end_date }}"
+                                   max="{{ default_end_date }}"
+                                   aria-label="End date">
+                            <button type="submit" class="btn btn-primary w-100 w-md-auto">
+                                <i class="bi bi-filter me-1"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card-body px-2 px-md-3">
+            <!-- Total Reports Count -->
+            <div class="alert alert-info" role="alert">
+                <small>Total Reports: {{ total_reports }} in selected date range</small>
+            </div>
+
+            {% if finished_reports %}
+                <div class="list-group list-group-flush">
+                    {% for report in finished_reports %}
+                    <div class="list-group-item list-group-item-action border-bottom">
+                        <!-- Stack content vertically on mobile -->
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2">
+                            <div class="w-100">
+                                <h6 class="mb-1">Report #{{ report.id }}</h6>
+                                <!-- Responsive text layout -->
+                                <div class="text-muted small">
+                                    <div class="mb-1"><strong>Product:</strong> {{ report.product.name }}</div>
+                                    <div class="mb-1"><strong>Address:</strong> {{ report.shop.address }}</div>
+                                    <div><strong>Date:</strong> {{ report.created_at|date:"M d, Y - H:i" }}</div>
+                                </div>
+                            </div>
+                            <!-- Action buttons -->
+                            <div class="btn-group btn-group-sm mt-2 mt-md-0 w-100 w-md-auto">
+                                <a href="{% url 'reptrack_trace:report-detail' report.id %}" 
+                                   class="btn btn-outline-primary"
+                                   aria-label="View report">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'reptrack_trace:download_report' report.id %}" 
+                                   class="btn btn-outline-success"
+                                   aria-label="Download report">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    <small>No reports found in the selected date range.</small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pagination --> 
+    <div class="my-3">
+        {% include 'include/Pagination.html' %}
+    </div>
+
+    <!-- Action Buttons - Stack vertically on mobile -->
+    <div class="d-grid gap-2 d-md-flex justify-content-between my-3">
+        <a href="{% url 'reptrack_trace:report-create' %}" 
+           class="btn btn-primary w-100 w-md-auto">
+            <i class="bi bi-plus-circle me-1"></i>Create New Report
+        </a>
+    </div>
+
+    <!-- Back to Dashboard Button -->
+    <div class="d-grid mb-4">
+        <form action="{% url 'reptrack_trace:home' %}" method="post" class="w-100">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger w-100">
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Back to Dashboard
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Date Range Form Validation
+    const dateRangeForm = document.getElementById('dateRangeForm');
+    const startDateInput = dateRangeForm.querySelector('input[name="start_date"]');
+    const endDateInput = dateRangeForm.querySelector('input[name="end_date"]');
+
+    dateRangeForm.addEventListener('submit', function(e) {
+        if (new Date(startDateInput.value) > new Date(endDateInput.value)) {
+            e.preventDefault();
+            alert('Start date must be before end date');
+        }
+    });
+
+    // Export Reports (placeholder functionality)
+    const exportReportsBtn = document.getElementById('exportReportsBtn');
+    exportReportsBtn.addEventListener('click', function() {
+        alert('Export functionality to be implemented');
+    });
+});
+</script>
+{% endblock %}
