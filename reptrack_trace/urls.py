@@ -38,13 +38,33 @@ urlpatterns = [
     path('admin/shops/', views.shop_management, name='shop-management'),
     path('admin/stores/', views.store_management, name='store-management'),
     path('admin/management/', views.AdminManagementView.as_view(), name='admin-management'),
+    
     path('admin/analytics/', views.AnalyticsView.as_view(), name='analytics'),
     
     path('admin/reports/shops/', views.ShopReportsView.as_view(), name='shop-reports'),
     path('admin/reports/shop-stores/', views.ShopStoreReportsView.as_view(), name='shop-store-reports'),
     path('admin/reports/main-stores/', views.MainStoreReportsView.as_view(), name='main-store-reports'),
     path('admin/reports/representatives/', views.RepresentativeReportsView.as_view(), name='rep-reports'),
+    path('admin/shops/', views.AdminShopListView.as_view(), name='admin-shop-list'),
+    path('admin/shops/create/', views.AdminShopCreateView.as_view(), name='admin-shop-create'),
+    path('admin/shops/<int:pk>/update/', views.AdminShopUpdateView.as_view(), name='admin-shop-update'),
+    path('admin/shops/<int:pk>/delete/', views.AdminShopDeleteView.as_view(), name='admin-shop-delete'),
     
+    path('admin/stores/', views.AdminStoreListView.as_view(), name='admin-store-list'),
+    path('admin/stores/create/', views.AdminStoreCreateView.as_view(), name='admin-store-create'),
+    path('admin/stores/<int:pk>/update/', views.AdminStoreUpdateView.as_view(), name='admin-store-update'),
+    path('admin/stores/<int:pk>/delete/', views.AdminStoreDeleteView.as_view(), name='admin-store-delete'),
+    
+    path('admin/products/', views.AdminProductListView.as_view(), name='admin-product-list'),
+    path('admin/products/create/', views.AdminProductCreateView.as_view(), name='admin-product-create'),
+    path('admin/products/<int:pk>/update/', views.AdminProductUpdateView.as_view(), name='admin-product-update'),
+    path('admin/products/<int:pk>/delete/', views.AdminProductDeleteView.as_view(), name='admin-product-delete'),
+    
+    path('admin/main-stores/', views.AdminMainStoreListView.as_view(), name='admin-main-store-list'),
+    path('admin/main-stores/create/', views.AdminMainStoreCreateView.as_view(), name='admin-main-store-create'),
+    path('admin/main-stores/<int:pk>/update/', views.AdminMainStoreUpdateView.as_view(), name='admin-main-store-update'),
+    path('admin/main-stores/<int:pk>/delete/', views.AdminMainStoreDeleteView.as_view(), name='admin-main-store-delete'),
+
     # API URLs
     path('api/get-shop-details/', views.get_shop_details, name='get-shop-details'),
     #path('api/inventory-status/', views.get_inventory_status, name='api-inventory-status'),

@@ -34,6 +34,7 @@ from django.utils import timezone
 from django.views.generic import DetailView
 from django.utils.timezone import localtime
 import json
+from .models import Report, Shop, Store, MainStore, Inventory, ShopStore, User
 from django.core.serializers.json import DjangoJSONEncoder
 from .models import Report
 from django.views.generic import TemplateView
@@ -98,7 +99,7 @@ class ShopCreateView(CreateView):
         return JsonResponse({
             'status': 'success',
             'id': self.object.id,
-            'name': str(self.object),  # Use the model's __str__ method
+            'name': str(self.object),  
         })
 
     def form_invalid(self, form):
@@ -272,7 +273,6 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         }
 
 
-from .models import Report, Shop, Store, MainStore, Inventory, ShopStore, User
 
 class ShopStoreReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'admin/shop_store_report.html'
@@ -751,6 +751,133 @@ class StoreUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         # Add any additional logic here if required
         return super().form_valid(form)
 
+
+
+class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.role == User.ADMIN
+
+# Shop Management
+class AdminShopCreateView(AdminRequiredMixin, CreateView):
+    model = Shop
+    form_class = ShopForm
+    template_name = 'admin/shop/create.html'
+    success_url = reverse_lazy('admin-shop-list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Shop "{self.object.name}" created successfully')
+        return response
+
+class AdminShopUpdateView(AdminRequiredMixin, UpdateView):
+    model = Shop
+    form_class = ShopForm
+    template_name = 'admin/shop/update.html'
+    success_url = reverse_lazy('admin-shop-list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Shop "{self.object.name}" updated successfully')
+        return response
+
+class AdminShopListView(AdminRequiredMixin, ListView):
+    model = Shop
+    template_name = 'admin/shop/list.html'
+    context_object_name = 'shops'
+
+class AdminShopDeleteView(AdminRequiredMixin, DeleteView):
+    model = Shop
+    template_name = 'admin/shop/delete.html'
+    success_url = reverse_lazy('admin-shop-list')
+
+    def delete(self, request, *args, **kwargs):
+        shop = self.get_object()
+        messages.success(request, f'Shop "{shop.name}" deleted successfully')
+        return super().delete(request, *args, **kwargs)
+
+# Store Management
+class AdminStoreCreateView(AdminRequiredMixin, CreateView):
+    model = Store
+    form_class = StoreForm
+    template_name = 'admin/store/create.html'
+    success_url = reverse_lazy('admin-store-list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Store "{self.object.name}" created successfully')
+        return response
+
+class AdminStoreUpdateView(AdminRequiredMixin, UpdateView):
+    model = Store
+    form_class = StoreForm
+    template_name = 'admin/store/update.html'
+    success_url = reverse_lazy('admin-store-list')
+
+class AdminStoreListView(AdminRequiredMixin, ListView):
+    model = Store
+    template_name = 'admin/store/list.html'
+    context_object_name = 'stores'
+
+class AdminStoreDeleteView(AdminRequiredMixin, DeleteView):
+    model = Store
+    template_name = 'admin/store/delete.html'
+    success_url = reverse_lazy('admin-store-list')
+
+# Product Management
+class AdminProductCreateView(AdminRequiredMixin, CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'admin/product/create.html'
+    success_url = reverse_lazy('admin-product-list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Product "{self.object.name}" created successfully')
+        return response
+
+class AdminProductUpdateView(AdminRequiredMixin, UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'admin/product/update.html'
+    success_url = reverse_lazy('admin-product-list')
+
+class AdminProductListView(AdminRequiredMixin, ListView):
+    model = Product
+    template_name = 'admin/product/list.html'
+    context_object_name = 'products'
+
+class AdminProductDeleteView(AdminRequiredMixin, DeleteView):
+    model = Product
+    template_name = 'admin/product/delete.html'
+    success_url = reverse_lazy('admin-product-list')
+
+# Main Store Management
+class AdminMainStoreCreateView(AdminRequiredMixin, CreateView):
+    model = MainStore
+    form_class = MainStoreForm
+    template_name = 'admin/main_store/create.html'
+    success_url = reverse_lazy('admin-main-store-list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Main Store "{self.object.name}" created successfully')
+        return response
+
+class AdminMainStoreUpdateView(AdminRequiredMixin, UpdateView):
+    model = MainStore
+    form_class = MainStoreForm
+    template_name = 'admin/main_store/update.html'
+    success_url = reverse_lazy('admin-main-store-list')
+
+class AdminMainStoreListView(AdminRequiredMixin, ListView):
+    model = MainStore
+    template_name = 'admin/main_store/list.html'
+    context_object_name = 'main_stores'
+
+class AdminMainStoreDeleteView(AdminRequiredMixin, DeleteView):
+    model = MainStore
+    template_name = 'admin/main_store/delete.html'
+    success_url = reverse_lazy('admin-main-store-list')
 
 
 class ReportCreateView(FormView):

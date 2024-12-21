@@ -16,15 +16,14 @@
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link id="pagestyle" href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
     <style>
-        /* ... (toggler styles remain the same) ... */
-        .section-title { /* Style for section titles */
+        .section-title {
             padding-left: 1rem;
             margin-top: 1rem;
             margin-bottom: 0.5rem;
             font-size: .8rem;
             font-weight: 700;
             text-transform: uppercase;
-            color: #8898aa; /* Example color */
+            color: #8898aa;
         }
         .nav-item.sub-item{
             padding-left: 2rem;
@@ -32,7 +31,6 @@
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-
 <body class="g-sidenav-show bg-gray-100">
     <div class="sidenav-toggler" id="sidenavToggler">
         <div class="sidenav-toggler-inner">
@@ -83,67 +81,86 @@
                 {% endif %}
 
                 <li class="nav-item">
-                    <h6 class="section-title">Reports</h6>
+                    <h6 class="section-title">Inventory Management</h6>
                 </li>
                 <li class="nav-item sub-item">
-                    <a class="nav-link {% if 'shop-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'reptrack_trace:shop-reports' %}">
+                    <a class="nav-link {% if 'admin-shop-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+                        href="{% url 'admin-shop-list' %}">
                         <i class="material-symbols-rounded opacity-5">store</i>
                         <span class="nav-link-text ms-1">Shops</span>
                     </a>
                 </li>
                 <li class="nav-item sub-item">
+                    <a class="nav-link {% if 'admin-store-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+                        href="{% url 'admin-store-list' %}">
+                        <i class="material-symbols-rounded opacity-5">store_mall_directory</i>
+                        <span class="nav-link-text ms-1">Stores</span>
+                    </a>
+                </li>
+                <li class="nav-item sub-item">
+                    <a class="nav-link {% if 'admin-product-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+                        href="{% url 'admin-product-list' %}">
+                        <i class="material-symbols-rounded opacity-5">inventory_2</i>
+                        <span class="nav-link-text ms-1">Products</span>
+                    </a>
+                </li>
+                <li class="nav-item sub-item">
+                    <a class="nav-link {% if 'admin-main-store-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+                        href="{% url 'admin-main-store-list' %}">
+                        <i class="material-symbols-rounded opacity-5">warehouse</i>
+                        <span class="nav-link-text ms-1">Main Stores</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <h6 class="section-title">Reports</h6>
+                </li>
+                <li class="nav-item sub-item">
+                    <a class="nav-link {% if 'shop-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+                        href="{% url 'reptrack_trace:shop-reports' %}">
+                        <i class="material-symbols-rounded opacity-5">analytics</i>
+                        <span class="nav-link-text ms-1">Shop Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item sub-item">
                     <a class="nav-link {% if 'shop-store-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
                         href="{% url 'reptrack_trace:shop-store-reports' %}">
-                        <i class="material-symbols-rounded opacity-5">inventory</i>
-                        <span class="nav-link-text ms-1">Shop Stores</span>
+                        <i class="material-symbols-rounded opacity-5">query_stats</i>
+                        <span class="nav-link-text ms-1">Store Reports</span>
                     </a>
                 </li>
                 <li class="nav-item sub-item">
                     <a class="nav-link {% if 'main-store-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
                         href="{% url 'reptrack_trace:main-store-reports' %}">
-                        <i class="material-symbols-rounded opacity-5">warehouse</i>
-                        <span class="nav-link-text ms-1">Main Stores</span>
+                        <i class="material-symbols-rounded opacity-5">monitoring</i>
+                        <span class="nav-link-text ms-1">Main Store Reports</span>
                     </a>
                 </li>
                 <li class="nav-item sub-item">
                     <a class="nav-link {% if 'rep-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
                         href="{% url 'reptrack_trace:rep-reports' %}">
-                        <i class="material-symbols-rounded opacity-5">assignment</i>
-                        <span class="nav-link-text ms-1">Representatives</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <h6 class="section-title">Management</h6>
-                </li>
-                <li class="nav-item sub-item">
-                    <a class="nav-link {% if 'shop-management' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'reptrack_trace:shop-management' %}">
-                        <i class="material-symbols-rounded opacity-5">store_mall_directory</i>
-                        <span class="nav-link-text ms-1">Shops & Stores</span>
+                        <i class="material-symbols-rounded opacity-5">person_search</i>
+                        <span class="nav-link-text ms-1">Representative Reports</span>
                     </a>
                 </li>
             </ul>
         </div>
-        <div class="sidenav-footer position-absolute w-100 bottom-0 ">
-            
-            </div>
+        <div class="sidenav-footer position-absolute w-100 bottom-0">
         </div>
     </aside>
-    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
-        <!-- Main Content -->
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
         <div class="container-fluid py-4">
-          {% block content %}
-          {% endblock %}
-      </div>
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
 
     <!-- Core JS Files -->
     <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
     <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
     <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
     <script src="{% static 'assets/js/material-dashboard.min.js' %}"></script>
-    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

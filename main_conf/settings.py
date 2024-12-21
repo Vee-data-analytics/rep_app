@@ -17,14 +17,11 @@ SECRET_KEY = 'django-insecure-6b5_3h*ky_aibfn)bfgx!vqwovnkgx43b(341v!!t6f##q7nmx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['172.28.46.126', '127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
 
-SECURE_SSL_REDIRECT = True
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
 
 
 INSTALLED_APPS = [
@@ -37,7 +34,7 @@ INSTALLED_APPS = [
 
     #third party 
     'corsheaders',
-    'django_extensions'
+    'django_extensions',
 
     # developer apps
     'users',
@@ -85,7 +82,7 @@ MIDDLEWARE = [
     'users.middleware.OfflineCheckMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
 ROOT_URLCONF = 'main_conf.urls'
 
