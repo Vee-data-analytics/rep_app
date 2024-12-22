@@ -85,28 +85,28 @@
                 </li>
                 <li class="nav-item sub-item">
                     <a class="nav-link {% if 'admin-shop-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'admin-shop-list' %}">
+                        href="{% url 'reptrack_trace:admin-shop-list' %}">
                         <i class="material-symbols-rounded opacity-5">store</i>
                         <span class="nav-link-text ms-1">Shops</span>
                     </a>
                 </li>
                 <li class="nav-item sub-item">
                     <a class="nav-link {% if 'admin-store-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'admin-store-list' %}">
+                        href="{% url 'reptrack_trace:admin-store-list' %}">
                         <i class="material-symbols-rounded opacity-5">store_mall_directory</i>
                         <span class="nav-link-text ms-1">Stores</span>
                     </a>
                 </li>
                 <li class="nav-item sub-item">
                     <a class="nav-link {% if 'admin-product-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'admin-product-list' %}">
+                        href="{% url 'reptrack_trace:admin-product-list' %}">
                         <i class="material-symbols-rounded opacity-5">inventory_2</i>
                         <span class="nav-link-text ms-1">Products</span>
                     </a>
                 </li>
                 <li class="nav-item sub-item">
                     <a class="nav-link {% if 'admin-main-store-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'admin-main-store-list' %}">
+                        href="{% url 'reptrack_trace:admin-main-store-list' %}">
                         <i class="material-symbols-rounded opacity-5">warehouse</i>
                         <span class="nav-link-text ms-1">Main Stores</span>
                     </a>

@@ -8,13 +8,13 @@
             <div class="card my-4">
                 <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                     <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                        <h6 class="text-white text-capitalize ps-3">Store Management</h6>
+                        <h6 class="text-white text-capitalize ps-3">Stores Management</h6>
                     </div>
                 </div>
                 <div class="card-body px-0 pb-2">
                     <div class="table-responsive p-0">
                         <div class="px-3 pb-3">
-                            <a href="{% url 'admin-store-create' %}" class="btn btn-primary">Add New Store</a>
+                            <a href="{% url 'reptrack_trace:admin-store-create' %}" class="btn btn-primary">Add New Store</a>
                         </div>
                         <table class="table align-items-center mb-0">
                             <thead>
@@ -32,15 +32,15 @@
                                     <td>{{ store.shop.name }}</td>
                                     <td>{{ store.location }}</td>
                                     <td>
-                                        <a href="{% url 'admin-store-update' store.pk %}" class="btn btn-info btn-sm">Edit</a>
-                                        <a href="{% url 'admin-store-delete' store.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                                        <a href="{% url 'reptrack_trace:admin-store-update' store.pk %}" class="btn btn-info btn-sm">Edit</a>
+                                        <a href="{% url 'reptrack_trace:admin-store-delete' store.pk %}" class="btn btn-danger btn-sm">Delete</a>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                         
-                        {% include "admin/includes/pagination.html" %}
+                        {% include "include/Pagination.html" %}
                     </div>
                 </div>
             </div>

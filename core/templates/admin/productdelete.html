@@ -1,0 +1,72 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                    <div class="bg-gradient-danger shadow-danger border-radius-lg pt-4 pb-3">
+                        <h6 class="text-white text-capitalize ps-3">Delete Main Store</h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-center mb-4">Are you sure you want to delete the main store "{{ object.name }}"?</h5>
+                    
+                    <div class="alert alert-danger">
+                        <p><strong>Critical Warning:</strong> This is a main store deletion. This action will have widespread effects across the system.</p>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <p><strong>The following data will be permanently deleted:</strong></p>
+                        <ul>
+                            <li>All associated branch shops</li>
+                            <li>All inventory records</li>
+                            <li>All supply chain records</li>
+                            <li>All distribution records</li>
+                            <li>All staff assignments</li>
+                            <li>All transaction history</li>
+                            <li>All stock transfer records</li>
+
+                        </ul>
+                    </div>
+
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">Current Statistics:</h6>
+                            <ul class="list-unstyled">
+                                <li>Connected Shops: {{ object.shop_set.count }}</li>
+                                <li>Active Inventory Items: {{ object.inventory_set.count }}</li>
+                                <li>Active Staff Members: {{ object.staff_count }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                            <label class="form-check-label" for="confirmDelete">
+                                I understand that this action cannot be undone and will delete all associated data
+                            </label>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-danger" id="deleteButton" disabled>Confirm Delete</button>
+                            <a href="{% url 'reptrack_trace:admin-product-list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.getElementById('confirmDelete').addEventListener('change', function() {
+        document.getElementById('deleteButton').disabled = !this.checked;
+    });
+</script>
+{% endblock %}
+{% endblock %}

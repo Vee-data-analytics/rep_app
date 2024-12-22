@@ -28,7 +28,7 @@
                                     <td>{{ store.location }}</td>
                                     <td>{{ store.manager_name }}</td>
                                     <td>
-                                        <a href="{% url 'reptrack_trace:store-update' store.pk %}" class="btn btn-info btn-sm">Edit</a>
+                                        <a href="{% url 'reptrack_trace:admin-store-update' store.pk %}" class="btn btn-info btn-sm">Edit</a>
                                         <a href="{% url 'reptrack_trace:store-delete' store.pk %}" class="btn btn-danger btn-sm">Delete</a>
                                     </td>
                                 </tr>

@@ -14,7 +14,7 @@
                 <div class="card-body px-0 pb-2">
                     <div class="table-responsive p-0">
                         <div class="px-3 pb-3">
-                            <a href="{% url 'admin-shop-create' %}" class="btn btn-primary">Add New Shop</a>
+                            <a href="{% url 'reptrack_trace:admin-shop-create' %}" class="btn btn-primary">Add New Shop</a>
                         </div>
                         <table class="table align-items-center mb-0">
                             <thead>
@@ -32,8 +32,8 @@
                                     <td>{{ shop.location }}</td>
                                     <td>{{ shop.status }}</td>
                                     <td>
-                                        <a href="{% url 'admin-shop-update' shop.pk %}" class="btn btn-info btn-sm">Edit</a>
-                                        <a href="{% url 'admin-shop-delete' shop.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                                        <a href="{% url 'reptrack_trace:admin-shop-update' shop.pk %}" class="btn btn-info btn-sm">Edit</a>
+                                        <a href="{% url 'reptrack_trace:admin-shop-delete' shop.pk %}" class="btn btn-danger btn-sm">Delete</a>
                                     </td>
                                 </tr>
                                 {% endfor %}

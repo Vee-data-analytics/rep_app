@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView,FormView, CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
 from django.urls import reverse_lazy
-from .models import Product,Shop, Report,ShopStore,Store,MainStore
+from .models import Product,Shop, Report,ShopStore,Store, MainStore
 from .forms import StoreForm, ShopForm, ReportForm, ProductForm,MainStoreForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -86,6 +86,9 @@ def logout_view(request):
 
 def main_report_window(request):
     return render(request,'reports/report_main.html')
+
+def offline_view(request):
+    return render(request, 'offline.html')
 
 
 def settings_grid(request):
@@ -654,8 +657,8 @@ class ShopUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """View for updating an existing shop"""
     model = Shop
     form_class = ShopForm
-    template_name = 'track_n_trace/shop/update_shop.html'
-    success_url = reverse_lazy('shop-management')  # Replace with the appropriate redirect URL
+    template_name = 'admin/update_shop.html'
+    success_url = reverse_lazy('reptrack_trace:admin-shop-management')  # Replace with the appropriate redirect URL
 
     def test_func(self):
         """Restrict access to only admin users"""
@@ -725,9 +728,9 @@ class MainStoreCreateView(CreateView):
 
 class StoreDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """View for deleting a shop"""
-    model = Shop
-    template_name = 'track_n_trace/store/delete_shop.html'
-    success_url = reverse_lazy('shop-management')  # Redirect after successful deletion
+    model = Store
+    template_name = 'admin/delete_shop.html'
+    success_url = reverse_lazy('reptrack_trace:shop-management')  
 
     def test_func(self):
         """Restrict access to admin users only"""
@@ -739,9 +742,9 @@ class StoreUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """View for updating an existing shop"""
     model = Shop
     form_class = ShopForm
-    template_name = 'track_n_trace/store/update_shop.html'
-    success_url = reverse_lazy('shop-management')  # Replace with the appropriate redirect URL
-
+    template_name = 'admin/update_store.html'
+    success_url = reverse_lazy('reptrack_trace:shop-management')  
+    
     def test_func(self):
         """Restrict access to only admin users"""
         return self.request.user.role == User.ADMIN
@@ -761,8 +764,8 @@ class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 class AdminShopCreateView(AdminRequiredMixin, CreateView):
     model = Shop
     form_class = ShopForm
-    template_name = 'admin/shop/create.html'
-    success_url = reverse_lazy('admin-shop-list')
+    template_name = 'admin/shopcreate.html'
+    success_url = reverse_lazy('reptrack_trace:admin-shop-list')
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -772,23 +775,23 @@ class AdminShopCreateView(AdminRequiredMixin, CreateView):
 class AdminShopUpdateView(AdminRequiredMixin, UpdateView):
     model = Shop
     form_class = ShopForm
-    template_name = 'admin/shop/update.html'
-    success_url = reverse_lazy('admin-shop-list')
+    template_name = 'admin/update.html'
+    success_url = reverse_lazy('reptrack_trace:admin-shop-list')
 
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, f'Shop "{self.object.name}" updated successfully')
         return response
 
-class AdminShopListView(AdminRequiredMixin, ListView):
+class ShopAdminListView(AdminRequiredMixin, ListView):
     model = Shop
-    template_name = 'admin/shop/list.html'
+    template_name = 'admin/shoplist.html'
     context_object_name = 'shops'
 
 class AdminShopDeleteView(AdminRequiredMixin, DeleteView):
     model = Shop
-    template_name = 'admin/shop/delete.html'
-    success_url = reverse_lazy('admin-shop-list')
+    template_name = 'admin/store_delete.html'
+    success_url = reverse_lazy('reptrack_trace:admin-shop-list')
 
     def delete(self, request, *args, **kwargs):
         shop = self.get_object()
@@ -799,8 +802,8 @@ class AdminShopDeleteView(AdminRequiredMixin, DeleteView):
 class AdminStoreCreateView(AdminRequiredMixin, CreateView):
     model = Store
     form_class = StoreForm
-    template_name = 'admin/store/create.html'
-    success_url = reverse_lazy('admin-store-list')
+    template_name = 'admin/storecreate.html'
+    success_url = reverse_lazy('reptrack_trace:admin-store-list')
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -810,25 +813,30 @@ class AdminStoreCreateView(AdminRequiredMixin, CreateView):
 class AdminStoreUpdateView(AdminRequiredMixin, UpdateView):
     model = Store
     form_class = StoreForm
-    template_name = 'admin/store/update.html'
-    success_url = reverse_lazy('admin-store-list')
+    template_name = 'admin/update_store.html'
+    success_url = reverse_lazy('reptrack_trace:admin-store-list')
 
 class AdminStoreListView(AdminRequiredMixin, ListView):
     model = Store
-    template_name = 'admin/store/list.html'
+    template_name = 'admin/storelist.html'
+    context_object_name = 'stores'
+
+class StoreAdminListView(AdminRequiredMixin, UpdateView):
+    model = Store
+    template_name = 'admin/store-list.html'
     context_object_name = 'stores'
 
 class AdminStoreDeleteView(AdminRequiredMixin, DeleteView):
     model = Store
-    template_name = 'admin/store/delete.html'
-    success_url = reverse_lazy('admin-store-list')
+    template_name = 'admin/store_delete.html'
+    success_url = reverse_lazy('reptrack_trace:admin-store-list')
 
 # Product Management
 class AdminProductCreateView(AdminRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
-    template_name = 'admin/product/create.html'
-    success_url = reverse_lazy('admin-product-list')
+    template_name = 'admin/productcreate.html'
+    success_url = reverse_lazy('reptrack_trace:admin-product-list')
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -838,25 +846,25 @@ class AdminProductCreateView(AdminRequiredMixin, CreateView):
 class AdminProductUpdateView(AdminRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
-    template_name = 'admin/product/update.html'
-    success_url = reverse_lazy('admin-product-list')
+    template_name = 'admin/productupdate.html'
+    success_url = reverse_lazy('reptrack_trace:admin-product-list')
 
 class AdminProductListView(AdminRequiredMixin, ListView):
     model = Product
-    template_name = 'admin/product/list.html'
+    template_name = 'admin/productlist.html'
     context_object_name = 'products'
 
 class AdminProductDeleteView(AdminRequiredMixin, DeleteView):
     model = Product
-    template_name = 'admin/product/delete.html'
-    success_url = reverse_lazy('admin-product-list')
+    template_name = 'admin/productdelete.html'
+    success_url = reverse_lazy('reptrack_trace:admin-product-list')
 
 # Main Store Management
 class AdminMainStoreCreateView(AdminRequiredMixin, CreateView):
     model = MainStore
     form_class = MainStoreForm
-    template_name = 'admin/main_store/create.html'
-    success_url = reverse_lazy('admin-main-store-list')
+    template_name = 'admin/mainstore_create.html'
+    success_url = reverse_lazy('reptrack_trace:admin-main-store-list')
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -866,18 +874,18 @@ class AdminMainStoreCreateView(AdminRequiredMixin, CreateView):
 class AdminMainStoreUpdateView(AdminRequiredMixin, UpdateView):
     model = MainStore
     form_class = MainStoreForm
-    template_name = 'admin/main_store/update.html'
-    success_url = reverse_lazy('admin-main-store-list')
+    template_name = 'admin/main_storeupdate.html'
+    success_url = reverse_lazy('reptrack_trace:admin-main-store-list')
 
 class AdminMainStoreListView(AdminRequiredMixin, ListView):
     model = MainStore
-    template_name = 'admin/main_store/list.html'
+    template_name = 'admin/mainstorelist.html'
     context_object_name = 'main_stores'
 
 class AdminMainStoreDeleteView(AdminRequiredMixin, DeleteView):
     model = MainStore
-    template_name = 'admin/main_store/delete.html'
-    success_url = reverse_lazy('admin-main-store-list')
+    template_name = 'admin/main-store-delete.html'
+    success_url = reverse_lazy('reptrack_trace:admin-main-store-list')
 
 
 class ReportCreateView(FormView):

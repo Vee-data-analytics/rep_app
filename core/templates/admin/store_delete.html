@@ -1,0 +1,36 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                    <div class="bg-gradient-danger shadow-danger border-radius-lg pt-4 pb-3">
+                        <h6 class="text-white text-capitalize ps-3">Delete Store</h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-center mb-4">Are you sure you want to delete the store "{{ object.name }}"?</h5>
+                    <div class="alert alert-warning">
+                        <p><strong>Warning:</strong> This action cannot be undone. Deleting this store will also affect:</p>
+                        <ul>
+                            <li>All associated shop records</li>
+                            <li>Stock records</li>
+                            <li>Transaction history</li>
+                        </ul>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                            <a href="{% url 'reptrack_trace:admin-main-store-list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

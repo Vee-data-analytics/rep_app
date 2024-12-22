@@ -14,14 +14,11 @@ CORE_ASSETS =  BASE_DIR/'core/'
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-6b5_3h*ky_aibfn)bfgx!vqwovnkgx43b(341v!!t6f##q7nmx'
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
-
-
-# Application definition
-
+ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1' ,'localhost','192.168.0.4', '.ngrok.io']
 
 
 INSTALLED_APPS = [
@@ -79,7 +76,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'users.middleware.RoleMiddleware', 
-    'users.middleware.OfflineCheckMiddleware',
+
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
@@ -177,7 +174,28 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = CORE_ASSETS / 'media' 
 
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Static Files Finders
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# Additional Security Settings for SSL
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Increase timeout in Django as well
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
 
 
 # Default primary key field type

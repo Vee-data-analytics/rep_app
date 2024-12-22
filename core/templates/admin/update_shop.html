@@ -9,7 +9,7 @@
                 <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                     <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
                         <h6 class="text-white text-capitalize ps-3">
-                            {% if form.instance.pk %}Edit Main Store{% else %}Create New Main Store{% endif %}
+                            {% if form.instance.pk %}Edit Shop{% else %}Create New Shop{% endif %}
                         </h6>
                     </div>
                 </div>
@@ -34,9 +34,9 @@
 
                             <div class="form-group mt-4">
                                 <button type="submit" class="btn btn-primary">
-                                    {% if form.instance.pk %}Update Main Store{% else %}Create Main Store{% endif %}
+                                    {% if form.instance.pk %}Update Shop{% else %}Create Shop{% endif %}
                                 </button>
-                                <a href="{% url 'admin-main-store-list' %}" class="btn btn-secondary">Cancel</a>
+                                <a href="{% url 'reptrack_trace:admin-shop-list' %}" class="btn btn-secondary">Cancel</a>
                             </div>
                         </form>
                     </div>
