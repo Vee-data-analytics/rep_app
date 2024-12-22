@@ -1,7 +1,7 @@
 const CACHE_NAME = 'shop-rep-cache-v1';
 const urlsToCache = [
-    '/track-n-trace/',  // Update this to your actual home URL
-    '/static/assets/css/mobile-app.css',  // Update based on your actual CSS files
+    '/track-n-trace/',
+    '/static/assets/css/mobile-app.css',
     '/static/assets/css/material-dashboard.css',
     '/static/assets/css/nucleo-icons.css',
     '/static/assets/css/nucleo-svg.css',
@@ -10,76 +10,55 @@ const urlsToCache = [
     '/static/assets/js/core/bootstrap.min.js',
     '/static/assets/js/material-dashboard.min.js',
     '/static/images/logo.png',
-    '/track-n-trace/login/'  // Add your login page URL
+    '/track-n-trace/login/'
 ];
 
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Opened cache');
-                return cache.addAll(urlsToCache);
-            })
-            .catch(error => {
-                console.error('Cache installation failed:', error);
-            })
+            .then(cache => cache.addAll(urlsToCache))
+            .catch(error => console.error('Cache installation failed:', error))
     );
 });
 
 self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // If cached response exists, return it
-                if (response) {
-                    return response;
-                }
+        caches.match(event.request).then(cachedResponse => {
+            if (cachedResponse) return cachedResponse;
 
-                // Clone the request because it can only be used once
-                const fetchRequest = event.request.clone();
+            return fetch(event.request)
+                .then(networkResponse => {
+                    if (!networkResponse || networkResponse.status !== 200) {
+                        return networkResponse;
+                    }
 
-                return fetch(fetchRequest)
-                    .then(response => {
-                        // Check if we received a valid response
-                        if (!response || response.status !== 200) {
-                            return response;
+                    // Cache the fetched response
+                    const responseToCache = networkResponse.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        if (event.request.url.startsWith(self.location.origin)) {
+                            cache.put(event.request, responseToCache);
                         }
-
-                        // Clone the response because it can only be used once
-                        const responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                // Only cache same-origin requests
-                                if (event.request.url.startsWith(self.location.origin)) {
-                                    cache.put(event.request, responseToCache);
-                                }
-                            });
-
-                        return response;
-                    })
-                    .catch(error => {
-                        console.error('Fetch failed:', error);
-                        // Only return offline page for navigation requests
-                        if (event.request.mode === 'navigate') {
-                            return caches.match('/track-n-trace/login/');
-                        }
-                        throw error;
                     });
-            })
+
+                    return networkResponse;
+                })
+                .catch(error => {
+                    console.error('Fetch failed:', error);
+                    if (event.request.mode === 'navigate') {
+                        return caches.match('/track-n-trace/login/');
+                    }
+                });
+        })
     );
 });
 
-// Add activate event to clean up old caches
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
+                cacheNames
+                    .filter(cacheName => cacheName.startsWith('shop-rep-') && cacheName !== CACHE_NAME)
+                    .map(cacheName => caches.delete(cacheName))
             );
         })
     );
