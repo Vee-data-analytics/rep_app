@@ -920,7 +920,7 @@ class ReportCreateView(FormView):
                     'phone': selected_shop.manager_phone,
                 }
             except Shop.DoesNotExist:
-                context['selected_shop'] = None
+                pass
         else:
             context['selected_shop'] = None
 

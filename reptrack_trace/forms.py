@@ -29,6 +29,12 @@ class ShopForm(forms.ModelForm):
         if not phone.isdigit():
             raise ValidationError('Phone number must contain only digits')
         return phone
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['shop'].widget.attrs.update({
+            'onchange': 'this.form.submit()'
+        })
 
 
 class StoreForm(forms.ModelForm):
@@ -98,7 +104,10 @@ class ReportForm(forms.ModelForm):
         ]
         widgets = {
             # Shop Section
-            'shop': forms.Select(attrs={'class': 'form-select'}),
+            'shop': forms.Select(attrs={
+                'class': 'form-select',
+                'onchange': 'this.form.submit()'
+            }),
             'product': forms.Select(attrs={'class': 'form-select'}),
             'shop_current_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'needs_topup': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

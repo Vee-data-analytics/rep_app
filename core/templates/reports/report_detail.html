@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Report Details</h2>
+    <p><strong>Status:</strong> {{ general_info.status }}</p>
+    <p><strong>Created At:</strong> {{ general_info.created_at }}</p>
+    <p><strong>Submitted At:</strong> {{ general_info.submitted_at }}</p>
+
+    <!-- Shop Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">Shop Details</div>
+        <div class="card-body">
+            <p><strong>Shop:</strong> {{ shop_details.shop.name }}</p>
+            <p><strong>Product:</strong> {{ shop_details.product.name }}</p>
+            <p><strong>Current Quantity:</strong> {{ shop_details.current_quantity }}</p>
+            <p><strong>Needs Top-up:</strong> {{ shop_details.needs_topup }}</p>
+            <p><strong>Desired Quantity:</strong> {{ shop_details.desired_quantity }}</p>
+            <p><strong>Top-up Quantity:</strong> {{ shop_details.topup_quantity }}</p>
+            {% if shop_details.photo %}
+                <p><strong>Photo:</strong> <img src="{{ shop_details.photo.url }}" alt="Shop Photo" class="img-fluid"></p>
+            {% endif %}
+            <p><strong>Comments:</strong> {{ shop_details.comments }}</p>
+        </div>
+    </div>
+
+    <!-- Shop-Stores Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">Shop-Stores Details</div>
+            <div class="card-body">
+                <p><strong>Manager Confirmed:</strong> {{ shop_store_details.manager_confirmed }}</p>
+                <p><strong>Current Quantity:</strong> {{ shop_store_details.current_quantity }}</p>
+                <p><strong>Has Sufficient Stock:</strong> {{ shop_store_details.has_sufficient_stock }}</p>
+                <p><strong>Quantity Taken:</strong> {{ shop_store_details.quantity_taken }}</p>
+                <p><strong>Remaining Quantity:</strong> {{ shop_store_details.remaining_quantity }}</p>
+                {% if shop_store_details.photo %}
+                    <p><strong>Photo:</strong> <img src="{{ shop_store_details.photo.url }}" alt="Shop Store Photo" class="img-fluid"></p>
+                {% endif %}
+                <p><strong>Comments:</strong> {{ shop_store_details.comments }}</p>
+            </div>
+        </div>
+
+
+        </div>
+    </div>
+     <!-- Store Section -->
+     <div class="card mb-4">
+         <div class="card-header bg-warning text-white">Store Details</div>
+         <div class="card-body">
+             <p><strong>Store Name:</strong> {{ store_details.name }}</p>
+             <p><strong>Location:</strong> {{ store_details.location }}</p>
+             <p><strong>Manager Name:</strong> {{ store_details.manager_name }}</p>
+             <p><strong>Manager Phone:</strong> {{ store_details.manager_phone }}</p>
+             <p><strong>Manager Email:</strong> {{ store_details.manager_email }}</p>
+             <p><strong>Current Quantity:</strong> {{ store_details.current_quantity }}</p>
+             <p><strong>Quantity Taken:</strong> {{ store_details.quantity_taken }}</p>
+             <p><strong>Remaining Quantity:</strong> {{ store_details.remaining_quantity }}</p>
+             {% if store_details.photo %}
+                 <p><strong>Photo:</strong> <img src="{{ store_details.photo.url }}" alt="Store Photo" class="img-fluid"></p>
+             {% endif %}
+             <p><strong>Comments:</strong> {{ store_details.comments }}</p>
+         </div>
+     </div>
+
+    <!-- Main Store Section -->
+     <div class="card mb-4">
+         <div class="card-header bg-danger text-white">Main Store Details</div>
+         <div class="card-body">
+             <p><strong>Main Store:</strong> {{ main_store_details.name }}</p>
+             <p><strong>Current Quantity:</strong> {{ main_store_details.current_quantity }}</p>
+             <p><strong>Quantity Taken:</strong> {{ main_store_details.quantity_taken }}</p>
+             <p><strong>Remaining Quantity:</strong> {{ main_store_details.remaining_quantity }}</p>
+             {% if main_store_details.photo %}
+                 <p><strong>Photo:</strong> <img src="{{ main_store_details.photo.url }}" alt="Main Store Photo" class="img-fluid"></p>
+             {% endif %}
+             <p><strong>Comments:</strong> {{ main_store_details.comments }}</p>
+         </div>
+     </div>
+
+    <!-- Final Quantities -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-white">Final Quantities</div>
+        <div class="card-body">
+            <p><strong>Final Shop Quantity:</strong> {{ general_info.final_shop_quantity }}</p>
+            <p><strong>Final Store Quantity:</strong> {{ general_info.final_store_quantity }}</p>
+        </div>
+    </div>
+</div>
+
+
+        <!-- Logout Button -->
+        <div class="mt-4">
+            <form action="{% url 'reptrack_trace:home' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    back to dashboard
+                </button>
+            </form>
+{% endblock %}

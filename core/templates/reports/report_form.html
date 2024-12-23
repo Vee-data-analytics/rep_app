@@ -25,36 +25,33 @@
                                     <div class="accordion-body">
                                         <div class="row">
                                             <!-- Shop Selection -->
-                                             <div class="row mb-3">
-                                                 <div class="col-md-6">
-                                                     <label for="id_shop" class="form-label">Select Shop</label>
-                                                     <div class="input-group">
-                                                         {{ form.shop }}
-                                                         <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addShopModal">
-                                                             Add Shop
-                                                         </button>
-                                                     </div>
-                                                 </div>
-                                             </div>
+                                            <form method="GET" id="shopForm">
+                                                <div class="col-md-6">
+                                                    <label for="id_shop" class="form-label">Select Shop</label>
+                                                    <div class="input-group">
+                                                        {{ form.shop }}
+                                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addShopModal">
+                                                            Add Shop
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                            
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="shopAddress" class="form-label">Shop Address</label>
+                                                    <input type="text" id="shopAddress" class="form-control" value="{{ selected_shop.address | default:'' }}" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="shopManagerName" class="form-label">Manager Name</label>
+                                                    <input type="text" id="shopManagerName" class="form-control" value="{{ selected_shop.manager_name | default:'' }}" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="shopManagerphone" class="form-label">Manager Phone</label>
+                                                <input type="text" id="shopManagerPhone" class="form-control" value="{{ selected_shop.phone|default:'' }}" readonly>
+                                            </div>
 
-                                             <!-- Auto-Populated Fields -->
-                                             <div class="row mb-3">
-                                                 <div class="col-md-6">
-                                                     <label for="shopAddress" class="form-label">Shop Address</label>
-                                                     <input type="text" id="shopAddress" class="form-control" readonly>
-                                                 </div>
-                                                 <div class="col-md-6">
-                                                     <label for="shopManagerName" class="form-label">Manager Name</label>
-                                                     <input type="text" id="shopManagerName" class="form-control" readonly>
-                                                 </div>
-                                             </div>
-
-                                             <div class="row mb-3">
-                                                 <div class="col-md-6">
-                                                     <label for="shopPhone" class="form-label">Shop Phone Number</label>
-                                                     <input type="text" id="shopPhone" class="form-control" readonly>
-                                                 </div>
-                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Select Product</label>
                                                 <div class="input-group">
