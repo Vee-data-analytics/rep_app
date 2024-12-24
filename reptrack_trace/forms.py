@@ -29,13 +29,6 @@ class ShopForm(forms.ModelForm):
         if not phone.isdigit():
             raise ValidationError('Phone number must contain only digits')
         return phone
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['shop'].widget.attrs.update({
-            'onchange': 'this.form.submit()'
-        })
-
 
 class StoreForm(forms.ModelForm):
     """Form for creating/editing stores"""
@@ -146,23 +139,35 @@ class ReportForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['shop'].widget.attrs.update({
             'class': 'form-select',
-            'id': 'id_shop'  
-        })        
+            'id': 'id_shop'
+        })  # Close the first update() call here
+        self.fields['topup_quantity'].widget.attrs.update({
+            'readonly': 'readonly',
+            'class': 'form-control'
+        })  
+    
 
     def clean(self):
-        """Custom validation for the report form"""
+        """Custom validation and auto-calculation for the report form"""
         cleaned_data = super().clean()
         
-        # Validation: If needs_topup is True, desired_quantity and topup_quantity must be specified
-        if cleaned_data.get('needs_topup'):
-            if not cleaned_data.get('desired_quantity'):
+        # Get required fields for calculation
+        shop_current_quantity = cleaned_data.get('shop_current_quantity')
+        desired_quantity = cleaned_data.get('desired_quantity')
+        needs_topup = cleaned_data.get('needs_topup')
+    
+        # Calculate topup_quantity if needs_topup is True
+        if needs_topup:
+            if desired_quantity is None:
                 self.add_error('desired_quantity', 'Desired quantity is required when top-up is needed.')
-            if not cleaned_data.get('topup_quantity'):
-                self.add_error('topup_quantity', 'Top-up quantity is required when top-up is needed.')
-        
-        
-            
+            if shop_current_quantity is None:
+                self.add_error('shop_current_quantity', 'Shop current quantity is required when top-up is needed.')
+            if desired_quantity is not None and shop_current_quantity is not None:
+                # Ensure topup_quantity is calculated as a non-negative value
+                cleaned_data['topup_quantity'] = max(desired_quantity - shop_current_quantity, 0)
+    
         return cleaned_data
+
 
 class ReportSearchForm(forms.Form):
     """Enhanced Report Search Form with Crispy Forms"""

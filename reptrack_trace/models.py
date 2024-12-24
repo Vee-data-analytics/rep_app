@@ -128,7 +128,18 @@ class Report(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
+    
+    def calculate_topup_quantity(self):
+        """Calculate Top-Up Quantity."""
+        if self.desired_quantity is not None and self.shop_current_quantity is not None:
+            return max(self.desired_quantity - self.shop_current_quantity, 0)
+        return None
 
+    def save(self, *args, **kwargs):
+        """Override save method to store calculated topup_quantity."""
+        self.topup_quantity = self.calculate_topup_quantity()
+        super().save(*args, **kwargs)
+    
     def save(self, *args, **kwargs):
         if self.status == 'submitted' and not self.submitted_at:
             self.submitted_at = timezone.now()

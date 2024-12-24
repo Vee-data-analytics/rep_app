@@ -908,8 +908,6 @@ class ReportCreateView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # If a shop is selected, pass its details
         selected_shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
         if selected_shop_id:
             try:
@@ -917,7 +915,7 @@ class ReportCreateView(FormView):
                 context['selected_shop'] = {
                     'address': selected_shop.address,
                     'manager_name': selected_shop.manager_name,
-                    'phone': selected_shop.manager_phone,
+                    'manager_phone': selected_shop.manager_phone,  
                 }
             except Shop.DoesNotExist:
                 pass
@@ -1224,9 +1222,35 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return Report.objects.filter(representative=self.request.user, status='draft')
         return Report.objects.filter(status='draft')
 
+    def get_initial(self):
+        initial = super().get_initial()
+        shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
+        if shop_id:
+            try:
+                shop = Shop.objects.get(id=shop_id)
+                initial.update({
+                    'shop': shop.id,
+                })
+            except Shop.DoesNotExist:
+                pass
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+        context = super().get_context_data(**kwargs)
+        selected_shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
+        if selected_shop_id:
+            try:
+                selected_shop = Shop.objects.get(id=selected_shop_id)
+                context['selected_shop'] = {
+                    'address': selected_shop.address,
+                    'manager_name': selected_shop.manager_name,
+                    'manager_phone': selected_shop.manager_phone,  
+                }
+            except Shop.DoesNotExist:
+                pass
+        else:
+            context['selected_shop'] = None        
         # Add forms for modals
         context.update({
             'products': Product.objects.all(),
