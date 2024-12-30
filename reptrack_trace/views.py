@@ -1160,18 +1160,18 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
                     'manager_phone': selected_shop.manager_phone,
                 }
             except Shop.DoesNotExist:
-                context['selected_shop'] = None
+                pass
         else:
             context['selected_shop'] = None
-    
-        # Debugging: Print to check context
-        print(context.get('selected_shop'))
-    
+
+        # Add dropdown options
         context.update({
+            'shops': Shop.objects.all(),
             'products': Product.objects.all(),
             'stores': Store.objects.all(),
             'main_stores': MainStore.objects.all(),
             'shop_stores': ShopStore.objects.all(),
+            'shop_form': ShopForm(),
             'product_form': ProductForm(),
             'store_form': StoreForm(),
             'main_store_form': MainStoreForm(),

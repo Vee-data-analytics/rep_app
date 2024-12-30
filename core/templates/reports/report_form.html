@@ -72,8 +72,20 @@
                                                 <label class="form-label">Shop Shelf Photo</label>
                                                 {{ form.shop_photo }}
                                             </div>
-                                            
-                                            
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    {{ form.needs_topup }}
+                                                    <label class="form-check-label">Does quantity need Top-up?</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Desired Stock Quantity</label>
+                                                {{ form.desired_quantity }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label"> Desired Top-up Quantity</label>
+                                                {{ form.topup_quantity }}
+                                            </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Shop Comments</label>
                                                 {{ form.shop_comments }}
