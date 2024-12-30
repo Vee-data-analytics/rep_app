@@ -99,6 +99,10 @@ class ProductForm(forms.ModelForm):
 
 
 class ReportForm(forms.ModelForm):
+    topup_quantity = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+        help_text="This field is autopopulated"
+    )
     
     """Form for creating and editing reports"""
     class Meta:
@@ -131,7 +135,7 @@ class ReportForm(forms.ModelForm):
             'shop_current_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'needs_topup': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'desired_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-            'topup_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            
             'shop_photo': forms.FileInput(attrs={'class': 'form-control'}),
             'shop_comments': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             

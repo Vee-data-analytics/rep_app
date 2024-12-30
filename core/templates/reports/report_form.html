@@ -85,10 +85,12 @@
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label"> Desired Top-up Quantity</label>
                                                 {{ form.topup_quantity }}
-                                            </div>
+                                                <small class="form-text text-muted">{{ form.topup_quantity.help_text }}</small>
                                             <div class="mb-3">
+                                                <div class="col-md-6 mb-3">
                                                 <label class="form-label">Shop Comments</label>
                                                 {{ form.shop_comments }}
+                                            </div>
                                             </div>
                                         </div>
                                     </div>
