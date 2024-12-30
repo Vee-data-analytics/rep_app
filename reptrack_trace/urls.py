@@ -9,6 +9,9 @@ from users.views import(
     
     )
 
+from .modal_views import (
+    create_shop, create_product, create_store, create_main_store, create_shop_store,
+)
 
 app_name = 'reptrack_trace'
 
@@ -28,6 +31,14 @@ urlpatterns = [
     path('shops/create/', views.ShopCreateView.as_view(), name='shop-create'),
     path('stores/create/',  views.StoreCreateView.as_view(), name='store-create'),
     path('products/create/', views.ProductCreateView.as_view(), name='product-create'),
+    
+    path('create-shop/', create_shop, name='create_shop'),
+    path('create-product/', create_product, name='create_product'),
+    path('create-store/', create_store, name='create_store'),
+    path('create-main-store/', create_main_store, name='create_main_store'),
+    path('create-shop-store/', create_shop_store, name='create_shop_store'),
+
+    
     
     path('main-stores/create/', views.MainStoreCreateView.as_view(), name='main-store-create'),
     path('reports/<uuid:pk>/', views.ReportUpdateView.as_view(), name='report-update'),

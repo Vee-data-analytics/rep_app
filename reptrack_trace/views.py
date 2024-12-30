@@ -891,17 +891,21 @@ class AdminMainStoreDeleteView(AdminRequiredMixin, DeleteView):
 class ReportCreateView(FormView):
     template_name = 'reports/report_form.html'
     form_class = ReportForm
-    success_url = reverse_lazy('reptrack_trace:report-list') 
+    success_url = reverse_lazy('reptrack_trace:report-list')
+    
     
     def get_initial(self):
         initial = super().get_initial()
+        # Retrieve unsaved data from session
+        unsaved_data = self.request.session.get('unsaved_report_data', {})
+        initial.update(unsaved_data)
+    
+        # Prepopulate with shop data if available
         shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
         if shop_id:
             try:
                 shop = Shop.objects.get(id=shop_id)
-                initial.update({
-                    'shop': shop.id,
-                })
+                initial.update({'shop': shop.id})
             except Shop.DoesNotExist:
                 pass
         return initial
@@ -915,7 +919,7 @@ class ReportCreateView(FormView):
                 context['selected_shop'] = {
                     'address': selected_shop.address,
                     'manager_name': selected_shop.manager_name,
-                    'manager_phone': selected_shop.manager_phone,  
+                    'manager_phone': selected_shop.manager_phone,
                 }
             except Shop.DoesNotExist:
                 pass
@@ -923,162 +927,68 @@ class ReportCreateView(FormView):
             context['selected_shop'] = None
 
         # Add dropdown options
-        context['shops'] = Shop.objects.all()
-        context['products'] = Product.objects.all()
-        context['stores'] = Store.objects.all()
-        context['main_stores'] = MainStore.objects.all()
-        context['shop_stores'] = ShopStore.objects.all()
-        
-        # Add forms for modal additions
-        context['shop_form'] = ShopForm()
-        context['product_form'] = ProductForm()
-        context['store_form'] = StoreForm()
-        context['main_store_form'] = MainStoreForm()
-        context['shop_store_form'] = ShopStoreForm()
-        
+        context.update({
+            'shops': Shop.objects.all(),
+            'products': Product.objects.all(),
+            'stores': Store.objects.all(),
+            'main_stores': MainStore.objects.all(),
+            'shop_stores': ShopStore.objects.all(),
+            'shop_form': ShopForm(),
+            'product_form': ProductForm(),
+            'store_form': StoreForm(),
+            'main_store_form': MainStoreForm(),
+            'shop_store_form': ShopStoreForm(),
+        })
         return context
-    
-    def get(self, request, *args, **kwargs):
-        """
-        Handle GET requests: instantiate a blank version of the form.
-        """
-        try:
-            return super().get(request, *args, **kwargs)
-        except Exception as e:
-            # Log the error
-            logger.error(f"Error in ReportCreateView GET method: {e}")
-            messages.error(request, "An unexpected error occurred. Please try again.")
-            return redirect(self.success_url)
 
     def post(self, request, *args, **kwargs):
-        try:
-            # First, handle shop selection if that's what was posted
-            if 'select_shop' in request.POST:
-                shop_id = request.POST.get('shop')
-                return redirect(f"{request.path}?shop={shop_id}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Handle modal form submissions (This part is correct)
+            form_key = request.POST.get('form_key')
+            modal_forms = {
+                'shop_form': ShopForm,
+                'product_form': ProductForm,
+                'store_form': StoreForm,
+                'main_store_form': MainStoreForm,
+                'shop_store_form': ShopStoreForm,
+            }
     
-            # Then handle modal form submissions
-            if 'shop_form' in request.POST:
-                shop_form = ShopForm(request.POST, request.FILES)
-                if shop_form.is_valid():
-                    shop = shop_form.save()
-                    messages.success(request, f'Shop "{shop.name}" created successfully')
-                    return redirect(request.path)
+            if form_key in modal_forms:
+                form_class = modal_forms[form_key]
+                form = form_class(request.POST, request.FILES)
+                if form.is_valid():
+                    instance = form.save()
+                    return JsonResponse({
+                        'success': True,
+                        'dropdown_data': {
+                            'dropdown_id': f'id_{form_key.split("_")[0]}',
+                            'new_option': {
+                                'value': instance.id,
+                                'text': str(instance)
+                            }
+                        }
+                    })
                 else:
-                    messages.error(request, 'Error creating shop. Please check the form.')
-                    return self.form_invalid(shop_form)
-            
-            elif 'product_form' in request.POST:
-                product_form = ProductForm(request.POST, request.FILES)
-                if product_form.is_valid():
-                    product = product_form.save()
-                    messages.success(request, f'Product "{product.name}" created successfully')
-                    return redirect(request.path)
-                else:
-                    messages.error(request, 'Error creating product. Please check the form.')
-                    return self.form_invalid(product_form)
-            
-            elif 'store_form' in request.POST:
-                store_form = StoreForm(request.POST, request.FILES)
-                if store_form.is_valid():
-                    store = store_form.save()
-                    messages.success(request, f'Store "{store.name}" created successfully')
-                    return redirect(request.path)
-                else:
-                    messages.error(request, 'Error creating store. Please check the form.')
-                    return self.form_invalid(store_form)
-            
-            elif 'main_store_form' in request.POST:
-                main_store_form = MainStoreForm(request.POST, request.FILES)
-                if main_store_form.is_valid():
-                    main_store = main_store_form.save()
-                    messages.success(request, f'Main Store "{main_store.name}" created successfully')
-                    return redirect(request.path)
-                else:
-                    messages.error(request, 'Error creating main store. Please check the form.')
-                    return self.form_invalid(main_store_form)
-            
-            elif 'shop_store_form' in request.POST:
-                shop_store_form = ShopStoreForm(request.POST, request.FILES)
-                if shop_store_form.is_valid():
-                    shop_store = shop_store_form.save()
-                    messages.success(request, f'Shop Store "{shop_store.name}" created successfully')
-                    return redirect(request.path)
-                else:
-                    messages.error(request, 'Error creating shop store. Please check the form.')
-                    return self.form_invalid(shop_store_form)
-            
-            # Finally, handle the main report form
-            form = self.get_form()
-            if form.is_valid():
-                report = form.save(commit=False)
-                report.representative = request.user
-                
-                # Get and set shop details
-                if report.shop:
-                    report.address = report.shop.address
-                    report.manager_name = report.shop.manager_name
-                    report.store_manager_phone = report.shop.store_manager_phone
+                    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     
-                # Handle submission type
-                submission_type = request.POST.get('submission_type', 'draft')
-                if submission_type == 'submit':
-                    report.status = 'submitted'
-                    report.submitted_at = timezone.now()
-                    messages.success(request, 'Report submitted successfully')
-                else:
-                    report.status = 'draft'
-                    messages.success(request, 'Report saved as draft')
-                
-                report.save()
-                return redirect(self.get_success_url())
-            else:
-                messages.error(request, 'Please correct the errors in the form.')
-                return self.form_invalid(form)
+        # Handle regular form submission for the main report form (Corrected)
+        form = self.get_form()  # Get the form instance *outside* the if/else block
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.representative = request.user
     
-        except Exception as e:
-            logger.error(f"Unexpected error in ReportCreateView: {e}", exc_info=True)
-            messages.error(request, "An unexpected error occurred. Please try again.")
-        return redirect(self.success_url)
+            submission_type = request.POST.get('submission_type', 'draft')
+            report.status = 'submitted' if submission_type == 'submit' else 'draft'
+            report.submitted_at = timezone.now() if submission_type == 'submit' else None
     
-    def form_invalid(self, form):
-        """
-        Called when the form is invalid. 
-        Adds additional context and error messages.
-        """
-        # Log form errors
-        for field, errors in form.errors.items():
-            for error in errors:
-                messages.error(self.request, f"{field}: {error}")
-        
-        # Render the form with error context
-        return super().form_invalid(form)
-
-    def get_success_url(self):
-        """
-        Flexible success URL routing.
-        Can be overridden or dynamically generated.
-        """
-        # Option to pass custom success URL
-        if self.success_url:
-            return self.success_url
-        
-        # Fallback to a default URL
-        return reverse('reptrack_trace:report-list')
-
-    def form_valid(self, form):
-        """
-        Additional processing when form is valid.
-        """
-        try:
-            # You can add any additional processing here
-            response = super().form_valid(form)
-            return response
-        except Exception as e:
-            # Log any unexpected errors
-            logger.error(f"Error in form_valid method: {e}")
-            messages.error(self.request, "An error occurred while processing your report.")
-            return redirect(self.success_url)
+            report.save()
+    
+            if 'unsaved_report_data' in self.request.session:
+                del self.request.session['unsaved_report_data']
+    
+            return redirect(self.get_success_url())
+        else:
+            return self.form_invalid(form) 
 
 
 class ReportDetailView(DetailView):
@@ -1224,19 +1134,21 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_initial(self):
         initial = super().get_initial()
+        # Retrieve unsaved data from session
+        unsaved_data = self.request.session.get('unsaved_report_data', {})
+        initial.update(unsaved_data)
+    
+        # Prepopulate with shop data if available
         shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
         if shop_id:
             try:
                 shop = Shop.objects.get(id=shop_id)
-                initial.update({
-                    'shop': shop.id,
-                })
+                initial.update({'shop': shop.id})
             except Shop.DoesNotExist:
                 pass
         return initial
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         context = super().get_context_data(**kwargs)
         selected_shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
         if selected_shop_id:
@@ -1245,13 +1157,16 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
                 context['selected_shop'] = {
                     'address': selected_shop.address,
                     'manager_name': selected_shop.manager_name,
-                    'manager_phone': selected_shop.manager_phone,  
+                    'manager_phone': selected_shop.manager_phone,
                 }
             except Shop.DoesNotExist:
-                pass
+                context['selected_shop'] = None
         else:
-            context['selected_shop'] = None        
-        # Add forms for modals
+            context['selected_shop'] = None
+    
+        # Debugging: Print to check context
+        print(context.get('selected_shop'))
+    
         context.update({
             'products': Product.objects.all(),
             'stores': Store.objects.all(),
@@ -1262,12 +1177,42 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             'main_store_form': MainStoreForm(),
             'shop_store_form': ShopStoreForm(),
         })
-
         return context
+
+
 
     def post(self, request, *args, **kwargs):
         """Handle POST requests: instantiate a form instance with the passed
         POST variables and then check if it's valid."""
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Handle modal form submissions (This part is correct)
+            form_key = request.POST.get('form_key')
+            modal_forms = {
+                'shop_form': ShopForm,
+                'product_form': ProductForm,
+                'store_form': StoreForm,
+                'main_store_form': MainStoreForm,
+                'shop_store_form': ShopStoreForm,
+            }
+    
+            if form_key in modal_forms:
+                form_class = modal_forms[form_key]
+                form = form_class(request.POST, request.FILES)
+                if form.is_valid():
+                    instance = form.save()
+                    return JsonResponse({
+                        'success': True,
+                        'dropdown_data': {
+                            'dropdown_id': f'id_{form_key.split("_")[0]}',
+                            'new_option': {
+                                'value': instance.id,
+                                'text': str(instance)
+                            }
+                        }
+                    })
+                else:
+                    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    
         self.object = self.get_object()
 
         try:

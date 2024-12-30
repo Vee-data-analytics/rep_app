@@ -17,19 +17,45 @@ from django.db.models import Q
 
 
 
-
 class ShopForm(forms.ModelForm):
     """Form for creating/editing shops"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add Bootstrap classes and other attributes to all fields
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update({
+                'class': 'form-control',
+                'id': f'id_shop_{field_name}',
+                'name': field_name
+            })
     class Meta:
         model = Shop
-        fields = '__all__'
+        fields = [
+            'name', 
+            'address', 
+            'manager_name',
+            'manager_phone',
+            'manager_email',
+            'store_manager_name',
+            'store_manager_phone',
+            'store_manager_email'
+        ]
+        exclude = ['created_at', 'updated_at']
         
     def clean_manager_phone(self):
         phone = self.cleaned_data.get('manager_phone')
-        if not phone.isdigit():
+        if phone and not phone.isdigit():
             raise ValidationError('Phone number must contain only digits')
         return phone
-
+    
+    def clean_store_manager_phone(self):
+        phone = self.cleaned_data.get('store_manager_phone')
+        if phone and not phone.isdigit():
+            raise ValidationError('Phone number must contain only digits')
+        return phone
+    
+    
 class StoreForm(forms.ModelForm):
     """Form for creating/editing stores"""
     class Meta:

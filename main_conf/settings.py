@@ -64,6 +64,7 @@ PWA_APP_ICONS = [
 AUTH_USER_MODEL = 'users.User'
 
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',

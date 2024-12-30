@@ -1,0 +1,35 @@
+<!-- templates/reports/partials/modal_form.html -->
+{% if form_submitted and not form.errors %}
+    <script>
+        // Trigger success message
+        document.getElementById('mainFormAlerts').innerHTML = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ success_message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('{{ modal_id }}'));
+        modal.hide();
+        
+        // Update dropdown if needed
+        {% if dropdown_id and new_option %}
+        const newOption = new Option("{{ new_option.text }}", "{{ new_option.value }}", true, true);
+        document.getElementById('{{ dropdown_id }}').add(newOption);
+        {% endif %}
+    </script>
+{% else %}
+    {% for field in form %}
+    <div class="mb-3">
+        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <div class="invalid-feedback d-block">
+            {% for error in field.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% endif %}

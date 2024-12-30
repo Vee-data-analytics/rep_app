@@ -1,0 +1,35 @@
+{% if form_submitted and not product_form.errors %}
+<script>
+    // Display success message
+    const alertContainer = document.getElementById('mainFormAlerts');
+    alertContainer.innerHTML = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Product created successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+
+    // Close modal
+    const modalInstance = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
+    modalInstance.hide();
+
+    // Reset form
+    document.getElementById('productFormContent').innerHTML = `
+        <p>Form reset. Ready for the next product.</p>
+    `;
+</script>
+{% endif %}
+
+{% for field in product_form %}
+<div class="mb-3">
+    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}
+    <div class="invalid-feedback d-block">
+        {% for error in field.errors %}
+        {{ error }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
