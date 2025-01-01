@@ -1,0 +1,26 @@
+<div class="input-group">
+    <!-- Search Input -->
+    <input 
+        type="text" 
+        id="shop-search" 
+        class="form-control" 
+        placeholder="Search for a shop..." 
+        hx-get="{% url 'reptrack_trace:filter_shops' %}" 
+        hx-target="#id_shop" 
+        hx-trigger="keyup changed delay:500ms" 
+        hx-indicator=".search-spinner"
+    >
+
+    <!-- Dropdown -->
+    <select id="id_shop" name="shop" class="form-select" hx-trigger="change" hx-get="{% url 'reptrack_trace:shop-details' %}" hx-target="#shopDetails">
+        <option value="">Select a shop</option>
+        {% for shop in shops %}
+        <option value="{{ shop.id }}" {% if shop.id == selected_shop_id %}selected{% endif %}>
+            {{ shop.name }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <!-- Loading Spinner -->
+    <div class="search-spinner" style="display:none;">Loading...</div>
+</div>

@@ -100,9 +100,10 @@ class ProductForm(forms.ModelForm):
 
 class ReportForm(forms.ModelForm):
     topup_quantity = forms.IntegerField(
-        widget=forms.NumberInput(attrs={'class': 'form-control'}),
-        help_text="This field is auto-calculated on draft"
-    )
+    widget=forms.NumberInput(attrs={'class': 'form-control'}),
+    help_text="This field is auto-calculated on draft",
+    required=False  
+)
     
     """Form for creating and editing reports"""
     class Meta:
@@ -178,24 +179,23 @@ class ReportForm(forms.ModelForm):
     
 
     def clean(self):
-        """Custom validation and auto-calculation for the report form"""
         cleaned_data = super().clean()
         
-        # Get required fields for calculation
-        shop_current_quantity = cleaned_data.get('shop_current_quantity')
-        desired_quantity = cleaned_data.get('desired_quantity')
         needs_topup = cleaned_data.get('needs_topup')
-    
-        # Calculate topup_quantity if needs_topup is True
         if needs_topup:
-            if desired_quantity is None:
-                self.add_error('desired_quantity', 'Desired quantity is required when top-up is needed.')
-            if shop_current_quantity is None:
-                self.add_error('shop_current_quantity', 'Shop current quantity is required when top-up is needed.')
-            if desired_quantity is not None and shop_current_quantity is not None:
-                # Ensure topup_quantity is calculated as a non-negative value
+            shop_current_quantity = cleaned_data.get('shop_current_quantity')
+            desired_quantity = cleaned_data.get('desired_quantity')
+            
+            if not shop_current_quantity:
+                self.add_error('shop_current_quantity', 'Required when top-up is needed.')
+            if not desired_quantity:
+                self.add_error('desired_quantity', 'Required when top-up is needed.')
+                
+            if shop_current_quantity and desired_quantity:
                 cleaned_data['topup_quantity'] = max(desired_quantity - shop_current_quantity, 0)
-    
+        else:
+            cleaned_data['topup_quantity'] = 0
+            
         return cleaned_data
 
 

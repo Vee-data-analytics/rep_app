@@ -971,8 +971,7 @@ class ReportCreateView(FormView):
                 else:
                     return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     
-        # Handle regular form submission for the main report form (Corrected)
-        form = self.get_form()  # Get the form instance *outside* the if/else block
+        form = self.get_form()
         if form.is_valid():
             report = form.save(commit=False)
             report.representative = request.user
@@ -986,7 +985,10 @@ class ReportCreateView(FormView):
             if 'unsaved_report_data' in self.request.session:
                 del self.request.session['unsaved_report_data']
     
-            return redirect(self.get_success_url())
+            # Conditional redirect based on submission type
+            if submission_type == 'submit':
+                return redirect('reptrack_trace:report-list')
+            return redirect('reptrack_trace:unfinished_reports')
         else:
             return self.form_invalid(form) 
 
