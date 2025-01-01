@@ -5,6 +5,8 @@ from django.contrib import admin
 from django.urls import path,include,reverse_lazy
 from users.models import User
 from django.http import HttpResponseRedirect
+from django.views.decorators.cache import cache_control
+from django.views.static import serve
 
 user = User
 
@@ -20,8 +22,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', main_view, name='authe'),
     path("track-n-trace/", include('reptrack_trace.urls', namespace='rep-track-trace/')),
+    path('', include('pwa.urls')),
     #path("reports/", include('reports.urls', namespace='report')),
-
 ]
 
 if settings.DEBUG:

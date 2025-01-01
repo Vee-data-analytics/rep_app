@@ -32,13 +32,13 @@ INSTALLED_APPS = [
     #third party 
     'corsheaders',
     'django_extensions',
+    "pwa",
 
     # developer apps
     'users',
     'reptrack_trace',
     'reports',
 ]
-
 
 
 PWA_APP_NAME = 'Reps Track and Trace'

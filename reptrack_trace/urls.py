@@ -98,7 +98,7 @@ urlpatterns = [
     path('admin/users/<int:pk>/delete/',UserDeleteView.as_view(), name='user-delete'),
     
     # PWA URLs
-    path('manifest.json', views.manifest, name='manifest'),
-    path('service-worker.js', views.ServiceWorkerView.as_view(), name='service_worker'),
-    path('api/reports/sync/', views.sync_reports, name='sync_reports'),
+    #path('manifest.json', views.manifest, name='manifest'),
+    #path('service-worker.js', views.ServiceWorkerView.as_view(), name='service_worker'),
+    #path('api/reports/sync/', views.sync_reports, name='sync_reports'),
 ]
