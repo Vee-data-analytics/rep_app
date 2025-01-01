@@ -101,7 +101,7 @@ class ProductForm(forms.ModelForm):
 class ReportForm(forms.ModelForm):
     topup_quantity = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class': 'form-control'}),
-        help_text="This field is autopopulated"
+        help_text="This field is auto-calculated on draft"
     )
     
     """Form for creating and editing reports"""
