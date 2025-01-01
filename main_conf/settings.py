@@ -48,6 +48,10 @@ PWA_APP_BACKGROUND_COLOR = '#ffffff'
 PWA_APP_DISPLAY = 'standalone'
 PWA_APP_SCOPE = '/'
 PWA_APP_START_URL = '/'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_CATEGORIES = ['utilities']
+PWA_APP_STATUS_BAR = 'default'
+PWA_APP_PREFER_RELATED_APPLICATIONS = False
 PWA_APP_ICONS = [
     {
         'src': '/static/images/logo.png',

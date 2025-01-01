@@ -1,7 +1,6 @@
-// PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('/static/js/service-worker.js')
             .then(function(registration) {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             })
@@ -10,7 +9,6 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
-
 // App Install Prompt
 let deferredPrompt;
 const addBtn = document.querySelector('.add-button');

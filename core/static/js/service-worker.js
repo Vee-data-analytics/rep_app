@@ -1,6 +1,5 @@
 const CACHE_NAME = 'shop-rep-v1';
 const urlsToCache = [
-    '/track-n-trace/',
     '/static/assets/css/mobile-app.css',
     '/static/assets/css/material-dashboard.css',
     '/static/assets/css/nucleo-icons.css',
