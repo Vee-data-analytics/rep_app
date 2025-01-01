@@ -5,8 +5,10 @@ from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 CORE_ASSETS =  BASE_DIR/'core/'
+PWA_SERVICE_WORKER_PATH = os.path.join(CORE_ASSETS, 'static/js', 'service-worker.js')
+
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -54,30 +56,27 @@ PWA_APP_STATUS_BAR = 'default'
 PWA_APP_PREFER_RELATED_APPLICATIONS = False
 PWA_APP_ICONS = [
     {
-        'src': '/static/images/logo.png',
+        'src': '/static/images/logo192x192.png',
         'sizes': '192x192',
         'type': 'image/png'
     },
     {
-        'src': '/static/images/logo.png',
+        'src': '/static/images/logo512x512.png',
         'sizes': '512x512',
-        'type': 'image/png'
-    }
-]
-# Add these to settings.py
-PWA_APP_ICONS_APPLE = [
-    {
-        'src': '/static/images/logo.png',
-        'sizes': '192x192',
         'type': 'image/png'
     }
 ]
 PWA_APP_SPLASH_SCREEN = [
     {
-        'src': '/static/images/logo.png',
-        'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
+        'src': '/static/images/screenshot_1.png',
+        'sizes': '1080x1920',
+        'type': 'image/png',
+        'form_factor': 'wide'
     }
 ]
+
+
+
 PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'en-US'
 

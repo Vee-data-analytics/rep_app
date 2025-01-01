@@ -1,4 +1,6 @@
 {% load static %}
+
+
 {% load pwa %}
 {% progressive_web_app_meta %}
 
@@ -7,8 +9,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'images/logo.png' %}">
-    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'images/logo192x192.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/logo192x192.png' %}">
     <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#000000">
     <title>{% block title %}Rep Dashboard{% endblock %}</title>
@@ -85,7 +87,7 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    
+
     
 </body>
 </html>
