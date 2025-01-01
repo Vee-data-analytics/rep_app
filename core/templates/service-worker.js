@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shop-rep-cache-v1';
+const CACHE_NAME = 'shop-rep-v1';
 const urlsToCache = [
     '/track-n-trace/',
     '/static/assets/css/mobile-app.css',

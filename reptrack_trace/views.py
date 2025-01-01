@@ -1699,12 +1699,12 @@ def manifest(request):
         'scope': '/',
         'icons': [
             {
-                'src': '/static/images/icon-192x192.png',
+                'src': '/static/images/logo.png',
                 'sizes': '192x192',
                 'type': 'image/png'
             },
             {
-                'src': '/static/images/icon-512x512.png',
+                'src': '/static/images/logo.png',
                 'sizes': '512x512',
                 'type': 'image/png'
             }
