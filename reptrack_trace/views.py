@@ -975,18 +975,6 @@ class ReportCreateView(FormView):
     
         form = self.get_form()
         if form.is_valid():
-            
-            # Add a simple session-based check
-            submission_timestamp = request.session.get('last_submission_timestamp')
-            current_time = timezone.now().timestamp()
-            
-            # If there was a submission in the last 5 seconds, ignore this one
-            if submission_timestamp and (current_time - submission_timestamp) < 5:
-                return redirect('reptrack_trace:home')  # Silently redirect
-            
-            # Store the submission timestamp
-            request.session['last_submission_timestamp'] = current_time
-
             report = form.save(commit=False)
             report.representative = request.user
     
