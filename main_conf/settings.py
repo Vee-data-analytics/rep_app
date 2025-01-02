@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 CORE_ASSETS =  BASE_DIR/'core/'
-PWA_SERVICE_WORKER_PATH = os.path.join(CORE_ASSETS, 'static/js', 'service-worker.js')
+#PWA_SERVICE_WORKER_PATH = os.path.join(CORE_ASSETS, 'static/js', 'service-worker.js')
 
 
 
