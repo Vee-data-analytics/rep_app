@@ -479,14 +479,13 @@
     }
 </script>
 <script>
-    // Get all form submit buttons inside modals
     document.querySelectorAll('#draftModal button[type="submit"], #submitModal button[type="submit"]').forEach(button => {
         button.addEventListener('click', function(e) {
             // Prevent default form submission
             e.preventDefault();
             
-            // Disable button immediately
-            this.disabled = true;
+            // Disable all submit buttons to prevent double submissions
+            document.querySelectorAll('button[type="submit"]').forEach(btn => btn.disabled = true);
             
             // Get the form
             const form = document.getElementById('reportForm');
@@ -495,13 +494,38 @@
             const hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
             hiddenInput.name = 'submission_type';
-            hiddenInput.value = this.value;  // 'draft' or 'submit'
+            hiddenInput.value = this.value; // 'draft' or 'submit'
             form.appendChild(hiddenInput);
             
             // Submit the form
             form.submit();
         });
     });
-</script>    
- 
+</script>
+
+<script>
+    document.querySelectorAll('#draftModal button[type="submit"], #submitModal button[type="submit"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Prevent default form submission
+            e.preventDefault();
+            
+            // Hide the clicked button
+            this.style.display = 'none';
+            
+            // Get the form
+            const form = document.getElementById('reportForm');
+            
+            // Create hidden input for submission type
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'submission_type';
+            hiddenInput.value = this.value; // 'draft' or 'submit'
+            form.appendChild(hiddenInput);
+            
+            // Submit the form
+            form.submit();
+        });
+    });
+</script>
+
 {% endblock %}
