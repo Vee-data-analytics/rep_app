@@ -45,6 +45,7 @@ from django.db.models import Count, Sum, Avg, F, Q
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from datetime import timedelta
+from django.views.decorators.csrf import csrf_protect
 
 import logging
 
@@ -52,6 +53,7 @@ logger = logging.getLogger(__name__)
 
 
 
+@csrf_protect
 def login_view(request):
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
