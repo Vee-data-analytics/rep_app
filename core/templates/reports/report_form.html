@@ -508,24 +508,17 @@
         button.addEventListener('click', function(e) {
             // Prevent default form submission
             e.preventDefault();
-            
-            // Hide the clicked button
-            this.style.display = 'none';
-            
-            // Get the form
+
+            // Add spinner and disable the button
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+            this.disabled = true;
+
+            // Allow form submission to proceed
             const form = document.getElementById('reportForm');
-            
-            // Create hidden input for submission type
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'submission_type';
-            hiddenInput.value = this.value; // 'draft' or 'submit'
-            form.appendChild(hiddenInput);
-            
-            // Submit the form
             form.submit();
         });
     });
 </script>
+
 
 {% endblock %}
