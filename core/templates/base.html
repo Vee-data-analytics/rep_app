@@ -14,7 +14,8 @@
     <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#000000">
     <title>{% block title %}Rep Dashboard{% endblock %}</title>
-    
+    {% csrf_token %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -40,7 +41,9 @@
                                     {{ user.username }}
                                 {% endif %}
                             {% else %}
-                                Guest
+                               {% if not user.is_authenticated %}
+                               <meta http-equiv="refresh" content="0; url={% url 'reptrack_trace:login' %}">
+                                {% endif %}
                             {% endif %}
                         </span>
                     </div>
@@ -53,10 +56,6 @@
                             Menu
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navDropdown">
-                        
-                            <li><a class="dropdown-item" href="{% url 'reptrack_trace:settings' %}">
-                                <i class="bi bi-gear me-2"></i>Settings
-                            </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="{% url 'reptrack_trace:logout' %}">
                                 <i class="bi bi-box-arrow-right me-2"></i>Logout
@@ -64,10 +63,25 @@
                         </ul>
                     </div>
                     
-                    <!-- Current Date/Time -->
                     <div>
-                        <div class="fw-medium" id="currentTime">14:30</div>
-                        <div class="text-muted small" id="currentDate">November 24, 2024</div>
+                        <div class="fw-medium" id="currentTime"></div>
+                        <div class="text-muted small" id="currentDate"></div>
+                     </div>
+                     
+                     <script>
+                     function updateDateTime() {
+                        const now = new Date();
+                        document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+                        document.getElementById('currentDate').textContent = now.toLocaleDateString('en-ZA', { 
+                            month: 'long',
+                            day: 'numeric', 
+                            year: 'numeric'
+                        });
+                     }
+                     
+                     updateDateTime();
+                     setInterval(updateDateTime, 1000);
+                     </script>
                     </div>
                 </div>
             </div>

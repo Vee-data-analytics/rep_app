@@ -46,14 +46,14 @@ from django.db.models.functions import TruncDate
 from django.utils import timezone
 from datetime import timedelta
 from django.views.decorators.csrf import csrf_protect
-
+from django.views.decorators.csrf import ensure_csrf_cookie
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 
-@csrf_protect
+@ensure_csrf_cookie
 def login_view(request):
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
@@ -893,7 +893,7 @@ class AdminMainStoreDeleteView(AdminRequiredMixin, DeleteView):
 class ReportCreateView(FormView):
     template_name = 'reports/report_form.html'
     form_class = ReportForm
-    success_url = reverse_lazy('reptrack_trace:report-list')
+    success_url = reverse_lazy('reptrack_trace:home')
     
     
     def get_initial(self):
@@ -975,6 +975,18 @@ class ReportCreateView(FormView):
     
         form = self.get_form()
         if form.is_valid():
+            
+            # Add a simple session-based check
+            submission_timestamp = request.session.get('last_submission_timestamp')
+            current_time = timezone.now().timestamp()
+            
+            # If there was a submission in the last 5 seconds, ignore this one
+            if submission_timestamp and (current_time - submission_timestamp) < 5:
+                return redirect('reptrack_trace:home')  # Silently redirect
+            
+            # Store the submission timestamp
+            request.session['last_submission_timestamp'] = current_time
+
             report = form.save(commit=False)
             report.representative = request.user
     
@@ -989,8 +1001,8 @@ class ReportCreateView(FormView):
     
             # Conditional redirect based on submission type
             if submission_type == 'submit':
-                return redirect('reptrack_trace:report-list')
-            return redirect('reptrack_trace:unfinished_reports')
+                return redirect('reptrack_trace:home')
+            return redirect('reptrack_trace:home')
         else:
             return self.form_invalid(form) 
 

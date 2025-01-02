@@ -82,10 +82,32 @@
                                                 <label class="form-label">Desired Stock Quantity</label>
                                                 {{ form.desired_quantity }}
                                             </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label"> Desired Top-up Quantity</label>
+                                            <div class="col-md-6 mb-3" id="topupQuantityField">
+                                                <label class="form-label">Desired Top-up Quantity</label>
                                                 {{ form.topup_quantity }}
-                                                <small class="form-text text-muted">{{ form.topup_quantity.help_text }}</small>
+                                                <small class="form-text text-muted">Calculated: Desired - Current Quantity</small>
+                                            </div>
+                                            
+                                            <script>
+                                            document.addEventListener('DOMContentLoaded', function() {
+                                                const currentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
+                                                const desiredQuantityInput = document.querySelector('[name="desired_quantity"]');
+                                                const topupQuantityInput = document.querySelector('[name="topup_quantity"]');
+                                                const needsTopupCheckbox = document.querySelector('[name="needs_topup"]');
+                                            
+                                                function calculateTopup() {
+                                                    if (needsTopupCheckbox.checked) {
+                                                        const current = parseInt(currentQuantityInput.value) || 0;
+                                                        const desired = parseInt(desiredQuantityInput.value) || 0;
+                                                        topupQuantityInput.value = Math.max(0, desired - current);
+                                                    }
+                                                }
+                                            
+                                                [currentQuantityInput, desiredQuantityInput, needsTopupCheckbox].forEach(input => {
+                                                    input.addEventListener('change', calculateTopup);
+                                                });
+                                            });
+                                            </script>
                                             <div class="mb-3">
                                                 <div class="col-md-6 mb-3">
                                                 <label class="form-label">Shop Comments</label>
@@ -239,6 +261,7 @@
                               </div>
                          </div>
                     </div>
+                    
             
                     <!-- Logout Button -->
                     <div class="mt-4">
