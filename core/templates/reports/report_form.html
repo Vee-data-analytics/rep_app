@@ -297,92 +297,92 @@
     </div>
 </div>
 
-<!-- Submit Modal -->
-<div class="modal fade" id="submitModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Submit Final Report</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to submit this report?</p>
-                <div class="alert alert-warning">
-                    <p>This action cannot be undone.</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary submit-btn" name="submission_type" value="submit">
-                    <span class="button-text">Submit Report</span>
-                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-// Store reference to the form
-const form = document.getElementById('reportForm');
-
-// Function to handle button state
-function handleButtonState(button, isSubmitting) {
-    const spinner = button.querySelector('.spinner-border');
-    const text = button.querySelector('.button-text');
-    
-    button.disabled = isSubmitting;
-    if (spinner) {
-        spinner.classList.toggle('d-none', !isSubmitting);
-    }
-    if (text) {
-        text.style.opacity = isSubmitting ? '0.5' : '1';
-    }
-}
-
-// Handle modal submit buttons
-document.querySelectorAll('.modal .submit-btn').forEach(button => {
-    button.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        // Get the submission type from the clicked button
-        const submissionType = this.value;
-        
-        // Find or create the submission type input
-        let submissionTypeInput = form.querySelector('input[name="submission_type"]');
-        if (!submissionTypeInput) {
-            submissionTypeInput = document.createElement('input');
-            submissionTypeInput.type = 'hidden';
-            submissionTypeInput.name = 'submission_type';
-            form.appendChild(submissionTypeInput);
-        }
-        submissionTypeInput.value = submissionType;
-        
-        // Show loading state
-        handleButtonState(this, true);
-        
-        // Submit the form
-        form.submit();
-    });
-});
-
-// Reset button states when modal is closed
-document.querySelectorAll('.btn-close, .btn-secondary').forEach(button => {
-    button.addEventListener('click', function() {
-        document.querySelectorAll('.submit-btn').forEach(submitBtn => {
-            handleButtonState(submitBtn, false);
-        });
-    });
-});
-
-// Optional: Add form submit handler to prevent double submission
-form.addEventListener('submit', function(e) {
-    // Disable all submit buttons when the form starts submitting
-    document.querySelectorAll('.submit-btn').forEach(button => {
-        handleButtonState(button, true);
-    });
-});
-</script>
+                      <!-- Submit Modal -->
+                      <div class="modal fade" id="submitModal" tabindex="-1">
+                          <div class="modal-dialog">
+                              <div class="modal-content">
+                                  <div class="modal-header">
+                                      <h5 class="modal-title">Submit Final Report</h5>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                      <p>Are you sure you want to submit this report?</p>
+                                      <div class="alert alert-warning">
+                                          <p>This action cannot be undone.</p>
+                                      </div>
+                                  </div>
+                                  <div class="modal-footer">
+                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                      <button type="submit" class="btn btn-primary submit-btn" name="submission_type" value="submit">
+                                          <span class="button-text">Submit Report</span>
+                                          <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <script>
+                      // Store reference to the form
+                      const form = document.getElementById('reportForm');
+                      
+                      // Function to handle button state
+                      function handleButtonState(button, isSubmitting) {
+                          const spinner = button.querySelector('.spinner-border');
+                          const text = button.querySelector('.button-text');
+                          
+                          button.disabled = isSubmitting;
+                          if (spinner) {
+                              spinner.classList.toggle('d-none', !isSubmitting);
+                          }
+                          if (text) {
+                              text.style.opacity = isSubmitting ? '0.5' : '1';
+                          }
+                      }
+                      
+                      // Handle modal submit buttons
+                      document.querySelectorAll('.modal .submit-btn').forEach(button => {
+                          button.addEventListener('click', function(e) {
+                              e.preventDefault();
+                              
+                              // Get the submission type from the clicked button
+                              const submissionType = this.value;
+                              
+                              // Find or create the submission type input
+                              let submissionTypeInput = form.querySelector('input[name="submission_type"]');
+                              if (!submissionTypeInput) {
+                                  submissionTypeInput = document.createElement('input');
+                                  submissionTypeInput.type = 'hidden';
+                                  submissionTypeInput.name = 'submission_type';
+                                  form.appendChild(submissionTypeInput);
+                              }
+                              submissionTypeInput.value = submissionType;
+                              
+                              // Show loading state
+                              handleButtonState(this, true);
+                              
+                              // Submit the form
+                              form.submit();
+                          });
+                      });
+                      
+                      // Reset button states when modal is closed
+                      document.querySelectorAll('.btn-close, .btn-secondary').forEach(button => {
+                          button.addEventListener('click', function() {
+                              document.querySelectorAll('.submit-btn').forEach(submitBtn => {
+                                  handleButtonState(submitBtn, false);
+                              });
+                          });
+                      });
+                      
+                      // Optional: Add form submit handler to prevent double submission
+                      form.addEventListener('submit', function(e) {
+                          // Disable all submit buttons when the form starts submitting
+                          document.querySelectorAll('.submit-btn').forEach(button => {
+                              handleButtonState(button, true);
+                          });
+                      });
+                      </script>
                          
                     
                        
