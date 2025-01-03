@@ -944,6 +944,9 @@ class ReportCreateView(FormView):
         return context
 
     def post(self, request, *args, **kwargs):
+        print("Form submitted")
+        print("POST data:", request.POST)
+        print("Files:", request.FILES)
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             # Handle modal form submissions (This part is correct)
             form_key = request.POST.get('form_key')
