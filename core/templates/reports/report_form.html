@@ -1,7 +1,49 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block content %}
+
+
+<style>
+    /* Shop Section - Orange theme */
+    .accordion-button.shop {
+        background-color: #fff4e6;
+    }
+    .accordion-button.shop:not(.collapsed) {
+        background-color: #fd7e14;
+        color: white;
+    }
+
+    /* Shop Stores Section - Blue theme */
+    .accordion-button.shop-stores {
+        background-color: #e7f5ff;
+    }
+    .accordion-button.shop-stores:not(.collapsed) {
+        background-color: #339af0;
+        color: white;
+    }
+
+    /* Main Store Section - Green theme */
+    .accordion-button.main-store {
+        background-color: #ebfbee;
+    }
+    .accordion-button.main-store:not(.collapsed) {
+        background-color: #40c057;
+        color: white;
+    }
+
+    /* Common styles */
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,.125);
+    }
+
+    /* Fix heading styles inside buttons */
+    .accordion-button h5 {
+        margin: 0;
+        color: inherit;
+    }
+</style>
+
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-8 offset-md-2">
@@ -18,8 +60,12 @@
                             <!-- Shop Section -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="shopSectionHeader">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#shopSection" aria-expanded="true" aria-controls="shopSection">
-                                        Shop Information
+                                    <button class="accordion-button shop" type="button" 
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#shopSection" 
+                                            aria-expanded="true" 
+                                            aria-controls="shopSection">
+                                        <h5>Shop Information</h5>
                                     </button>
                                 </h2>
                                 <div id="shopSection" class="accordion-collapse collapse show" aria-labelledby="shopSectionHeader" data-bs-parent="#reportSections">
@@ -122,8 +168,12 @@
                             <!-- Shop Stores Section -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="shopStoresSectionHeader">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shopStoresSection" aria-expanded="false" aria-controls="shopStoresSection">
-                                        Shop Stores Information
+                                    <button class="accordion-button collapsed shop-stores" type="button" 
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#shopStoresSection" 
+                                            aria-expanded="false" 
+                                            aria-controls="shopStoresSection">
+                                        <h5>Shop Stores Information</h5>
                                     </button>
                                 </h2>
                                 <div id="shopStoresSection" class="accordion-collapse collapse" aria-labelledby="shopStoresSectionHeader" data-bs-parent="#reportSections">
@@ -165,50 +215,16 @@
                                 </div>
                             </div>
 
-                            <!-- Store Section -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="storeSectionHeader">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#storeSection" aria-expanded="false" aria-controls="storeSection">
-                                        Store Information
-                                    </button>
-                                </h2>
-                                <div id="storeSection" class="accordion-collapse collapse" aria-labelledby="storeSectionHeader" data-bs-parent="#reportSections">
-                                    <div class="accordion-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Select Store</label>
-                                                <div class="input-group">
-                                                {{ form.store }}
-                                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#newStoreModal">
-                                                    Add Stores
-                                                </button>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Store Current Quantity</label>
-                                                {{ form.store_current_quantity }}
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Quantity Taken from Store</label>
-                                                {{ form.quantity_taken_from_store }}
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Remaining Store Quantity</label>
-                                                {{ form.remaining_store_quantity }}
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Store Comments</label>
-                                                {{ form.store_comments }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            
 
-                            <!-- Main Store Section -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="mainStoreSectionHeader">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mainStoreSection" aria-expanded="false" aria-controls="mainStoreSection">
-                                        Main Store Information
+                                    <button class="accordion-button collapsed main-store" type="button" 
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#mainStoreSection" 
+                                            aria-expanded="false" 
+                                            aria-controls="mainStoreSection">
+                                        <h5>Main Store Information</h5>
                                     </button>
                                 </h2>
                                 <div id="mainStoreSection" class="accordion-collapse collapse" aria-labelledby="mainStoreSectionHeader" data-bs-parent="#reportSections">

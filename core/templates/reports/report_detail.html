@@ -43,24 +43,7 @@
 
         </div>
     </div>
-     <!-- Store Section -->
-     <div class="card mb-4">
-         <div class="card-header bg-warning text-white">Store Details</div>
-         <div class="card-body">
-             <p><strong>Store Name:</strong> {{ store_details.name }}</p>
-             <p><strong>Location:</strong> {{ store_details.location }}</p>
-             <p><strong>Manager Name:</strong> {{ store_details.manager_name }}</p>
-             <p><strong>Manager Phone:</strong> {{ store_details.manager_phone }}</p>
-             <p><strong>Manager Email:</strong> {{ store_details.manager_email }}</p>
-             <p><strong>Current Quantity:</strong> {{ store_details.current_quantity }}</p>
-             <p><strong>Quantity Taken:</strong> {{ store_details.quantity_taken }}</p>
-             <p><strong>Remaining Quantity:</strong> {{ store_details.remaining_quantity }}</p>
-             {% if store_details.photo %}
-                 <p><strong>Photo:</strong> <img src="{{ store_details.photo.url }}" alt="Store Photo" class="img-fluid"></p>
-             {% endif %}
-             <p><strong>Comments:</strong> {{ store_details.comments }}</p>
-         </div>
-     </div>
+     
 
     <!-- Main Store Section -->
      <div class="card mb-4">
