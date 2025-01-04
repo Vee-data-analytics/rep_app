@@ -89,6 +89,7 @@ def logout_view(request):
 def main_report_window(request):
     return render(request,'reports/report_main.html')
 
+
 def offline_view(request):
     return render(request, 'offline.html')
 
@@ -97,8 +98,6 @@ def settings_grid(request):
     return render(request, 'include/settings.html')
 
 class ShopCreateView(CreateView):
-
-
     def form_valid(self, form):
         self.object = form.save()
         return JsonResponse({
@@ -712,7 +711,12 @@ class StoreCreateView(CreateView):
         messages.success(self.request, f'Store "{store.name}" created successfully')
         return super().form_valid(form)
 
-
+class ReportDeleteView(LoginRequiredMixin, DeleteView):
+    """View for deleting a Drafted reports"""
+    model = Report
+    template_name = 'reports/report_delete.html'
+    success_url = reverse_lazy('reptrack_trace:home')
+    
 
 class MainStoreCreateView(CreateView):
     model = MainStore
@@ -947,8 +951,9 @@ class ReportCreateView(FormView):
         print("Form submitted")
         print("POST data:", request.POST)
         print("Files:", request.FILES)
+        
+        # Handle AJAX modal form submissions
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            # Handle modal form submissions (This part is correct)
             form_key = request.POST.get('form_key')
             modal_forms = {
                 'shop_form': ShopForm,
@@ -976,6 +981,7 @@ class ReportCreateView(FormView):
                 else:
                     return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     
+        # Handle main form submission
         form = self.get_form()
         if form.is_valid():
             report = form.save(commit=False)
@@ -985,18 +991,23 @@ class ReportCreateView(FormView):
             report.status = 'submitted' if submission_type == 'submit' else 'draft'
             report.submitted_at = timezone.now() if submission_type == 'submit' else None
     
-            report.save()
+            try:
+                report.save()
+                
+                if 'unsaved_report_data' in self.request.session:
+                    del self.request.session['unsaved_report_data']
     
-            if 'unsaved_report_data' in self.request.session:
-                del self.request.session['unsaved_report_data']
-    
-            # Conditional redirect based on submission type
-            if submission_type == 'submit':
+                messages.success(request, 'Report saved successfully as {}'.format(
+                    'final submission' if submission_type == 'submit' else 'draft'
+                ))
+                
                 return redirect('reptrack_trace:home')
-            return redirect('reptrack_trace:home')
+            except Exception as e:
+                messages.error(request, f'Error saving report: {str(e)}')
+                return self.form_invalid(form)
         else:
             return self.form_invalid(form) 
-
+    
 
 class ReportDetailView(DetailView):
     model = Report

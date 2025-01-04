@@ -58,6 +58,12 @@
                         </div>
                     </div>
                     <div class="d-grid d-md-block">
+                        <a href="{% url 'reptrack_trace:draft-delete' report.id %}" 
+                           class="btn btn-danger btn-sm w-100 w-md-auto">
+                            <i class="bi bi-pencil-square me-1"></i>draft-delete
+                        </a>
+                    </div>
+                    <div class="d-grid d-md-block">
                         <a href="{% url 'reptrack_trace:report-update' report.id %}" 
                            class="btn btn-primary btn-sm w-100 w-md-auto">
                             <i class="bi bi-pencil-square me-1"></i>Continue

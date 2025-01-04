@@ -31,7 +31,7 @@ urlpatterns = [
     path('shops/create/', views.ShopCreateView.as_view(), name='shop-create'),
     path('stores/create/',  views.StoreCreateView.as_view(), name='store-create'),
     path('products/create/', views.ProductCreateView.as_view(), name='product-create'),
-    
+    path('reports/draft/delete/<uuid:pk>/', views.ReportDeleteView.as_view(), name='draft-delete'),
     
     
     path('create-shop/', create_shop, name='create_shop'),
