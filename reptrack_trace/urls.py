@@ -29,7 +29,6 @@ urlpatterns = [
     path('reports/', views.FinishedReportsView.as_view(), name='report-list'),
     path('reports/unfinished/', views.UnfinishedReportsView.as_view(), name='unfinished_reports'),
     path('shops/create/', views.ShopCreateView.as_view(), name='shop-create'),
-    path('stores/create/',  views.StoreCreateView.as_view(), name='store-create'),
     path('products/create/', views.ProductCreateView.as_view(), name='product-create'),
     path('reports/draft/delete/<uuid:pk>/', views.ReportDeleteView.as_view(), name='draft-delete'),
     
@@ -44,8 +43,8 @@ urlpatterns = [
     
     path('main-stores/create/', views.MainStoreCreateView.as_view(), name='main-store-create'),
     path('reports/<uuid:pk>/', views.ReportUpdateView.as_view(), name='report-update'),
-    path('reports/<uuid:pk>/pdf/', views.generate_pdf_report, name='download_report'),
-
+    path('reports/<uuid:pk>/pdf/', views.download_report_pdf, name='download_report'),
+    
     # Admin URLs
     path('admin/dashboard/', views.AdminDashboardView.as_view(), name='admin-dashboard'),
     path('admin/shops/', views.shop_management, name='shop-management'),
@@ -62,10 +61,6 @@ urlpatterns = [
     path('admin/shops/<int:pk>/update/', views.AdminShopUpdateView.as_view(), name='admin-shop-update'),
     path('admin/shops/<int:pk>/delete/', views.AdminShopDeleteView.as_view(), name='admin-shop-delete'),
     
-    path('admin/storage-list',views.AdminStoreListView.as_view(), name='admin-store-list'),
-    path('admin/stores/create/', views.AdminStoreCreateView.as_view(), name='admin-store-create'),
-    path('admin/stores/<int:pk>/update/', views.AdminStoreUpdateView.as_view(), name='admin-store-update'),
-    path('admin/stores/<int:pk>/delete/', views.AdminStoreDeleteView.as_view(), name='admin-store-delete'),
 
     path('admin/products/', views.AdminProductListView.as_view(), name='admin-product-list'),
     path('admin/products/create/', views.AdminProductCreateView.as_view(), name='admin-product-create'),
@@ -87,9 +82,6 @@ urlpatterns = [
     path('admin/shops/<int:pk>/edit/', views.ShopUpdateView.as_view(), name='shop-update'),
     path('admin/shops/<int:pk>/delete/', views.ShopDeleteView.as_view(), name='shop-delete'),
     
-    # Store Management URLs
-    path('admin/stores/add/', views.StoreCreateView.as_view(), name='store-create'),
-    path('admin/stores/<int:pk>/delete/', views.StoreDeleteView.as_view(), name='store-delete'),
     
     # User Management URLs
     path('admin/users/', UserListView.as_view(), name='user-list'),

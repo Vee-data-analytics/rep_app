@@ -114,20 +114,26 @@
                                                 <label class="form-label">Current Stock Quantity</label>
                                                 {{ form.shop_current_quantity }}
                                             </div>
+                                            
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Shop Shelf Photo</label>
                                                 {{ form.shop_photo }}
                                             </div>
+
+
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Desired Stock Quantity</label>
                                                 {{ form.desired_quantity }}
                                             </div>
+                                            
                                             <div class="mb-3">
                                                 <div class="form-check">
                                                     {{ form.needs_topup }}
                                                     <label class="form-check-label">Tick if quantity needs Top-up</label>
                                                 </div>
                                             </div>
+
+
                                             <div class="col-md-6 mb-3" id="topupQuantityField">
                                                 <label class="form-label">Desired Top-up Quantity</label>
                                                 {{ form.topup_quantity }}
@@ -179,33 +185,73 @@
                                 <div id="shopStoresSection" class="accordion-collapse collapse" aria-labelledby="shopStoresSectionHeader" data-bs-parent="#reportSections">
                                     <div class="accordion-body">
                                         <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Select Shop-Store</label>
-                                                {{ form.shop_store }}
+
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="shopAddress" class="form-label">Shop-store Name</label>
+                                                    <input type="text" id="shopAddress" class="form-control" value="{{ selected_shop.name | default:'' }}" readonly>
+                                                </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="shopAddress" class="form-label">Shop Address</label>
+                                                    <input type="text" id="shopAddress" class="form-control" value="{{ selected_shop.address | default:'' }}" readonly>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="shopManagerName" class="form-label">Manager Name</label>
+                                                    <input type="text" id="shopManagerName" class="form-control" value="{{ selected_shop.stores_manager | default:'' }}" readonly>
+                                                </div>
                                             </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Store Current Stock</label>
-                                                {{ form.shop_store_current_quantity }}
+                                            <div class="col-md-6">
+                                                <label for="shopManagerphone" class="form-label">Manager Phone</label>
+                                                <input type="text" id="shopManagerPhone" class="form-control" value="{{ selected_shop.stores_manager_phone|default:'' }}" readonly>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Shop Shelf Photo</label>
                                                 {{ form.shop_store_photo }}
                                             </div>
+                                            
+
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                <label class="form-check-label">Does stores have sufficient stock?</label>
+                                                {{ form.shop_store_has_sufficient_stock }}
+                                            </div>
+                                        </div>
+                                        
+
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Current quantity from Shop-Store</label>
+                                                {{ form.shop_store_current_quantity }}
+                                            </div>
+
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Quantity Taken from Shop-Store</label>
                                                 {{ form.quantity_taken_from_shop_store }}
                                             </div>
+
+                                            
+                                            <div class=" mb-3">
+                                               <div class="form-check">
+                                                 <label class="form-check-label">Was Shop quantity replenished ? </label>
+                                                  {{ form.was_shop_updated }}
+                                                </div>
+                                             </div>
+                                            
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Remaining Shop-Store Quantity</label>
                                                 {{ form.remaining_shop_store_quantity }}
                                             </div>
+
+
+                                            
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Shop-Store Manager Confirmed</label>
-                                                <div class="form-check">
-                                                    {{ form.shop_store_manager_confirmed }}
-                                                    <label class="form-check-label">Confirmed</label>
-                                                </div>
+                                                <label class="form-label"> If updated, provide Shop shelf Image</label>
+                                                {{ form.shop_photo_update }}
                                             </div>
+
+
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Shop-Store Comments</label>
                                                 {{ form.shop_store_comments }}
@@ -214,9 +260,29 @@
                                     </div>
                                 </div>
                             </div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const currentQuantityInput = document.querySelector('[name="shop_store_current_quantity"]');
+                                    const desiredQuantityInput = document.querySelector('[name="quantity_taken_from_shop_store"]');
+                                    const topupQuantityInput = document.querySelector('[name="remaining_shop_store_quantity"]');
+                                    const needsTopupCheckbox = document.querySelector('[name="was_shop_updated"]');
+                                
+                                    function calculateTopup() {
+                                        if (needsTopupCheckbox.checked) {
+                                            const current = parseInt(currentQuantityInput.value) || 0;
+                                            const desired = parseInt(desiredQuantityInput.value) || 0;
+                                            topupQuantityInput.value = Math.max(0,  current-desired);
+                                        }
+                                    }
+                                
+                                    [currentQuantityInput, desiredQuantityInput, needsTopupCheckbox].forEach(input => {
+                                        input.addEventListener('change', calculateTopup);
+                                    });
+                                });
+                                </script>
 
                             
-
+                            <!-- Main stores section -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="mainStoreSectionHeader">
                                     <button class="accordion-button collapsed main-store" type="button" 
@@ -229,14 +295,42 @@
                                 </h2>
                                 <div id="mainStoreSection" class="accordion-collapse collapse" aria-labelledby="mainStoreSectionHeader" data-bs-parent="#reportSections">
                                     <div class="accordion-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
+                                        <!-- Main Store Selection and Details -->
+                                        <div class="row mb-4">
+                                            <div class="col-12 mb-3">
                                                 <label class="form-label">Select Main Store</label>
                                                 <div class="input-group">
-                                                {{ form.main_store }}
-                                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addMainStoreModal">
-                                                    Add Main Stores
-                                                </button>
+                                                    {{ form.main_store }}
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addMainStoreModal">
+                                                        Add Main Store
+                                                    </button>
+                                                </div>
+                                            </div>
+                                
+                                            <!-- Auto-populated Main Store Details -->
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Main Store Address</label>
+                                                <input type="text" id="mainstoreAddress" class="form-control" value="{{ selected_mainstore.location|default:'' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Manager Name</label>
+                                                <input type="text" id="mainstoreManagerName" class="form-control" value="{{ selected_mainstore.manager_name|default:'' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Manager Phone</label>
+                                                <input type="text" id="mainstoreManagerPhone" class="form-control" value="{{ selected_mainstore.manager_phone|default:'' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Manager Email</label>
+                                                <input type="text" id="mainstoreManagerEmail" class="form-control" value="{{ selected_mainstore.manager_email|default:'' }}" readonly>
+                                            </div>
+                                        </div>
+                                
+                                        <!-- Product Information and Quantities -->
+                                        <div class="row mb-4">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Product Name</label>
+                                                <input type="text" class="form-control" value="{{ form.instance.product.name|default:'' }}" readonly>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Main Store Current Quantity</label>
@@ -250,14 +344,165 @@
                                                 <label class="form-label">Remaining Main Store Quantity</label>
                                                 {{ form.remaining_main_store_quantity }}
                                             </div>
+                                        </div>
+                                
+                                        <!-- Photo Evidence and Comments -->
+                                        <div class="row mb-4">
+                                            <div class="col-12 mb-3">
+                                                <label class="form-label">Main Store Photo Evidence</label>
+                                                {{ form.main_store_photo }}
+                                            </div>
+                                           
+                                
+                                        <!-- Shop Store and Shop Distribution -->
+                                        <div class="row mb-4">
                                             <div class="col-md-6 mb-3">
+                                                <label class="form-label">Quantity Delivered to Shop Store</label>
+                                                {{ form.delivered_to_shop_stores }}
+                                            </div>
+
+                                                <div class="mb-3">
+                                                    <div class="form-check">
+                                                    <label class="form-check-label">Was shop-stores quantity updated? </label>
+                                                    {{ form.was_shop_stores_updated }}
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Total Quantity in Shop Store</label>
+                                                {{ form.quantity_in_shopstores }}
+                                            </div>
+                                                  
+                                        <!-- Photo Evidence for Updates -->
+                                        <div class="row mb-4">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Current Shop Store Photo</label>
+                                                {{ form.current_shop_store_photo }}
+                                            </div>
+
+
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Quantity Delivered to Shop</label>
+                                                {{ form.delivered_to_shop }}
+                                            </div>
+
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                            <label class="form-check-label">Was shop quantity updated ?</label>
+                                            {{ form.was_shop_m_updated }}
+                                          </div>
+                                        </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Total Quantity in Shop</label>
+                                                {{ form.total_quantity_in_shop }}
+                                            </div>
+                                        </div>
+                                         
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Current Shop Photo</label>
+                                            {{ form.current_shop_photo }}
+                                        </div>    
+                                
+
+                                            <div class="col-12 mb-3">
                                                 <label class="form-label">Main Store Comments</label>
                                                 {{ form.main_store_comments }}
                                             </div>
                                         </div>
+                                        </div>
                                     </div>
                                 </div>
+                                
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        // Get input elements using the form field names from your HTML
+                                        const mainStoreQuantityInput = document.querySelector('[name="main_store_quantity"]');
+                                        const quantityTakenInput = document.querySelector('[name="quantity_taken_from_main_store"]');
+                                        const remainingQuantityInput = document.querySelector('[name="remaining_main_store_quantity"]');
+                                        
+                                        function calculateRemainingQuantity() {
+                                            // Get values and convert to integers, default to 0 if empty
+                                            const currentQuantity = parseInt(mainStoreQuantityInput.value) || 0;
+                                            const quantityTaken = parseInt(quantityTakenInput.value) || 0;
+                                            
+                                            // Calculate remaining quantity (ensure it's not negative)
+                                            const remainingQuantity = Math.max(0, currentQuantity - quantityTaken);
+                                            
+                                            // Update the remaining quantity input
+                                            remainingQuantityInput.value = remainingQuantity;
+                                        }
+                                        
+                                        // Add event listeners to both inputs if they exist
+                                        if (mainStoreQuantityInput && quantityTakenInput && remainingQuantityInput) {
+                                            [mainStoreQuantityInput, quantityTakenInput].forEach(input => {
+                                                input.addEventListener('input', calculateRemainingQuantity);
+                                                input.addEventListener('change', calculateRemainingQuantity);
+                                            });
+                                        }
+                                    });
+                                </script>   
+
+
                                 </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        // Get all relevant input fields
+                                        const shopInitialQuantityInput = document.querySelector('[name="shop_current_quantity"]');
+                                        const shopStoreInitialQuantityInput = document.querySelector('[name="shop_store_current_quantity"]');
+                                        const deliveredToShopStoresInput = document.querySelector('[name="delivered_to_shop_stores"]');
+                                        const quantityInShopStoresInput = document.querySelector('[name="quantity_in_shopstores"]');
+                                        const deliveredToShopInput = document.querySelector('[name="delivered_to_shop"]');
+                                        const totalQuantityInShopInput = document.querySelector('[name="total_quantity_in_shop"]');
+                                        const wasShopStoresUpdatedSelect = document.querySelector('[name="was_shop_stores_updated"]');
+                                        const wasShopUpdatedSelect = document.querySelector('[name="was_shop_m_updated"]');
+                                    
+                                        // Function to calculate shop stores total quantity
+                                        function calculateShopStoresTotal() {
+                                            if (wasShopStoresUpdatedSelect && wasShopStoresUpdatedSelect.value === 'Yes') {
+                                                const initialQuantity = parseInt(shopStoreInitialQuantityInput.value) || 0;
+                                                const deliveredQuantity = parseInt(deliveredToShopStoresInput.value) || 0;
+                                                const totalQuantity = initialQuantity + deliveredQuantity;
+                                                quantityInShopStoresInput.value = totalQuantity;
+                                            }
+                                        }
+                                    
+                                        // Function to calculate shop total quantity
+                                        function calculateShopTotal() {
+                                            if (wasShopUpdatedSelect && wasShopUpdatedSelect.value === 'Yes') {
+                                                const initialQuantity = parseInt(shopInitialQuantityInput.value) || 0;
+                                                const deliveredQuantity = parseInt(deliveredToShopInput.value) || 0;
+                                                const totalQuantity = initialQuantity + deliveredQuantity;
+                                                totalQuantityInShopInput.value = totalQuantity;
+                                            }
+                                        }
+                                    
+                                        // Add event listeners for shop stores calculations
+                                        if (wasShopStoresUpdatedSelect && deliveredToShopStoresInput && shopStoreInitialQuantityInput) {
+                                            [wasShopStoresUpdatedSelect, deliveredToShopStoresInput, shopStoreInitialQuantityInput].forEach(input => {
+                                                input.addEventListener('change', calculateShopStoresTotal);
+                                                input.addEventListener('input', calculateShopStoresTotal);
+                                            });
+                                        }
+                                    
+                                        // Add event listeners for shop calculations
+                                        if (wasShopUpdatedSelect && deliveredToShopInput && shopInitialQuantityInput) {
+                                            [wasShopUpdatedSelect, deliveredToShopInput, shopInitialQuantityInput].forEach(input => {
+                                                input.addEventListener('change', calculateShopTotal);
+                                                input.addEventListener('input', calculateShopTotal);
+                                            });
+                                        }
+                                    
+                                        // Initialize calculations
+                                        calculateShopStoresTotal();
+                                        calculateShopTotal();
+                                    
+                                        // Log for debugging
+                                        console.log('Shop Stores Updated Select:', wasShopStoresUpdatedSelect);
+                                        console.log('Shop Updated Select:', wasShopUpdatedSelect);
+                                    });
+                                </script>
                                 </div>
                                 <!-- Hidden input for submission type -->
                                <input type="hidden" name="submission_type" id="submission_type" value="">

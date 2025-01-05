@@ -51,6 +51,11 @@
                         <div class="d-flex align-items-center mb-2">
                             <span class="badge bg-warning me-2">Draft</span>
                             <h6 class="mb-0">Report #{{ report.id }}</h6>
+                            <!-- Responsive text layout -->
+                            <div class="text-muted small">
+                                <div class="mb-1"><strong>Product:</strong> {{ report.product.name }}</div>
+                                <div class="mb-1"><strong>Address:</strong> {{ report.shop.address }}</div>
+                            </div>
                         </div>
                         <div class="text-muted small">
                             <div><i class="bi bi-clock me-1"></i>Started: {{ report.created_at|timesince }} ago</div>

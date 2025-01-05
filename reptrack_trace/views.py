@@ -4,8 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView,FormView, CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
 from django.urls import reverse_lazy
-from .models import Product,Shop, Report,ShopStore,Store, MainStore
-from .forms import StoreForm, ShopForm, ReportForm, ProductForm,MainStoreForm
+from .models import Product,Shop, Report,ShopStore, MainStore
+from .forms import  ShopForm, ReportForm, ProductForm,MainStoreForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth import logout 
@@ -15,26 +15,25 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from io import BytesIO
+from PIL import Image as PILImage
+import os
 from django.http import HttpResponse
 from datetime import datetime
 from .forms import *
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 from django.views.decorators.cache import cache_control
-from django.shortcuts import render
 import os
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from users.forms import UserLoginForm
 from datetime import datetime, timedelta
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView
 from django.utils import timezone
-from django.views.generic import DetailView
 from django.utils.timezone import localtime
 import json
-from .models import Report, Shop, Store, MainStore, Inventory, ShopStore, User
+from reportlab.lib.units import inch
+
+from .models import Report, Shop, MainStore, Inventory, ShopStore, User
 from django.core.serializers.json import DjangoJSONEncoder
 from .models import Report
 from django.views.generic import TemplateView
@@ -45,8 +44,7 @@ from django.db.models import Count, Sum, Avg, F, Q
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from datetime import timedelta
-from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect,ensure_csrf_cookie
 import logging
 
 logger = logging.getLogger(__name__)
@@ -344,7 +342,7 @@ class ShopStoreReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
 
         context.update({
             'shops': Shop.objects.all(),
-            'stores': Store.objects.all(),
+            
             'selected_shop': shop_id,
             'selected_store': store_id,
             'start_date': start_date,
@@ -698,18 +696,6 @@ class ProductCreateView(CreateView):
         messages.success(self.request, f'Product "{product.name}" created successfully')
         return super().form_valid(form)
 
-class StoreCreateView(CreateView):
-    model = Store
-    form_class = StoreForm
-    template_name = 'reports/report_form.html'
-
-    def get_success_url(self):
-        return self.request.META.get('HTTP_REFERER', '/')
-
-    def form_valid(self, form):
-        store = form.save()
-        messages.success(self.request, f'Store "{store.name}" created successfully')
-        return super().form_valid(form)
 
 class ReportDeleteView(LoginRequiredMixin, DeleteView):
     """View for deleting a Drafted reports"""
@@ -732,15 +718,7 @@ class MainStoreCreateView(CreateView):
         return super().form_valid(form)
 
 
-class StoreDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """View for deleting a shop"""
-    model = Store
-    template_name = 'admin/delete_shop.html'
-    success_url = reverse_lazy('reptrack_trace:shop-management')  
 
-    def test_func(self):
-        """Restrict access to admin users only"""
-        return self.request.user.role == User.ADMIN
     
     
 
@@ -804,38 +782,8 @@ class AdminShopDeleteView(AdminRequiredMixin, DeleteView):
         messages.success(request, f'Shop "{shop.name}" deleted successfully')
         return super().delete(request, *args, **kwargs)
 
-# Store Management
-class AdminStoreCreateView(AdminRequiredMixin, CreateView):
-    model = Store
-    form_class = StoreForm
-    template_name = 'admin/storecreate.html'
-    success_url = reverse_lazy('reptrack_trace:admin-store-list')
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, f'Store "{self.object.name}" created successfully')
-        return response
 
-class AdminStoreUpdateView(AdminRequiredMixin, UpdateView):
-    model = Store
-    form_class = StoreForm
-    template_name = 'admin/update_store.html'
-    success_url = reverse_lazy('reptrack_trace:admin-store-list')
-
-class AdminStoreListView(AdminRequiredMixin, ListView):
-    model = Store
-    template_name = 'admin/storelist.html'
-    context_object_name = 'stores'
-
-class StoreAdminListView(AdminRequiredMixin, UpdateView):
-    model = Store
-    template_name = 'admin/store-list.html'
-    context_object_name = 'stores'
-
-class AdminStoreDeleteView(AdminRequiredMixin, DeleteView):
-    model = Store
-    template_name = 'admin/store_delete.html'
-    success_url = reverse_lazy('reptrack_trace:admin-store-list')
 
 # Product Management
 class AdminProductCreateView(AdminRequiredMixin, CreateView):
@@ -905,8 +853,17 @@ class ReportCreateView(FormView):
         # Retrieve unsaved data from session
         unsaved_data = self.request.session.get('unsaved_report_data', {})
         initial.update(unsaved_data)
-    
+           
         # Prepopulate with shop data if available
+        
+        main_store_id = self.request.GET.get('main_store') or self.request.POST.get('main_store')
+        if main_store_id:
+            try:
+                main_store = MainStore.objects.get(id=main_store_id)
+                initial.update({'main_store': main_store.id})
+            except MainStore.DoesNotExist:
+                pass
+        
         shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
         if shop_id:
             try:
@@ -915,42 +872,61 @@ class ReportCreateView(FormView):
             except Shop.DoesNotExist:
                 pass
         return initial
+       
+        
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Fetch selected shop data
         selected_shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
         if selected_shop_id:
             try:
                 selected_shop = Shop.objects.get(id=selected_shop_id)
                 context['selected_shop'] = {
+                    'name': selected_shop.name,
                     'address': selected_shop.address,
                     'manager_name': selected_shop.manager_name,
                     'manager_phone': selected_shop.manager_phone,
+                    'stores_manager': selected_shop.store_manager_name,
+                    'stores_manager_phone': selected_shop.store_manager_phone,
                 }
             except Shop.DoesNotExist:
-                pass
+                context['selected_shop'] = None
         else:
             context['selected_shop'] = None
-
-        # Add dropdown options
+    
+        # Fetch selected main store data
+        selected_main_store_id = self.request.GET.get('main_store') or self.request.POST.get('main_store')
+        if selected_main_store_id:
+            try:
+                selected_mainstore = MainStore.objects.get(id=selected_main_store_id)
+                context['selected_mainstore'] = {
+                    'location': selected_mainstore.address,
+                    'manager_name': selected_mainstore.manager_name,
+                    'manager_phone': selected_mainstore.manager_phone,
+                    'manager_email': selected_mainstore.manager_email
+                }    
+            except MainStore.DoesNotExist:
+                context['selected_mainstore'] = None
+        else:
+            context['selected_mainstore'] = None
+    
+        # Add dropdown options and forms
         context.update({
             'shops': Shop.objects.all(),
             'products': Product.objects.all(),
-            'stores': Store.objects.all(),
             'main_stores': MainStore.objects.all(),
             'shop_stores': ShopStore.objects.all(),
             'shop_form': ShopForm(),
             'product_form': ProductForm(),
-            'store_form': StoreForm(),
             'main_store_form': MainStoreForm(),
             'shop_store_form': ShopStoreForm(),
         })
+        
         return context
 
     def post(self, request, *args, **kwargs):
-        print("Form submitted")
-        print("POST data:", request.POST)
-        print("Files:", request.FILES)
         
         # Handle AJAX modal form submissions
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -1061,6 +1037,13 @@ class ReportDetailView(DetailView):
             'submitted_at': localtime(report.submitted_at) if report.submitted_at else "Not Submitted",
             'final_shop_quantity': report.final_shop_quantity,
             'final_store_quantity': report.final_store_quantity,
+        }
+        context['general_info'] = {
+            'final_shop_quantity': report.final_shop_quantity or 0,
+            'final_store_quantity': report.final_store_quantity or 0,
+            'created_at': report.created_at,
+            'shop': report.shop,
+            'product': report.product,
         }
 
         return context
@@ -1173,9 +1156,12 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             try:
                 selected_shop = Shop.objects.get(id=selected_shop_id)
                 context['selected_shop'] = {
+                    'name':selected_shop.name,
                     'address': selected_shop.address,
                     'manager_name': selected_shop.manager_name,
                     'manager_phone': selected_shop.manager_phone,
+                    'stores_manager': selected_shop.store_manager_name, 
+                    'stores_manager_phone': selected_shop.store_manager_phone,
                 }
             except Shop.DoesNotExist:
                 pass
@@ -1186,12 +1172,11 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context.update({
             'shops': Shop.objects.all(),
             'products': Product.objects.all(),
-            'stores': Store.objects.all(),
             'main_stores': MainStore.objects.all(),
             'shop_stores': ShopStore.objects.all(),
             'shop_form': ShopForm(),
             'product_form': ProductForm(),
-            'store_form': StoreForm(),
+            
             'main_store_form': MainStoreForm(),
             'shop_store_form': ShopStoreForm(),
         })
@@ -1448,7 +1433,7 @@ class RepresentativeReportsView(LoginRequiredMixin, UserPassesTestMixin, Templat
                 'submitted_reports': reports.filter(status='submitted').count(),
                 'draft_reports': reports.filter(status='draft').count(),
                 'shops_visited': reports.values('shop').distinct().count(),
-                'stores_visited': reports.values('store').distinct().count(),
+                
             }
         })
         return context
@@ -1569,8 +1554,40 @@ def get_inventory_status(request):
 
     return JsonResponse({'quantity': inventory.quantity})
 
-@login_required
-def generate_pdf_report(report):
+def get_image_for_pdf(image_field, max_width=6*inch, max_height=4*inch):
+    """Helper function to process and resize images for PDF"""
+    if not image_field:
+        return None
+        
+    try:
+        # Open the image using PIL
+        img = PILImage.open(image_field)
+        
+        # Convert to RGB if necessary (for PNG with transparency)
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+            
+        # Calculate aspect ratio and new dimensions
+        aspect = img.width / img.height
+        if aspect > (max_width / max_height):
+            new_width = max_width
+            new_height = max_width / aspect
+        else:
+            new_height = max_height
+            new_width = max_height * aspect
+            
+        # Save the processed image to a temporary BytesIO buffer
+        temp_buffer = BytesIO()
+        img.save(temp_buffer, format='JPEG', quality=85)
+        temp_buffer.seek(0)
+        
+        # Create ReportLab Image object
+        return Image(temp_buffer, width=new_width, height=new_height)
+    except Exception as e:
+        print(f"Error processing image: {str(e)}")
+        return None
+
+def generate_pdf_report(report, pk=None):
     """Generate PDF for the report"""
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
@@ -1584,103 +1601,161 @@ def generate_pdf_report(report):
         fontSize=18,
         spaceAfter=20
     )
-    elements.append(Paragraph(f"Report Details - {report.shop.name}", title_style))
-
-    # General Information
-    general_data = [
-        ['Report ID:', str(report.id)],
-        ['Report Date:', report.created_at.strftime('%Y-%m-%d %H:%M')],
-        ['Representative:', report.representative.get_full_name()],
-        ['Status:', report.get_status_display()]
-    ]
-
-    general_table = Table(general_data, colWidths=[150, 350])
-    general_table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    elements.append(general_table)
+    elements.append(Paragraph(f"Inventory Report #{report.pk}", title_style))
     elements.append(Spacer(1, 20))
 
-    # Shop Details
+    # Report metadata
+    metadata_style = ParagraphStyle(
+        'MetadataStyle',
+        parent=styles['Normal'],
+        fontSize=12,
+        spaceAfter=6
+    )
+    elements.append(Paragraph(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}", metadata_style))
+    elements.append(Paragraph(f"Shop: {report.shop}", metadata_style))
+    elements.append(Paragraph(f"Product: {report.product}", metadata_style))
+    elements.append(Spacer(1, 20))
+
+    # Shop Section
+    section_style = ParagraphStyle(
+        'SectionStyle',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceAfter=10
+    )
+    elements.append(Paragraph("Shop Details", section_style))
     shop_data = [
-        ['Shop Name:', report.shop.name],
-        ['Current Quantity:', report.shop_current_quantity],
-        ['Needs Top-up:', 'Yes' if report.needs_topup else 'No'],
-        ['Desired Quantity:', report.desired_quantity or 'N/A'],
-        ['Top-up Quantity:', report.topup_quantity or 'N/A'],
-        ['Comments:', report.shop_comments or 'N/A']
+        ["Current Quantity", str(report.shop_current_quantity)],
+        ["Needs Top-up", "Yes" if report.needs_topup else "No"],
+        ["Desired Quantity", str(report.desired_quantity)],
+        ["Top-up Quantity", str(report.topup_quantity)],
+        ["Comments", report.shop_comments or "N/A"]
     ]
-    shop_table = Table(shop_data, colWidths=[150, 350])
+    shop_table = Table(shop_data, colWidths=[200, 300])
     shop_table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
     ]))
-    elements.append(Paragraph("Shop Details", styles['Heading2']))
     elements.append(shop_table)
+    
+    # Add shop photo if exists
+    shop_image = get_image_for_pdf(report.shop_photo)
+    if shop_image:
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("Shop Photo:", metadata_style))
+        elements.append(shop_image)
     elements.append(Spacer(1, 20))
 
-    # Add sections for Shop-Stores, Stores, and Main Stores
-    sections = [
-        ("Shop-Stores Details", [
-            ['Manager Confirmed:', 'Yes' if report.shop_store_manager_confirmed else 'No'],
-            ['Current Quantity:', report.shop_store_current_quantity or 'N/A'],
-            ['Sufficient Stock:', 'Yes' if report.shop_store_has_sufficient_stock else 'No'],
-            ['Comments:', report.shop_store_comments or 'N/A']
-        ]),
-        ("Store Details", [
-            ['Store Name:', report.store.name if report.store else 'N/A'],
-            ['Current Quantity:', report.store_current_quantity or 'N/A'],
-            ['Quantity Taken:', report.quantity_taken_from_store or 'N/A'],
-            ['Remaining Quantity:', report.remaining_store_quantity or 'N/A'],
-            ['Comments:', report.store_comments or 'N/A']
-        ]),
-        ("Main Store Details", [
-            ['Main Store Name:', report.main_store.name if report.main_store else 'N/A'],
-            ['Current Quantity:', report.main_store_quantity or 'N/A'],
-            ['Quantity Taken:', report.quantity_taken_from_main_store or 'N/A'],
-            ['Remaining Quantity:', report.remaining_main_store_quantity or 'N/A'],
-            ['Comments:', report.main_store_comments or 'N/A']
-        ])
+    # Shop Store Section
+    elements.append(Paragraph("Shop Store Details", section_style))
+    shop_store_data = [
+        ["Manager Confirmed", "Yes" if report.shop_store_manager_confirmed else "No"],
+        ["Current Quantity", str(report.shop_store_current_quantity)],
+        ["Quantity Taken", str(report.quantity_taken_from_shop_store)],
+        ["Remaining Quantity", str(report.remaining_shop_store_quantity)],
+        ["Comments", report.shop_store_comments or "N/A"]
     ]
+    shop_store_table = Table(shop_store_data, colWidths=[200, 300])
+    shop_store_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(shop_store_table)
+    
+    # Add shop store photo if exists
+    shop_store_image = get_image_for_pdf(report.shop_store_photo)
+    if shop_store_image:
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("Shop Store Photo:", metadata_style))
+        elements.append(shop_store_image)
+    elements.append(Spacer(1, 20))
 
-    for section_title, section_data in sections:
-        elements.append(Paragraph(section_title, styles['Heading2']))
-        table = Table(section_data, colWidths=[150, 350])
-        table.setStyle(TableStyle([
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ]))
-        elements.append(table)
-        elements.append(Spacer(1, 20))
+    # Store Section
+    elements.append(Paragraph("Store Details", section_style))
+    store_data = [
+        ["Store", str(report.store)],
+        ["Current Quantity", str(report.store_current_quantity)],
+        ["Quantity Taken", str(report.quantity_taken_from_store)],
+        ["Remaining Quantity", str(report.remaining_store_quantity)],
+        ["Comments", report.store_comments or "N/A"]
+    ]
+    store_table = Table(store_data, colWidths=[200, 300])
+    store_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(store_table)
+    
+    # Add store photo if exists
+    store_image = get_image_for_pdf(report.store_photo)
+    if store_image:
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("Store Photo:", metadata_style))
+        elements.append(store_image)
+    elements.append(Spacer(1, 20))
 
-    # Build the PDF document
+    # Main Store Section
+    elements.append(Paragraph("Main Store Details", section_style))
+    main_store_data = [
+        ["Main Store", str(report.main_store)],
+        ["Current Quantity", str(report.main_store_quantity)],
+        ["Quantity Taken", str(report.quantity_taken_from_main_store)],
+        ["Remaining Quantity", str(report.remaining_main_store_quantity)],
+        ["Comments", report.main_store_comments or "N/A"]
+    ]
+    main_store_table = Table(main_store_data, colWidths=[200, 300])
+    main_store_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(main_store_table)
+    
+    # Add main store photo if exists
+    main_store_image = get_image_for_pdf(report.main_store_photo)
+    if main_store_image:
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("Main Store Photo:", metadata_style))
+        elements.append(main_store_image)
+
+    # Build PDF
     doc.build(elements)
-    buffer.seek(0)
+    pdf = buffer.getvalue()
+    buffer.close()
+    return pdf
 
-    response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+def download_report_pdf(request, pk):
+    """View to download the report as PDF"""
+    report = get_object_or_404(Report, pk=pk)
+    
+    # Generate PDF
+    pdf = generate_pdf_report(report, pk)
+    
+    # Create response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="report_{pk}.pdf"'
+    response.write(pdf)
+    
     return response
-
-
-
-def download_report(request, report_id):
-    report = get_object_or_404(Report, id=report_id)
-
-    # Permission check (optional)
-    if request.user != report.representative and not request.user.is_superuser:
-        raise Http404("You do not have permission to access this report.")
-
-    return generate_pdf_report(report)
 
 # Analytics Views
 class AnalyticsView(LoginRequiredMixin, UserPassesTestMixin, ListView):

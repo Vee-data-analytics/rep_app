@@ -21,35 +21,23 @@ class Shop(models.Model):
         return self.name
 
 
-class Store(models.Model):
-    """Model to represent a Store"""
-    name = models.CharField(max_length=255, unique=True)
-    location = models.CharField(max_length=255, blank=True, null=True)
-    manager_name = models.CharField(max_length=255)
-    manager_phone = models.CharField(max_length=20)
-    manager_email = models.EmailField()
-    store_manager_name = models.CharField(max_length=255, null=True, blank=True)
-    store_manager_phone = models.CharField(max_length=20,null=True, blank=True)
-    store_manager_email = models.EmailField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
 
 class ShopStore(models.Model):
     """Model to represent the relationship between a Shop and a Store"""
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='shop_stores')
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store_shops')
-    quantity_taken= models.IntegerField(null=True, blank=True)
+    shop = models.OneToOneField(
+        Shop, 
+        on_delete=models.CASCADE, 
+        related_name='shop_stores',
+        unique=True
+    )
+    quantity_taken = models.IntegerField(null=True, blank=True)
     assigned_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     note = models.TextField(blank=True, null=True)  
-    class Meta:
-        unique_together = ('shop', 'store')  
-    def __str__(self):
-        return f"{self.shop.name} - {self.store.name}"
 
+    def __str__(self):
+        return f"{self.shop.name}"
+    
 class MainStore(models.Model):
     """Model for storing main store information"""
     name = models.CharField(max_length=255)
@@ -94,6 +82,7 @@ class Report(models.Model):
     shop_comments = models.TextField(blank=True)
     
     # Shop-Stores Section
+    
     shop_store_manager_confirmed = models.BooleanField(default=False)
     shop_store_current_quantity = models.IntegerField(null=True, blank=True)
     shop_store_has_sufficient_stock = models.BooleanField(null=True)
@@ -101,15 +90,12 @@ class Report(models.Model):
     remaining_shop_store_quantity = models.IntegerField(null=True, blank=True)
     shop_store_photo = models.ImageField(upload_to='shop_store_photos/', null=True, blank=True)
     shop_store_comments = models.TextField(blank=True)
+    was_shop_updated = models.BooleanField(null=True, blank=True)
+    shop_photo_update = models.ImageField(upload_to='shop_photos/', null=True, blank=True)
+    shop_update_quantity = models.IntegerField(null=True, blank=True)
     
-    # Store/Storage Section
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, null=True, blank=True)
-    store_current_quantity = models.IntegerField(null=True, blank=True)
-    quantity_taken_from_store = models.IntegerField(null=True, blank=True)
-    remaining_store_quantity = models.IntegerField(null=True, blank=True)
-    store_photo = models.ImageField(upload_to='store_photos/', null=True, blank=True)
-    store_comments = models.TextField(blank=True)
     
+   
     # Main Store Section
     main_store = models.ForeignKey(MainStore, on_delete=models.CASCADE, null=True, blank=True)
     main_store_quantity = models.IntegerField(null=True, blank=True)
@@ -117,13 +103,23 @@ class Report(models.Model):
     remaining_main_store_quantity = models.IntegerField(null=True, blank=True)
     main_store_photo = models.ImageField(upload_to='main_store_photos/', null=True, blank=True)
     main_store_comments = models.TextField(blank=True)
-    
+    shop_store_current_quantity = models.ImageField(null=True, blank=True)
+    shop_quantity = models.IntegerField(null=True, blank=True)
+    was_shop_stores_updated = models.BooleanField(null=True, blank=True)
+    was_shop_m_updated = models.BooleanField(null=True, blank=True)
+    current_shop_store_photo = models.ImageField(upload_to='store_photos/', null=True, blank=True)
+    current_shop_photo = models.ImageField(upload_to='store_photos/', null=True, blank=True)
+    delivered_to_shop_stores = models.IntegerField(null=True,blank=True)
+    quantity_in_shopstores = models.IntegerField(null=True, blank=True)
+    delivered_to_shop = models.IntegerField(null=True,blank=True)
+    total_quantity_in_shop   = models.IntegerField(null=True,blank=True)
+     
     # Final quantities
     quantity_taken_from_main = models.IntegerField(null=True, blank=True)
     final_shop_quantity = models.IntegerField(null=True, blank=True)
     final_store_quantity = models.IntegerField(null=True, blank=True)
     
-    # General fields
+    # General fields    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

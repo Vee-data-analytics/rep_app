@@ -9,7 +9,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Row, Column, Submit, HTML, Field
 from django.utils.translation import gettext_lazy as _
 from django import forms
-from .models import Report, Shop, Product, Store,ShopStore ,MainStore
+from .models import Report, Shop, Product,ShopStore ,MainStore
 from django.core.exceptions import ValidationError
 from django import forms
 from django.db.models import Q
@@ -56,16 +56,6 @@ class ShopForm(forms.ModelForm):
         return phone
     
     
-class StoreForm(forms.ModelForm):
-    """Form for creating/editing stores"""
-    class Meta:
-        model = Store
-        fields= '__all__'
-    def clean_manager_phone(self):
-        phone = self.cleaned_data.get('manager_phone')
-        if not phone.isdigit():
-            raise ValidationError('Phone number must contain only digits')
-        return phone
 
 class MainStoreForm(forms.ModelForm):
     """Form for creating/editing main stores"""
@@ -115,16 +105,14 @@ class ReportForm(forms.ModelForm):
             
             # Shop-Stores Section
             'shop_store_manager_confirmed', 'shop_store_current_quantity', 
-            'shop_store_has_sufficient_stock', 'quantity_taken_from_shop_store', 
-            'remaining_shop_store_quantity', 'shop_store_photo', 'shop_store_comments',
+            'shop_store_has_sufficient_stock', 'quantity_taken_from_shop_store', 'was_shop_updated','shop_store_has_sufficient_stock',
+            'remaining_shop_store_quantity', 'shop_store_photo', 'shop_store_comments','shop_photo_update',
             
-            # Store/Storage Section
-            'store', 'store_current_quantity', 'quantity_taken_from_store', 
-            'remaining_store_quantity', 'store_photo', 'store_comments',
             
             # Main Store Section
-            'main_store', 'main_store_quantity', 'quantity_taken_from_main_store', 
-            'remaining_main_store_quantity', 'main_store_photo', 'main_store_comments',
+            'main_store', 'main_store_quantity', 'quantity_taken_from_main_store', 'delivered_to_shop_stores','delivered_to_shop',
+            'remaining_main_store_quantity','current_shop_photo','quantity_in_shopstores','was_shop_stores_updated','was_shop_m_updated',
+            'total_quantity_in_shop' ,'current_shop_store_photo','main_store_photo', 'main_store_comments',
         ]
         widgets = {
             # Shop Section
@@ -143,19 +131,14 @@ class ReportForm(forms.ModelForm):
             # Shop-Stores Section
             'shop_store_manager_confirmed': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'shop_store_current_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-            'has_sufficient_stock': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'shop_store_has_sufficient_stock': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'quantity_taken_from_shop_store': forms.NumberInput(attrs={'class': 'form-control'}),
+            'was_shop_updated':forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'remaining_shop_store_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'shop_store_photo': forms.FileInput(attrs={'class': 'form-control'}),
             'shop_store_comments': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'shop_photo_update': forms.FileInput(attrs={'class': 'form-control'}),
             
-            # Store/Storage Section
-            'store': forms.Select(attrs={'class': 'form-select'}),
-            'store_current_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-            'quantity_taken_from_store': forms.NumberInput(attrs={'class': 'form-control'}),
-            'remaining_store_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-            'store_photo': forms.FileInput(attrs={'class': 'form-control'}),
-            'store_comments': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             
             # Main Store Section
             'main_store': forms.Select(attrs={'class': 'form-select'}),
@@ -163,7 +146,14 @@ class ReportForm(forms.ModelForm):
             'quantity_taken_from_main_store': forms.NumberInput(attrs={'class': 'form-control'}),
             'remaining_main_store_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'main_store_photo': forms.FileInput(attrs={'class': 'form-control'}),
+            'current_shop_store_photo': forms.FileInput(attrs={'class':'form-control'}),
+            'current_shop_photo': forms.FileInput(attrs={'class':'form-control'}),
+            'delivered_to_shop_stores':forms.NumberInput(attrs={'class': 'form-control'}),
+            'quantity_in_shopstores': forms.NumberInput(attrs={'class': 'form-control'}),  
+            'delivered_to_shop': forms.NumberInput(attrs={'class': 'form-control'}),
+            'total_quantity_in_shop': forms.NumberInput(attrs={'class': 'form-control'}),  
             'main_store_comments': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            
         }
     
     def __init__(self, *args, **kwargs):
@@ -181,6 +171,7 @@ class ReportForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         
+        # First handle the existing topup calculation
         needs_topup = cleaned_data.get('needs_topup')
         if needs_topup:
             shop_current_quantity = cleaned_data.get('shop_current_quantity')
@@ -195,9 +186,53 @@ class ReportForm(forms.ModelForm):
                 cleaned_data['topup_quantity'] = max(desired_quantity - shop_current_quantity, 0)
         else:
             cleaned_data['topup_quantity'] = 0
+    
+        try:
+            # Calculate final shop quantity
+            shop_current_quantity = cleaned_data.get('shop_current_quantity') or 0
+            delivered_to_shop = cleaned_data.get('delivered_to_shop') or 0
+            cleaned_data['final_shop_quantity'] = shop_current_quantity + delivered_to_shop
+            
+            # Calculate final store quantity
+            shop_store_current_quantity = cleaned_data.get('shop_store_current_quantity') or 0
+            delivered_to_shop_stores = cleaned_data.get('delivered_to_shop_stores') or 0
+            
+            # Final store quantity is:
+            # Current shop store quantity + Quantity from main store - Quantity given to shop
+            cleaned_data['final_store_quantity'] = (
+                shop_store_current_quantity + 
+                delivered_to_shop_stores
+            )
+            
+            # Validate quantities can't be negative
+            if cleaned_data['final_shop_quantity'] < 0:
+                self.add_error('quantity_taken_from_shop_store', 
+                    'Invalid quantity. Final shop quantity cannot be negative.')
+            
+            if cleaned_data['final_store_quantity'] < 0:
+                self.add_error('quantity_taken_from_shop_store', 
+                    'Invalid quantity. Final store quantity cannot be negative.')
+        except TypeError:
+             # Handle case where some values are None
+            pass
             
         return cleaned_data
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make calculated fields readonly
+        readonly_fields = [
+            'topup_quantity',
+            'remaining_main_store_quantity',
+            'final_store_quantity',
+            'final_shop_quantity'
+        ]
+        
+        for field in readonly_fields:
+            if field in self.fields:
+                self.fields[field].widget.attrs['readonly'] = True
+                self.fields[field].widget.attrs['class'] = 'form-control'
+    
 
 class ReportSearchForm(forms.Form):
     """Enhanced Report Search Form with Crispy Forms"""

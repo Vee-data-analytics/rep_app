@@ -84,7 +84,7 @@
                                 {% for report in reports %}
                                 <tr>
                                     <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
-                                    <td>{{ report.representative.get_full_name }}</td>
+                                    <td>{{ report.representative.get_username }}</td>
                                     <td>{{ report.shop.name }}</td>
                                     <td>{{ report.product.name }}</td>
                                     <td>

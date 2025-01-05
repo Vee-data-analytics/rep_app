@@ -61,7 +61,7 @@
                             <tbody>
                                 {% for inventory in current_inventory %}
                                 <tr>
-                                    <td>{{ inventory.product.name }}</td>
+                                    <td>{{ report.product.name }}</td>
                                     <td>{{ inventory.quantity }}</td>
                                     <td>{{ inventory.last_updated|date:"Y-m-d H:i" }}</td>
                                     <td>
@@ -97,6 +97,7 @@
                                     <th>Representative</th>
                                     <th>Product</th>
                                     <th>Initial Quantity</th>
+                                    <th>Desired Quantity</th>
                                     <th>Top-up Quantity</th>
                                     <th>Final Quantity</th>
                                     <th>Actions</th>
@@ -106,11 +107,12 @@
                                 {% for report in reports %}
                                 <tr>
                                     <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
-                                    <td>{{ report.representative.get_full_name }}</td>
+                                    <td>{{ report.representative.username }}</td>
                                     <td>{{ report.product.name }}</td>
                                     <td>{{ report.shop_current_quantity }}</td>
-                                    <td>{{ report.topup_quantity|default:"N/A" }}</td>
-                                    <td>{{ report.final_shop_quantity|default:"N/A" }}</td>
+                                    <td>{{ report.desired_quantity|default:"0" }}</td>
+                                    <td>{{ report.topup_quantity|default:"0" }}</td>
+                                    <td>{{ report.final_shop_quantity|default:"0" }}</td>
                                     <td>
                                         <a href="{% url 'reptrack_trace:report-detail' report.pk %}" 
                                            class="btn btn-info btn-sm">View Details</a>

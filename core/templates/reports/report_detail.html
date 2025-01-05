@@ -60,7 +60,38 @@
          </div>
      </div>
 
-
+         <!-- Final Quantities Section -->
+     <div class="card mb-4">
+         <div class="card-header bg-warning text-white">
+             <h5 class="mb-0">Final Quantities</h5>
+         </div>
+         <div class="card-body">
+             <div class="row">
+                 <div class="col-md-6">
+                     <div class="mb-3">
+                         <label class="fw-bold">Final Shop Quantity:</label>
+                         <div class="border rounded p-2 bg-light">
+                             {{ general_info.final_shop_quantity|default:"0" }}
+                         </div>
+                     </div>
+                 </div>
+                 <div class="col-md-6">
+                     <div class="mb-3">
+                         <label class="fw-bold">Final Store Quantity:</label>
+                         <div class="border rounded p-2 bg-light">
+                             {{ general_info.final_store_quantity|default:"0" }}
+                         </div>
+                     </div>
+                 </div>
+             </div>
+             {% if report.needs_topup %}
+             <div class="alert alert-info mt-3">
+                 <i class="bi bi-info-circle"></i>
+                 Top-up was required for this report
+             </div>
+             {% endif %}
+         </div>
+     </div>
 
 
         <!-- Logout Button -->
