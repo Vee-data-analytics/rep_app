@@ -1,109 +1,284 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="container mt-4">
-    <h2>Report Details</h2>
-    <p><strong>Status:</strong> {{ general_info.status }}</p>
-    <p><strong>Created At:</strong> {{ general_info.created_at }}</p>
-    <p><strong>Submitted At:</strong> {{ general_info.submitted_at }}</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .report-img {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .card-header {
+            padding: 1rem;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Status Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted">Status</h6>
+                        <p class="h5">{{ general_info.status }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted">Created At</h6>
+                        <p class="h5">{{ general_info.created_at }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted">Submitted At</h6>
+                        <p class="h5">{{ general_info.submitted_at }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Shop Section -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">Shop Details</div>
+        <!-- Shop Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Shop Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <!-- Basic Info -->
+                    <div class="col-md-6">
+                        <h6 class="info-label">Shop Information</h6>
+                        <div class="mt-3">
+                            <p><span class="info-label">Shop:</span> {{ shop_details.shop }}</p>
+                            <p><span class="info-label">Address:</span> {{ shop_details.address }}</p>
+                            <p><span class="info-label">Manager:</span> {{ shop_details.manager_name }}</p>
+                            <p><span class="info-label">Phone:</span> {{ shop_details.manager_phone }}</p>
+                        </div>
+                    </div>
+         
+                    <!-- Quantity Details -->
+                    <div class="col-12">
+                        <h6 class="info-label">Quantity Details</h6>
+                        <div class="row g-4 mt-1">
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-3">Current Status</h6>
+                                        <p><span class="info-label">Current Quantity:</span> {{ shop_details.current_quantity }}</p>
+                                        <p><span class="info-label">Product:</span> {{ shop_details.product }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-3">Requirements</h6>
+                                        <p><span class="info-label">Desired Quantity:</span> {{ shop_details.desired_quantity }}</p>
+                                        <p><span class="info-label">Top-up Needed:</span>
+                                            <span class="status-badge {{ shop_details.needs_topup|yesno:'bg-warning,bg-success' }} text-white">
+                                                {{ shop_details.needs_topup|yesno:'Yes,No' }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                    {% if shop_details.photo %}
+                    <div class="col-12">
+                        <h6 class="info-label mb-3">Photo Evidence</h6>
+                        <img src="{{ shop_details.photo.url }}" class="report-img" alt="Shop Photo">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+                   <!-- Shop Store Details -->
+                   <div class="col-12">
+                       <h6 class="info-label">Quantity Details</h6>
+                       <div class="row g-4 mt-1">
+                           <div class="col-md-4">
+                               <div class="card h-100">
+                                   <div class="card-body">
+                                       <h6 class="text-muted mb-3">Current Status</h6>
+                                       <p><span class="info-label">Current Quantity:</span> {{ shop_store_details.current_quantity }}</p>
+                                       <p><span class="info-label">Has Sufficient Stock:</span>
+                                           <span class="status-badge {{ shop_store_details.has_sufficient_stock|yesno:'bg-success,bg-danger' }} text-white">
+                                               {{ shop_store_details.has_sufficient_stock|yesno:'Yes,No' }}
+                                           </span>
+                                       </p>
+                                   </div>
+                               </div>
+                           </div>
+                           <div class="col-md-4">
+                               <div class="card h-100">
+                                   <div class="card-body">
+                                       <h6 class="text-muted mb-3">Movement</h6>
+                                       <p><span class="info-label">Quantity Taken:</span> {{ shop_store_details.quantity_taken }}</p>
+                                       <p><span class="info-label">Remaining Quantity:</span> {{ shop_store_details.remaining_quantity }}</p>
+                                   </div>
+                               </div>
+                           </div>
+                           <div class="col-md-4">
+                               <div class="card h-100">
+                                   <div class="card-body">
+                                       <h6 class="text-muted mb-3">Final Status</h6>
+                                       <p><span class="info-label">Final Shop Quantity:</span> {{ shop_store_details.final_shop_quantity }}</p>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                    {% if shop_store_details.photo %}
+                    <div class="col-md-6">
+                        <h6 class="info-label mb-3">Store Photo</h6>
+                        <img src="{{ shop_store_details.photo.url }}" class="report-img" alt="Store Photo">
+                    </div>
+                    {% endif %}
+                    {% if shop_store_details.shop_update_photo %}
+                    <div class="col-md-6">
+                        <h6 class="info-label mb-3">Updated Shop Photo</h6>
+                        <img src="{{ shop_store_details.shop_update_photo.url }}" class="report-img" alt="Updated Shop Photo">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Store Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Main Store Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="col-12">
+                    <h6 class="info-label">Quantity Details</h6>
+                    <div class="row g-4 mt-1">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-3">Shop Store Quantities</h6>
+                                    <p><span class="info-label">Delivered to Shop Stores:</span> {{main_store_details.delivered_to_shop_stores }}</p>
+                                    <p><span class="info-label">Total in Shop Stores:</span> {{ main_store_details.quantity_in_shopstores }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-3">Shop Quantities</h6>
+                                    <p><span class="info-label">Delivered to Shop:</span> {{ main_store_details.delivered_to_shop }}</p>
+                                    <p><span class="info-label">Total in Shop:</span> {{ main_store_details.total_quantity_in_shop }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-3">Main Store Quantities</h6>
+                                    <p><span class="info-label">Current Quantity:</span> {{ main_store_details.current_quantity }}</p>
+                                    <p><span class="info-label">Quantity Taken:</span> {{ main_store_details.quantity_taken }}</p>
+                                    <p><span class="info-label">Remaining:</span> {{ main_store_details.remaining_quantity }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% if main_store_details.current_shop_store_photo %}
+                    <div class="col-md-6">
+                        <h6 class="info-label mb-3">Shop Store Photo</h6>
+                        <img src="{{ main_store_details.current_shop_store_photo.url }}" class="report-img" alt="Current Shop Store Photo">
+                    </div>
+                    {% endif %}
+                    {% if main_store_details.current_shop_photo %}
+                    <div class="col-md-6">
+                        <h6 class="info-label mb-3">Shop Photo</h6>
+                        <img src="{{ main_store_details.current_shop_photo.url }}" class="report-img" alt="Current Shop Photo">
+                    </div>
+                    {% endif %}
+                    {% if main_store_details.photo %}
+                    <div class="col-12">
+                        <h6 class="info-label mb-3">Main Store Photo</h6>
+                        <img src="{{ main_store_details.photo.url }}" class="report-img" alt="Main Store Photo">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+      <!-- Final Quantities Section -->
+     
+      <div class="card mb-4">
+        <div class="card-header bg-warning text-white">
+            <h5 class="mb-0">Final Quantities</h5>
+        </div>
         <div class="card-body">
-            <p><strong>Shop:</strong> {{ shop_details.shop.name }}</p>
-            <p><strong>Product:</strong> {{ shop_details.product.name }}</p>
-            <p><strong>Current Quantity:</strong> {{ shop_details.current_quantity }}</p>
-            <p><strong>Needs Top-up:</strong> {{ shop_details.needs_topup }}</p>
-            <p><strong>Desired Quantity:</strong> {{ shop_details.desired_quantity }}</p>
-            <p><strong>Top-up Quantity:</strong> {{ shop_details.topup_quantity }}</p>
-            {% if shop_details.photo %}
-                <p><strong>Photo:</strong> <img src="{{ shop_details.photo.url }}" alt="Shop Photo" class="img-fluid"></p>
-            {% endif %}
-            <p><strong>Comments:</strong> {{ shop_details.comments }}</p>
+            <div class="row">
+                <!-- Final Shop Quantity -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="fw-bold">Final Shop Quantity:</label>
+                        <div class="border rounded p-2 bg-light">
+                            {{ main_store_details.total_quantity_in_shop|default:"0" }}
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Final Shop-Store Quantity -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="fw-bold">Final Store Quantity:</label>
+                        <div class="border rounded p-2 bg-light">
+                            {{  main_store_details.quantity_in_shopstores |default:"0" }}
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Final Main-Store Quantity -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="fw-bold">Final Main-Store Quantity:</label>
+                        <div class="border rounded p-2 bg-light">
+                            {{ main_store_details.remaining_quantity|default:"0" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
-    <!-- Shop-Stores Section -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">Shop-Stores Details</div>
-            <div class="card-body">
-                <p><strong>Status of shop-stores Quantity:</strong> {{ shop_store_details.current_quantity }}</p>
-                <p><strong>Has sufficient stock?:</strong> {{ shop_store_details.has_sufficient_stock }}</p>
-                <p><strong>Quantity Taken to replenish shop:</strong> {{ shop_store_details.quantity_taken }}</p>
-                <p><strong>Remaining shop-stores Quantity:</strong> {{ shop_store_details.remaining_quantity }}</p>
-                <p><strong>Final shop shelf Quantity:</strong> {{ shop_store_details.final_shop_qauntity }}</p>
-                {% if shop_store_details.photo %}
-                    <p><strong>Photo Shop-stores shelf:</strong> <img src="{{ shop_store_details.photo.url }}" alt="Shop Store Photo" class="img-fluid"></p>
-                {% endif %}
-
-                {% if shop_store_details.shop_update_photo %}
-                    <p><strong>Shop shelf if updated :</strong> <img src="{{ shop_store_details.shop_update_photo.url }}" alt="Shop if Photo" class="img-fluid"></p>
-                {% endif %}
-                
-                <p><strong>Comments:</strong> {{ shop_store_details.comments }}</p>
+     
+      {% if report.needs_topup %}
+            <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle"></i>
+                Top-up was required for this report
             </div>
-        </div>
+            {% endif %}
         </div>
     </div>
-     
-
-    <!-- Main Store Section -->
-     <div class="card mb-4">
-         <div class="card-header bg-danger text-white">Main Store Details</div>
-         <div class="card-body">
-             <p><strong>Main Store:</strong> {{ main_store_details.name }}</p>
-             <p><strong>Current Quantity:</strong> {{ main_store_details.current_quantity }}</p>
-             <p><strong>Quantity Taken:</strong> {{ main_store_details.quantity_taken }}</p>
-             <p><strong>Remaining Quantity:</strong> {{ main_store_details.remaining_quantity }}</p>
-             {% if main_store_details.photo %}
-                 <p><strong>Photo:</strong> <img src="{{ main_store_details.photo.url }}" alt="Main Store Photo" class="img-fluid"></p>
-             {% endif %}
-             <p><strong>Comments:</strong> {{ main_store_details.comments }}</p>
-         </div>
-     </div>
-
-         <!-- Final Quantities Section -->
-     <div class="card mb-4">
-         <div class="card-header bg-warning text-white">
-             <h5 class="mb-0">Final Quantities</h5>
-         </div>
-         <div class="card-body">
-             <div class="row">
-                 <div class="col-md-6">
-                     <div class="mb-3">
-                         <label class="fw-bold">Final Shop Quantity:</label>
-                         <div class="border rounded p-2 bg-light">
-                             {{ general_info.final_shop_quantity|default:"0" }}
-                         </div>
-                     </div>
-                 </div>
-                 <div class="col-md-6">
-                     <div class="mb-3">
-                         <label class="fw-bold">Final Store Quantity:</label>
-                         <div class="border rounded p-2 bg-light">
-                             {{ general_info.final_store_quantity|default:"0" }}
-                         </div>
-                     </div>
-                 </div>
-             </div>
-             {% if report.needs_topup %}
-             <div class="alert alert-info mt-3">
-                 <i class="bi bi-info-circle"></i>
-                 Top-up was required for this report
-             </div>
-             {% endif %}
-         </div>
-     </div>
 
 
-        <!-- Logout Button -->
-        <div class="mt-4">
-            <form action="{% url 'reptrack_trace:home' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger w-100">
-                    <i class="bi bi-box-arrow-right me-2"></i>
-                    back to dashboard
-                </button>
-            </form>
+       <!-- Logout Button -->
+       <div class="mt-4">
+           <form action="{% url 'reptrack_trace:home' %}" method="post">
+               {% csrf_token %}
+               <button type="submit" class="btn btn-danger w-100">
+                   <i class="bi bi-box-arrow-right me-2"></i>
+                   back to dashboard
+               </button>
+           </form>
+        </body>
+        </html>
 {% endblock %}

@@ -461,76 +461,7 @@
                                     </div>
                                 </div>
                                 
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        // Main Store Quantity Calculation
-                                        const mainStoreQuantityInput = document.querySelector('[name="main_store_quantity"]');
-                                        const quantityTakenMainInput = document.querySelector('[name="quantity_taken_from_main_store"]');
-                                        const remainingMainStoreInput = document.querySelector('[name="remaining_main_store_quantity"]');
-                                    
-                                        function calculateMainStoreRemaining() {
-                                            const mainStoreQty = Number(mainStoreQuantityInput.value) || 0;
-                                            const quantityTaken = Number(quantityTakenMainInput.value) || 0;
-                                            const remaining = Math.max(0, mainStoreQty - quantityTaken);
-                                            remainingMainStoreInput.value = remaining;
-                                        }
-                                    
-                                        [mainStoreQuantityInput, quantityTakenMainInput].forEach(input => {
-                                            input.addEventListener('input', calculateMainStoreRemaining);
-                                        });
-                                    
-                                        // Shop Store Quantity Calculation
-                                        const deliveredToStoresInput = document.querySelector('[name="delivered_to_shop_stores"]');
-                                        const remainingShopStoreInput = document.querySelector('[name="remaining_shop_store_quantity"]');
-                                        const quantityInShopStoresInput = document.querySelector('[name="quantity_in_shopstores"]');
-                                    
-                                        function calculateShopStoreQuantity() {
-                                            const deliveredQty = Number(deliveredToStoresInput.value) || 0;
-                                            const remainingQty = Number(remainingShopStoreInput.value) || 0;
-                                            const totalQty = deliveredQty + remainingQty;
-                                            quantityInShopStoresInput.value = totalQty;
-                                        }
-                                    
-                                        [deliveredToStoresInput, remainingShopStoreInput].forEach(input => {
-                                            input.addEventListener('input', calculateShopStoreQuantity);
-                                        });
-                                    
-                                        // Shop Total Quantity Calculation
-                                        const wasShopUpdatedCheckbox = document.querySelector('[name="was_shop_m_updated"]');
-                                        const deliveredToShopInput = document.querySelector('[name="delivered_to_shop"]');
-                                        const shopCurrentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
-                                        const totalQuantityInShopInput = document.querySelector('[name="total_quantity_in_shop"]');
-                                    
-                                        function calculateTotalShopQuantity() {
-                                            if (wasShopUpdatedCheckbox.checked) {
-                                                const deliveredQty = Number(deliveredToShopInput.value) || 0;
-                                                const currentQty = Number(shopCurrentQuantityInput.value) || 0;
-                                                const totalQty = deliveredQty + currentQty;
-                                                totalQuantityInShopInput.value = totalQty;
-                                            } else {
-                                                totalQuantityInShopInput.value = '';
-                                            }
-                                        }
-                                    
-                                        [wasShopUpdatedCheckbox, deliveredToShopInput, shopCurrentQuantityInput].forEach(input => {
-                                            input.addEventListener('change', calculateTotalShopQuantity);
-                                            input.addEventListener('input', calculateTotalShopQuantity);
-                                        });
-                                    
-                                        // Initial calculations
-                                        calculateMainStoreRemaining();
-                                        calculateShopStoreQuantity();
-                                        calculateTotalShopQuantity();
-                                    
-                                        // Form submission handler
-                                        const form = document.getElementById('reportForm');
-                                        form.addEventListener('submit', function(e) {
-                                            calculateMainStoreRemaining();
-                                            calculateShopStoreQuantity();
-                                            calculateTotalShopQuantity();
-                                        });
-                                    });
-                                </script>   
+                            
 
 
                                 </div>
@@ -552,6 +483,7 @@
                                     const shopCurrentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
                                     const totalQuantityInShopInput = document.querySelector('[name="total_quantity_in_shop"]');
                                     
+                                    
                                     // Main store calculation
                                     function calculateMainStoreRemaining() {
                                         const mainStoreQty = parseFloat(mainStoreQuantityInput.value) || 0;
@@ -560,25 +492,41 @@
                                         remainingMainStoreInput.value = remaining;
                                     }
                                     
-                                    // Shop stores calculation
                                     function calculateShopStores() {
-                                        if (wasShopStoresUpdatedSelect.value === 'Yes') {
+                                        const wasShopStoresUpdated = document.querySelector('[name="was_shop_stores_updated"]').checked;
+                                        
+                                        if (wasShopStoresUpdated) {
                                             const deliveredQty = parseFloat(deliveredToShopStoresInput.value) || 0;
                                             const remainingQty = parseFloat(remainingShopStoreQuantityInput.value) || 0;
                                             const total = deliveredQty + remainingQty;
                                             quantityInShopStoresInput.value = total;
+                                        } else {
+                                            quantityInShopStoresInput.value = '';
                                         }
                                     }
-                                    
+
                                     // Shop quantity calculation
                                     function calculateShopQuantity() {
-                                        if (wasShopUpdatedSelect.value === 'Yes') {
-                                            const deliveredQty = parseFloat(deliveredToShopInput.value) || 0;
-                                            const currentQty = parseFloat(shopCurrentQuantityInput.value) || 0;
-                                            const total = deliveredQty + currentQty;
-                                            totalQuantityInShopInput.value = total;
+                                    const wasShopUpdated = document.querySelector('[name="was_shop_m_updated"]').checked;
+                                    const deliveredQty = parseFloat(deliveredToShopInput.value) || 0;
+                                    const shopUpdateQty = parseFloat(document.querySelector('[name="shop_update_quantity"]').value) || 0;
+                                    const currentQty = parseFloat(shopCurrentQuantityInput.value) || 0;
+                                
+                                    let totalQty;
+                                    if (wasShopUpdated) {
+                                        // First check if shop_update_quantity is available
+                                        if (shopUpdateQty > 0) {
+                                            totalQty = deliveredQty + shopUpdateQty;
+                                        } else {
+                                            // Fallback to current quantity if shop_update_quantity is 0 or empty
+                                            totalQty = deliveredQty + currentQty;
                                         }
+                                    } else {
+                                        totalQty = currentQty;
                                     }
+                                    
+                                    totalQuantityInShopInput.value = totalQty;
+                                }
                                     
                                     // Add event listeners for main store calculations
                                     mainStoreQuantityInput.addEventListener('input', calculateMainStoreRemaining);

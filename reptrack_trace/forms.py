@@ -149,6 +149,8 @@ class ReportForm(forms.ModelForm):
             'current_shop_store_photo': forms.FileInput(attrs={'class':'form-control'}),
             'current_shop_photo': forms.FileInput(attrs={'class':'form-control'}),
             'delivered_to_shop_stores':forms.NumberInput(attrs={'class': 'form-control'}),
+            'was_shop_m_updated':forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'was_shop_stores_updated' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'quantity_in_shopstores': forms.NumberInput(attrs={'class': 'form-control'}),  
             'delivered_to_shop': forms.NumberInput(attrs={'class': 'form-control'}),
             'total_quantity_in_shop': forms.NumberInput(attrs={'class': 'form-control'}),  
@@ -210,7 +212,10 @@ class ReportForm(forms.ModelForm):
             'final_store_quantity',
             'final_shop_quantity',
             'shop_update_quantity',
-            'remaining_shop_store_quantity'
+            'remaining_shop_store_quantity',
+            'total_quantity_in_shop',
+            'quantity_in_shopstores'
+            
             
         ]
         

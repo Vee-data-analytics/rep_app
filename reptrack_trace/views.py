@@ -993,52 +993,64 @@ class ReportDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         report = self.object
-
-        # Group fields for easier rendering in template
+        
+        
+       
         context['shop_details'] = {
             'shop': report.shop,
+            'address': report.shop.address,
+            'manager_name': report.shop.manager_name,
+            'manager_phone': report.shop.manager_phone,
             'product': report.product,
             'current_quantity': report.shop_current_quantity,
-            'needs_topup': report.needs_topup,
             'desired_quantity': report.desired_quantity,
+            'needs_topup': report.needs_topup,
             'topup_quantity': report.topup_quantity,
             'photo': report.shop_photo,
             'comments': report.shop_comments,
         }
+
         context['shop_store_details'] = {
+            'name': report.shop,
             'manager_confirmed': report.shop_store_manager_confirmed,
             'current_quantity': report.shop_store_current_quantity,
             'has_sufficient_stock': report.shop_store_has_sufficient_stock,
             'quantity_taken': report.quantity_taken_from_shop_store,
             'remaining_quantity': report.remaining_shop_store_quantity,
-            'final_shop_qauntity':report.shop_update_quantity,
+            'updated': report.was_shop_updated,
+            'final_shop_quantity': report.shop_update_quantity,
             'photo': report.shop_store_photo,
-            'shop_update_photo':report.shop_photo_update,
+            'shop_update_photo': report.shop_photo_update,
             'comments': report.shop_store_comments,
         }
-        
+
         context['main_store_details'] = {
             'main_store': report.main_store,
+            'address': report.main_store.address,
+            'manager_name': report.main_store.manager_name,
+            'manager_phone': report.main_store.manager_phone,
+            'manager_email': report.main_store.manager_email,
             'current_quantity': report.main_store_quantity,
             'quantity_taken': report.quantity_taken_from_main_store,
             'remaining_quantity': report.remaining_main_store_quantity,
             'photo': report.main_store_photo,
+            'delivered_to_shop_stores': report.delivered_to_shop_stores,
+            'was_shop_stores_updated': report.was_shop_stores_updated,
+            'quantity_in_shopstores': report.quantity_in_shopstores,
+            'current_shop_store_photo': report.current_shop_store_photo,
+            'delivered_to_shop': report.delivered_to_shop,
+            'was_shop_updated': report.was_shop_m_updated,
+            'total_quantity_in_shop': report.total_quantity_in_shop,
+            'current_shop_photo': report.current_shop_photo,
             'comments': report.main_store_comments,
         }
+
         context['general_info'] = {
             'status': report.status,
             'created_at': localtime(report.created_at),
-            'updated_at': localtime(report.updated_at),
             'submitted_at': localtime(report.submitted_at) if report.submitted_at else "Not Submitted",
-            'final_shop_quantity': report.final_shop_quantity,
-            'final_store_quantity': report.final_store_quantity,
-        }
-        context['general_info'] = {
             'final_shop_quantity': report.final_shop_quantity or 0,
             'final_store_quantity': report.final_store_quantity or 0,
-            'created_at': report.created_at,
-            'shop': report.shop,
-            'product': report.product,
         }
 
         return context
