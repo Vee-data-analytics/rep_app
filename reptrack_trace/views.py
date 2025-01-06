@@ -1011,17 +1011,12 @@ class ReportDetailView(DetailView):
             'has_sufficient_stock': report.shop_store_has_sufficient_stock,
             'quantity_taken': report.quantity_taken_from_shop_store,
             'remaining_quantity': report.remaining_shop_store_quantity,
+            'final_shop_qauntity':report.shop_update_quantity,
             'photo': report.shop_store_photo,
+            'shop_update_photo':report.shop_photo_update,
             'comments': report.shop_store_comments,
         }
-        context['store_details'] = {
-            'store': report.store,
-            'current_quantity': report.store_current_quantity,
-            'quantity_taken': report.quantity_taken_from_store,
-            'remaining_quantity': report.remaining_store_quantity,
-            'photo': report.store_photo,
-            'comments': report.store_comments,
-        }
+        
         context['main_store_details'] = {
             'main_store': report.main_store,
             'current_quantity': report.main_store_quantity,

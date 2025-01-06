@@ -231,14 +231,14 @@
                                                 {{ form.quantity_taken_from_shop_store }}
                                             </div>
 
-                                            
+
                                             <div class=" mb-3">
-                                               <div class="form-check">
-                                                 <label class="form-check-label">Was Shop quantity replenished ? </label>
-                                                  {{ form.was_shop_updated }}
-                                                </div>
-                                             </div>
-                                            
+                                                <div class="form-check">
+                                                  <label class="form-check-label">Was Shop quantity replenished ? </label>
+                                                   {{ form.was_shop_updated }}
+                                                 </div>
+                                              </div>                                            
+
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Remaining Shop-Store Quantity</label>
                                                 {{ form.remaining_shop_store_quantity }}
@@ -251,6 +251,10 @@
                                                 {{ form.shop_photo_update }}
                                             </div>
 
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Final shop quantity</label>
+                                                {{ form.shop_update_quantity}}
+                                            </div>
 
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Shop-Store Comments</label>
@@ -279,6 +283,48 @@
                                         input.addEventListener('change', calculateTopup);
                                     });
                                 });
+                                </script>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const shopStoreForm = document.getElementById('reportForm');
+                                        
+                                        // Get all relevant input fields
+                                        const wasShopUpdatedInput = document.querySelector('[name="was_shop_updated"]');
+                                        const currentQuantityInput = document.querySelector('[name="shop_store_current_quantity"]');
+                                        const takenQuantityInput = document.querySelector('[name="quantity_taken_from_shop_store"]');
+                                        const remainingQuantityInput = document.querySelector('[name="remaining_shop_store_quantity"]');
+                                        const shopCurrentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
+                                        const shopUpdateQuantityInput = document.querySelector('[name="shop_update_quantity"]');
+                                    
+                                        function updateCalculations() {
+                                            if (wasShopUpdatedInput.checked) {
+                                                const currentQty = Number(currentQuantityInput.value) || 0;
+                                                const takenQty = Number(takenQuantityInput.value) || 0;
+                                                const shopCurrentQty = Number(shopCurrentQuantityInput.value) || 0;
+                                    
+                                                // Calculate remaining quantity
+                                                remainingQuantityInput.value = Math.max(0, currentQty - takenQty);
+                                    
+                                                // Calculate updated shop quantity
+                                                shopUpdateQuantityInput.value = shopCurrentQty + takenQty;
+                                            }
+                                        }
+                                    
+                                        // Add event listeners
+                                        wasShopUpdatedInput.addEventListener('change', updateCalculations);
+                                        currentQuantityInput.addEventListener('input', updateCalculations);
+                                        takenQuantityInput.addEventListener('input', updateCalculations);
+                                        
+                                        // Initial calculation
+                                        updateCalculations();
+                                    
+                                        // Update before form submission
+                                        shopStoreForm.addEventListener('submit', function(e) {
+                                            if (wasShopUpdatedInput.checked) {
+                                                updateCalculations();
+                                            }
+                                        });
+                                    });
                                 </script>
 
                             
@@ -417,30 +463,72 @@
                                 
                                 <script>
                                     document.addEventListener('DOMContentLoaded', function() {
-                                        // Get input elements using the form field names from your HTML
+                                        // Main Store Quantity Calculation
                                         const mainStoreQuantityInput = document.querySelector('[name="main_store_quantity"]');
-                                        const quantityTakenInput = document.querySelector('[name="quantity_taken_from_main_store"]');
-                                        const remainingQuantityInput = document.querySelector('[name="remaining_main_store_quantity"]');
-                                        
-                                        function calculateRemainingQuantity() {
-                                            // Get values and convert to integers, default to 0 if empty
-                                            const currentQuantity = parseInt(mainStoreQuantityInput.value) || 0;
-                                            const quantityTaken = parseInt(quantityTakenInput.value) || 0;
-                                            
-                                            // Calculate remaining quantity (ensure it's not negative)
-                                            const remainingQuantity = Math.max(0, currentQuantity - quantityTaken);
-                                            
-                                            // Update the remaining quantity input
-                                            remainingQuantityInput.value = remainingQuantity;
+                                        const quantityTakenMainInput = document.querySelector('[name="quantity_taken_from_main_store"]');
+                                        const remainingMainStoreInput = document.querySelector('[name="remaining_main_store_quantity"]');
+                                    
+                                        function calculateMainStoreRemaining() {
+                                            const mainStoreQty = Number(mainStoreQuantityInput.value) || 0;
+                                            const quantityTaken = Number(quantityTakenMainInput.value) || 0;
+                                            const remaining = Math.max(0, mainStoreQty - quantityTaken);
+                                            remainingMainStoreInput.value = remaining;
                                         }
-                                        
-                                        // Add event listeners to both inputs if they exist
-                                        if (mainStoreQuantityInput && quantityTakenInput && remainingQuantityInput) {
-                                            [mainStoreQuantityInput, quantityTakenInput].forEach(input => {
-                                                input.addEventListener('input', calculateRemainingQuantity);
-                                                input.addEventListener('change', calculateRemainingQuantity);
-                                            });
+                                    
+                                        [mainStoreQuantityInput, quantityTakenMainInput].forEach(input => {
+                                            input.addEventListener('input', calculateMainStoreRemaining);
+                                        });
+                                    
+                                        // Shop Store Quantity Calculation
+                                        const deliveredToStoresInput = document.querySelector('[name="delivered_to_shop_stores"]');
+                                        const remainingShopStoreInput = document.querySelector('[name="remaining_shop_store_quantity"]');
+                                        const quantityInShopStoresInput = document.querySelector('[name="quantity_in_shopstores"]');
+                                    
+                                        function calculateShopStoreQuantity() {
+                                            const deliveredQty = Number(deliveredToStoresInput.value) || 0;
+                                            const remainingQty = Number(remainingShopStoreInput.value) || 0;
+                                            const totalQty = deliveredQty + remainingQty;
+                                            quantityInShopStoresInput.value = totalQty;
                                         }
+                                    
+                                        [deliveredToStoresInput, remainingShopStoreInput].forEach(input => {
+                                            input.addEventListener('input', calculateShopStoreQuantity);
+                                        });
+                                    
+                                        // Shop Total Quantity Calculation
+                                        const wasShopUpdatedCheckbox = document.querySelector('[name="was_shop_m_updated"]');
+                                        const deliveredToShopInput = document.querySelector('[name="delivered_to_shop"]');
+                                        const shopCurrentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
+                                        const totalQuantityInShopInput = document.querySelector('[name="total_quantity_in_shop"]');
+                                    
+                                        function calculateTotalShopQuantity() {
+                                            if (wasShopUpdatedCheckbox.checked) {
+                                                const deliveredQty = Number(deliveredToShopInput.value) || 0;
+                                                const currentQty = Number(shopCurrentQuantityInput.value) || 0;
+                                                const totalQty = deliveredQty + currentQty;
+                                                totalQuantityInShopInput.value = totalQty;
+                                            } else {
+                                                totalQuantityInShopInput.value = '';
+                                            }
+                                        }
+                                    
+                                        [wasShopUpdatedCheckbox, deliveredToShopInput, shopCurrentQuantityInput].forEach(input => {
+                                            input.addEventListener('change', calculateTotalShopQuantity);
+                                            input.addEventListener('input', calculateTotalShopQuantity);
+                                        });
+                                    
+                                        // Initial calculations
+                                        calculateMainStoreRemaining();
+                                        calculateShopStoreQuantity();
+                                        calculateTotalShopQuantity();
+                                    
+                                        // Form submission handler
+                                        const form = document.getElementById('reportForm');
+                                        form.addEventListener('submit', function(e) {
+                                            calculateMainStoreRemaining();
+                                            calculateShopStoreQuantity();
+                                            calculateTotalShopQuantity();
+                                        });
                                     });
                                 </script>   
 
@@ -457,6 +545,15 @@
                                         const totalQuantityInShopInput = document.querySelector('[name="total_quantity_in_shop"]');
                                         const wasShopStoresUpdatedSelect = document.querySelector('[name="was_shop_stores_updated"]');
                                         const wasShopUpdatedSelect = document.querySelector('[name="was_shop_m_updated"]');
+                                    
+                                        // Set read-only attribute and styling for calculated fields
+                                        [quantityInShopStoresInput, totalQuantityInShopInput].forEach(input => {
+                                            if (input) {
+                                                input.readOnly = true;
+                                                input.style.backgroundColor = '#f8f9fa';  // Light gray background to indicate read-only
+                                                input.style.cursor = 'not-allowed';       // Changes cursor to indicate field can't be edited
+                                            }
+                                        });
                                     
                                         // Function to calculate shop stores total quantity
                                         function calculateShopStoresTotal() {
@@ -494,15 +591,29 @@
                                             });
                                         }
                                     
+                                        // Handle dropdown changes for "No" or "Unknown" selections
+                                        wasShopStoresUpdatedSelect?.addEventListener('change', function() {
+                                            if (this.value !== 'Yes') {
+                                                quantityInShopStoresInput.value = '';  // Clear the field if not "Yes"
+                                            } else {
+                                                calculateShopStoresTotal();  // Recalculate if "Yes"
+                                            }
+                                        });
+                                    
+                                        wasShopUpdatedSelect?.addEventListener('change', function() {
+                                            if (this.value !== 'Yes') {
+                                                totalQuantityInShopInput.value = '';  // Clear the field if not "Yes"
+                                            } else {
+                                                calculateShopTotal();  // Recalculate if "Yes"
+                                            }
+                                        });
+                                    
                                         // Initialize calculations
                                         calculateShopStoresTotal();
                                         calculateShopTotal();
-                                    
-                                        // Log for debugging
-                                        console.log('Shop Stores Updated Select:', wasShopStoresUpdatedSelect);
-                                        console.log('Shop Updated Select:', wasShopUpdatedSelect);
                                     });
                                 </script>
+                                
                                 </div>
                                 <!-- Hidden input for submission type -->
                                <input type="hidden" name="submission_type" id="submission_type" value="">

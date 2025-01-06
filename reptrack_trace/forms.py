@@ -106,7 +106,7 @@ class ReportForm(forms.ModelForm):
             # Shop-Stores Section
             'shop_store_manager_confirmed', 'shop_store_current_quantity', 
             'shop_store_has_sufficient_stock', 'quantity_taken_from_shop_store', 'was_shop_updated','shop_store_has_sufficient_stock',
-            'remaining_shop_store_quantity', 'shop_store_photo', 'shop_store_comments','shop_photo_update',
+            'remaining_shop_store_quantity', 'shop_store_photo', 'shop_store_comments','shop_photo_update','shop_update_quantity',
             
             
             # Main Store Section
@@ -138,7 +138,7 @@ class ReportForm(forms.ModelForm):
             'shop_store_photo': forms.FileInput(attrs={'class': 'form-control'}),
             'shop_store_comments': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'shop_photo_update': forms.FileInput(attrs={'class': 'form-control'}),
-            
+            'shop_update_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             
             # Main Store Section
             'main_store': forms.Select(attrs={'class': 'form-select'}),
@@ -168,54 +168,37 @@ class ReportForm(forms.ModelForm):
         })  
     
 
-    def clean(self):
-        cleaned_data = super().clean()
-        
-        # First handle the existing topup calculation
+    def clean_shop_store_section(self):
+        cleaned_data = self.cleaned_data
         needs_topup = cleaned_data.get('needs_topup')
-        if needs_topup:
-            shop_current_quantity = cleaned_data.get('shop_current_quantity')
-            desired_quantity = cleaned_data.get('desired_quantity')
+
+        # Get Shop-Store section values
+        was_shop_updated = cleaned_data.get('was_shop_updated')
+        shop_store_current_quantity = cleaned_data.get('shop_store_current_quantity')
+        quantity_taken = cleaned_data.get('quantity_taken_from_shop_store')
+
+        if was_shop_updated:
+            # Validate required fields when shop is updated
+            if shop_store_current_quantity is None:
+                self.add_error('shop_store_current_quantity', 'Required when shop is updated')
+            if quantity_taken is None:
+                self.add_error('quantity_taken_from_shop_store', 'Required when shop is updated')
             
-            if not shop_current_quantity:
-                self.add_error('shop_current_quantity', 'Required when top-up is needed.')
-            if not desired_quantity:
-                self.add_error('desired_quantity', 'Required when top-up is needed.')
-                
-            if shop_current_quantity and desired_quantity:
-                cleaned_data['topup_quantity'] = max(desired_quantity - shop_current_quantity, 0)
-        else:
-            cleaned_data['topup_quantity'] = 0
-    
-        try:
-            # Calculate final shop quantity
-            shop_current_quantity = cleaned_data.get('shop_current_quantity') or 0
-            delivered_to_shop = cleaned_data.get('delivered_to_shop') or 0
-            cleaned_data['final_shop_quantity'] = shop_current_quantity + delivered_to_shop
-            
-            # Calculate final store quantity
-            shop_store_current_quantity = cleaned_data.get('shop_store_current_quantity') or 0
-            delivered_to_shop_stores = cleaned_data.get('delivered_to_shop_stores') or 0
-            
-            # Final store quantity is:
-            # Current shop store quantity + Quantity from main store - Quantity given to shop
-            cleaned_data['final_store_quantity'] = (
-                shop_store_current_quantity + 
-                delivered_to_shop_stores
-            )
-            
-            # Validate quantities can't be negative
-            if cleaned_data['final_shop_quantity'] < 0:
-                self.add_error('quantity_taken_from_shop_store', 
-                    'Invalid quantity. Final shop quantity cannot be negative.')
-            
-            if cleaned_data['final_store_quantity'] < 0:
-                self.add_error('quantity_taken_from_shop_store', 
-                    'Invalid quantity. Final store quantity cannot be negative.')
-        except TypeError:
-             # Handle case where some values are None
-            pass
-            
+            if shop_store_current_quantity is not None and quantity_taken is not None:
+                # Calculate remaining shop store quantity
+                remaining = max(0, shop_store_current_quantity - quantity_taken)
+                cleaned_data['remaining_shop_store_quantity'] = remaining
+
+                # Calculate shop update quantity
+                shop_current = cleaned_data.get('shop_current_quantity', 0)
+                cleaned_data['shop_update_quantity'] = shop_current + quantity_taken
+
+                # Validate quantities
+                if quantity_taken > shop_store_current_quantity:
+                    self.add_error('quantity_taken_from_shop_store', 
+                        'Cannot take more quantity than available in shop store')
+        cleaned_data = self.clean_shop_store_section()
+
         return cleaned_data
 
     def __init__(self, *args, **kwargs):
@@ -225,7 +208,10 @@ class ReportForm(forms.ModelForm):
             'topup_quantity',
             'remaining_main_store_quantity',
             'final_store_quantity',
-            'final_shop_quantity'
+            'final_shop_quantity',
+            'shop_update_quantity',
+            'remaining_shop_store_quantity'
+            
         ]
         
         for field in readonly_fields:

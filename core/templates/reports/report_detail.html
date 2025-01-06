@@ -23,24 +23,27 @@
             <p><strong>Comments:</strong> {{ shop_details.comments }}</p>
         </div>
     </div>
-
+    
     <!-- Shop-Stores Section -->
         <div class="card mb-4">
             <div class="card-header bg-success text-white">Shop-Stores Details</div>
             <div class="card-body">
-                <p><strong>Manager Confirmed:</strong> {{ shop_store_details.manager_confirmed }}</p>
-                <p><strong>Current Quantity:</strong> {{ shop_store_details.current_quantity }}</p>
-                <p><strong>Has Sufficient Stock:</strong> {{ shop_store_details.has_sufficient_stock }}</p>
-                <p><strong>Quantity Taken:</strong> {{ shop_store_details.quantity_taken }}</p>
-                <p><strong>Remaining Quantity:</strong> {{ shop_store_details.remaining_quantity }}</p>
+                <p><strong>Status of shop-stores Quantity:</strong> {{ shop_store_details.current_quantity }}</p>
+                <p><strong>Has sufficient stock?:</strong> {{ shop_store_details.has_sufficient_stock }}</p>
+                <p><strong>Quantity Taken to replenish shop:</strong> {{ shop_store_details.quantity_taken }}</p>
+                <p><strong>Remaining shop-stores Quantity:</strong> {{ shop_store_details.remaining_quantity }}</p>
+                <p><strong>Final shop shelf Quantity:</strong> {{ shop_store_details.final_shop_qauntity }}</p>
                 {% if shop_store_details.photo %}
-                    <p><strong>Photo:</strong> <img src="{{ shop_store_details.photo.url }}" alt="Shop Store Photo" class="img-fluid"></p>
+                    <p><strong>Photo Shop-stores shelf:</strong> <img src="{{ shop_store_details.photo.url }}" alt="Shop Store Photo" class="img-fluid"></p>
                 {% endif %}
+
+                {% if shop_store_details.shop_update_photo %}
+                    <p><strong>Shop shelf if updated :</strong> <img src="{{ shop_store_details.shop_update_photo.url }}" alt="Shop if Photo" class="img-fluid"></p>
+                {% endif %}
+                
                 <p><strong>Comments:</strong> {{ shop_store_details.comments }}</p>
             </div>
         </div>
-
-
         </div>
     </div>
      

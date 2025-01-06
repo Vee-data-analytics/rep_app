@@ -94,7 +94,6 @@ class Report(models.Model):
     shop_photo_update = models.ImageField(upload_to='shop_photos/', null=True, blank=True)
     shop_update_quantity = models.IntegerField(null=True, blank=True)
     
-    
    
     # Main Store Section
     main_store = models.ForeignKey(MainStore, on_delete=models.CASCADE, null=True, blank=True)
@@ -103,7 +102,7 @@ class Report(models.Model):
     remaining_main_store_quantity = models.IntegerField(null=True, blank=True)
     main_store_photo = models.ImageField(upload_to='main_store_photos/', null=True, blank=True)
     main_store_comments = models.TextField(blank=True)
-    shop_store_current_quantity = models.ImageField(null=True, blank=True)
+    shop_store_current_quantity = models.IntegerField(null=True, blank=True)
     shop_quantity = models.IntegerField(null=True, blank=True)
     was_shop_stores_updated = models.BooleanField(null=True, blank=True)
     was_shop_m_updated = models.BooleanField(null=True, blank=True)
