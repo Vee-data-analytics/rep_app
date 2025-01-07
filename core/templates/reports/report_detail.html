@@ -218,9 +218,7 @@
     </div>
 
 
-      <!-- Final Quantities Section -->
-     
-      <div class="card mb-4">
+    <div class="card mb-4">
         <div class="card-header bg-warning text-white">
             <h5 class="mb-0">Final Quantities</h5>
         </div>
@@ -231,7 +229,11 @@
                     <div class="mb-3">
                         <label class="fw-bold">Final Shop Quantity:</label>
                         <div class="border rounded p-2 bg-light">
-                            {{ main_store_details.total_quantity_in_shop|default:"0" }}
+                            {% if main_store_details.total_quantity_in_shop is not None %}
+                                {{ main_store_details.total_quantity_in_shop }}
+                            {% else %}
+                                Not available
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -241,7 +243,11 @@
                     <div class="mb-3">
                         <label class="fw-bold">Final Store Quantity:</label>
                         <div class="border rounded p-2 bg-light">
-                            {{  main_store_details.quantity_in_shopstores |default:"0" }}
+                            {% if main_store_details.quantity_in_shopstores is not None %}
+                                {{ main_store_details.quantity_in_shopstores }}
+                            {% else %}
+                                Not available
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -251,12 +257,50 @@
                     <div class="mb-3">
                         <label class="fw-bold">Final Main-Store Quantity:</label>
                         <div class="border rounded p-2 bg-light">
-                            {{ main_store_details.remaining_quantity|default:"0" }}
+                            {% if main_store_details.remaining_quantity is not None %}
+                                {{ main_store_details.remaining_quantity }}
+                            {% else %}
+                                Not available
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+        <script>
+            function calculateFinalQuantities() {
+                const reportStage = document.querySelector('[name="report_stage"]').value;
+                const shopCurrentQty = parseFloat(shopCurrentQuantityInput.value) || 0;
+                const shopUpdateQty = parseFloat(document.querySelector('[name="shop_update_quantity"]').value) || 0;
+                const totalShopQty = parseFloat(totalQuantityInShopInput.value) || 0;
+                const mainStoreQty = parseFloat(mainStoreQuantityInput.value) || 0;
+                const shopStoreCurrentQty = parseFloat(document.querySelector('[name="shop_store_current_quantity"]').value) || 0;
+            
+                let finalShopQty = 0;
+                let finalStoreQty = 0;
+            
+                switch(reportStage) {
+                    case 'shop':
+                        finalShopQty = shopCurrentQty;
+                        break;
+                    case 'shop_store':
+                        finalShopQty = shopUpdateQty;
+                        finalStoreQty = shopStoreCurrentQty;
+                        break;
+                    case 'main_store':
+                        finalShopQty = totalShopQty;
+                        finalStoreQty = mainStoreQty;
+                        break;
+                }
+            
+                document.querySelector('[name="final_shop_quantity"]').value = finalShopQty;
+                document.querySelector('[name="final_store_quantity"]').value = finalStoreQty;
+            }
+            
+            // Add event listener for report stage changes
+            document.querySelector('[name="report_stage"]').addEventListener('change', calculateFinalQuantities);
+        <script>
     </div>
     
      

@@ -124,34 +124,22 @@ class Report(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
     
-    def calculate_topup_quantity(self):
-        """Calculate Top-Up Quantity."""
-        if self.desired_quantity is not None and self.shop_current_quantity is not None:
-            return max(self.desired_quantity - self.shop_current_quantity, 0)
-        return None
-    # Method to calculate final quantities based on report stage
     def calculate_final_quantities(self):
-        # Initialize quantities
-        final_shop_quantity = 0
-        final_store_quantity = 0
-        
-        # Calculate final quantities based on the report stage
-        if self.report_stage == 'main_store':
-            final_shop_quantity = self.total_quantity_in_shop or 0
-            final_store_quantity = self.main_store_quantity or 0
-        elif self.report_stage == 'shop_store':
-            final_shop_quantity = self.shop_update_quantity or 0
-            final_store_quantity = self.shop_store_current_quantity or 0
-        elif self.report_stage == 'shop':
-            final_shop_quantity = self.shop_current_quantity or 0
-            final_store_quantity = self.final_store_quantity or 0
-
-        # Set the values for final quantities dynamically
-        self.final_shop_quantity = final_shop_quantity
-        self.final_store_quantity = final_store_quantity
-
-        # Save the instance with updated final quantities
-        self.save()
+        try:
+            if self.report_stage == 'main_store':
+                self.final_shop_quantity = int(self.total_quantity_in_shop) if self.total_quantity_in_shop is not None else None
+                self.final_store_quantity = int(self.main_store_quantity) if self.main_store_quantity is not None else None
+            elif self.report_stage == 'shop_store':
+                self.final_shop_quantity = int(self.shop_update_quantity) if self.shop_update_quantity is not None else None
+                self.final_store_quantity = int(self.shop_store_current_quantity) if self.shop_store_current_quantity is not None else None
+            elif self.report_stage == 'shop':
+                self.final_shop_quantity = int(self.shop_current_quantity) if self.shop_current_quantity is not None else None
+                self.final_store_quantity = None
+            
+            self.save()
+        except (TypeError, ValueError):
+            # Handle conversion errors
+            return False
 
     def save(self, *args, **kwargs):
         """Override save method to store calculated topup_quantity."""
