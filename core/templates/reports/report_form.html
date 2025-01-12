@@ -678,64 +678,83 @@
                               </div>
                               
                               <script>
-                              document.addEventListener('DOMContentLoaded', function() {
-                                  const form = document.getElementById('reportForm');
-                                  
-                                  function handleButtonState(button, isSubmitting) {
-                                      const spinner = button.querySelector('.spinner-border');
-                                      const text = button.querySelector('.button-text');
-                                      
-                                      button.disabled = isSubmitting;
-                                      if (spinner) {
-                                          spinner.classList.toggle('d-none', !isSubmitting);
-                                      }
-                                      if (text) {
-                                          text.style.opacity = isSubmitting ? '0.5' : '1';
-                                      }
-                                  }
-                                  
-                                  // Handle form submission
-                                  form.addEventListener('submit', function(e) {
-                                      e.preventDefault();
-                                      
-                                      // Get the clicked button's submission type
-                                      const submittedButton = document.activeElement;
-                                      const submissionType = submittedButton.value;
-                                      
-                                      // Create or update hidden input for submission type
-                                      let submissionTypeInput = form.querySelector('input[name="submission_type"]');
-                                      if (!submissionTypeInput) {
-                                          submissionTypeInput = document.createElement('input');
-                                          submissionTypeInput.type = 'hidden';
-                                          submissionTypeInput.name = 'submission_type';
-                                          form.appendChild(submissionTypeInput);
-                                      }
-                                      submissionTypeInput.value = submissionType;
-                                      
-                                      // Show loading state on all submit buttons
-                                      document.querySelectorAll('.submit-btn').forEach(button => {
-                                          handleButtonState(button, true);
-                                      });
-                                      
-                                      // Close the modal
-                                      const modal = bootstrap.Modal.getInstance(submittedButton.closest('.modal'));
-                                      if (modal) {
-                                          modal.hide();
-                                      }
-                                      
-                                      // Actually submit the form
-                                      form.submit();
-                                  });
-                                  
-                                  // Reset button states when modal is closed
-                                  document.querySelectorAll('.modal').forEach(modalEl => {
-                                      modalEl.addEventListener('hidden.bs.modal', function() {
-                                          document.querySelectorAll('.submit-btn').forEach(submitBtn => {
-                                              handleButtonState(submitBtn, false);
-                                          });
-                                      });
-                                  });
-                              });
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const form = document.getElementById('reportForm');
+                                    
+                                    function handleButtonState(button, isSubmitting) {
+                                        const spinner = button.querySelector('.spinner-border');
+                                        const text = button.querySelector('.button-text');
+                                        
+                                        button.disabled = isSubmitting;
+                                        if (spinner) {
+                                            spinner.classList.toggle('d-none', !isSubmitting);
+                                        }
+                                        if (text) {
+                                            text.style.opacity = isSubmitting ? '0.5' : '1';
+                                        }
+                                    }
+                                    
+                                    // Handle form submission
+                                    form.addEventListener('submit', async function(e) {
+                                        e.preventDefault();
+                                        
+                                        // Get the clicked button's submission type
+                                        const submittedButton = document.activeElement;
+                                        const submissionType = submittedButton.value;
+                                        
+                                        // Create or update hidden input for submission type
+                                        let submissionTypeInput = form.querySelector('input[name="submission_type"]');
+                                        if (!submissionTypeInput) {
+                                            submissionTypeInput = document.createElement('input');
+                                            submissionTypeInput.type = 'hidden';
+                                            submissionTypeInput.name = 'submission_type';
+                                            form.appendChild(submissionTypeInput);
+                                        }
+                                        submissionTypeInput.value = submissionType;
+                                        
+                                        // Show loading state on all submit buttons
+                                        document.querySelectorAll('.submit-btn').forEach(button => {
+                                            handleButtonState(button, true);
+                                        });
+                                        
+                                        try {
+                                            // Add a small delay to ensure the loading state is visible
+                                            await new Promise(resolve => setTimeout(resolve, 500));
+                                            
+                                            // Create form data
+                                            const formData = new FormData(form);
+                                            
+                                            // Submit the form programmatically
+                                            form.submit();
+                                            
+                                            // Keep the modal open for a brief moment to show the loading state
+                                            setTimeout(() => {
+                                                const modal = bootstrap.Modal.getInstance(submittedButton.closest('.modal'));
+                                                if (modal) {
+                                                    modal.hide();
+                                                }
+                                            }, 800);
+                                        } catch (error) {
+                                            console.error('Submission error:', error);
+                                            // Reset button states on error
+                                            document.querySelectorAll('.submit-btn').forEach(button => {
+                                                handleButtonState(button, false);
+                                            });
+                                            
+                                            // Optionally show an error message to the user
+                                            alert('There was an error submitting the form. Please try again.');
+                                        }
+                                    });
+                                    
+                                    // Reset button states when modal is closed
+                                    document.querySelectorAll('.modal').forEach(modalEl => {
+                                        modalEl.addEventListener('hidden.bs.modal', function() {
+                                            document.querySelectorAll('.submit-btn').forEach(submitBtn => {
+                                                handleButtonState(submitBtn, false);
+                                            });
+                                        });
+                                    });
+                                });
                               </script>
                        
                       <!-- Add Shop-->

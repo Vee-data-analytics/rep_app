@@ -1047,12 +1047,13 @@ class ReportDetailView(DetailView):
             'comments': report.shop_store_comments,
         }
 
+
         context['main_store_details'] = {
             'main_store': report.main_store,
-            'address': report.main_store.address,
-            'manager_name': report.main_store.manager_name,
-            'manager_phone': report.main_store.manager_phone,
-            'manager_email': report.main_store.manager_email,
+            'address': report.main_store.address if report.main_store else None,
+            'manager_name': report.main_store.manager_name if report.main_store else None,
+            'manager_phone': report.main_store.manager_phone if report.main_store else None,
+            'manager_email': report.main_store.manager_email if report.main_store else None,
             'current_quantity': report.main_store_quantity,
             'quantity_taken': report.quantity_taken_from_main_store,
             'remaining_quantity': report.remaining_main_store_quantity,
@@ -1199,7 +1200,7 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         # If we have a main store in the report, use it
         if report.main_store:
             context['selected_mainstore'] = {
-                'location': report.main_store.address,
+                'location': report.main_store.location,
                 'manager_name': report.main_store.manager_name,
                 'manager_phone': report.main_store.manager_phone,
                 'manager_email': report.main_store.manager_email,
