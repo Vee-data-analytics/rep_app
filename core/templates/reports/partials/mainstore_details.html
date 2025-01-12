@@ -1,0 +1,21 @@
+<!-- templates/partials/mainstore_details.html -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label for="mainstoreLocation" class="form-label">Location</label>
+        <input type="text" id="mainstoreLocation" class="form-control" value="{{ mainstore.address }}" readonly>
+    </div>
+    <div class="col-md-6">
+        <label for="mainstoreManagerName" class="form-label">Manager Name</label>
+        <input type="text" id="mainstoreManagerName" class="form-control" value="{{ mainstore.manager_name }}" readonly>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label for="mainstoreManagerPhone" class="form-label">Manager Phone</label>
+        <input type="text" id="mainstoreManagerPhone" class="form-control" value="{{ mainstore.manager_phone }}" readonly>
+    </div>
+    <div class="col-md-6">
+        <label for="mainstoreManagerEmail" class="form-label">Manager Email</label>
+        <input type="text" id="mainstoreManagerEmail" class="form-control" value="{{ mainstore.manager_email }}" readonly>
+    </div>
+</div>

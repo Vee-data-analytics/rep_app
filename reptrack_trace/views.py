@@ -195,7 +195,6 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         # Basic statistics
         basic_stats = {
             'total_shops': Shop.objects.count(),
-            'total_stores': Store.objects.count(),
             'total_main_stores': MainStore.objects.count(),
             'total_representatives': User.objects.filter(role=User.REPRESENTATIVE).count(),
         }
@@ -871,11 +870,22 @@ class ReportCreateView(FormView):
                 initial.update({'shop': shop.id})
             except Shop.DoesNotExist:
                 pass
+            
+        product_id = self.request.GET.get('product') or self.request.POST.get('product')
+        if product_id:
+            try:
+                product = Product.objects.get(id=product_id)
+                initial.update({'product': product.id})
+            except Product.DoesNotExist:
+                pass
         return initial
        
         
 
     def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Fetch selected shop data
         context = super().get_context_data(**kwargs)
         
         # Fetch selected shop data
@@ -895,7 +905,7 @@ class ReportCreateView(FormView):
                 context['selected_shop'] = None
         else:
             context['selected_shop'] = None
-    
+
         # Fetch selected main store data
         selected_main_store_id = self.request.GET.get('main_store') or self.request.POST.get('main_store')
         if selected_main_store_id:
@@ -906,11 +916,24 @@ class ReportCreateView(FormView):
                     'manager_name': selected_mainstore.manager_name,
                     'manager_phone': selected_mainstore.manager_phone,
                     'manager_email': selected_mainstore.manager_email
-                }    
+                }
             except MainStore.DoesNotExist:
                 context['selected_mainstore'] = None
         else:
             context['selected_mainstore'] = None
+
+        # Fetch selected product data
+        selected_product_id = self.request.GET.get('product') or self.request.POST.get('product')
+        if selected_product_id:
+            try:
+                selected_product = Product.objects.get(id=selected_product_id)
+                context['selected_product'] = {
+                    'name': selected_product.name,
+                }
+            except Product.DoesNotExist:
+                context['selected_product'] = None
+        else:
+            context['selected_product'] = None
     
         # Add dropdown options and forms
         context.update({
@@ -1158,24 +1181,37 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        selected_shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
-        if selected_shop_id:
-            try:
-                selected_shop = Shop.objects.get(id=selected_shop_id)
-                context['selected_shop'] = {
-                    'name':selected_shop.name,
-                    'address': selected_shop.address,
-                    'manager_name': selected_shop.manager_name,
-                    'manager_phone': selected_shop.manager_phone,
-                    'stores_manager': selected_shop.store_manager_name, 
-                    'stores_manager_phone': selected_shop.store_manager_phone,
-                }
-            except Shop.DoesNotExist:
-                pass
-        else:
-            context['selected_shop'] = None
-
-        # Add dropdown options
+        
+        # Get the current report
+        report = self.get_object()
+        
+        # If we have a shop in the report, use it
+        if report.shop:
+            context['selected_shop'] = {
+                'name': report.shop.name,
+                'address': report.shop.address,
+                'manager_name': report.shop.manager_name,
+                'manager_phone': report.shop.manager_phone,
+                'stores_manager': report.shop.store_manager_name,
+                'stores_manager_phone': report.shop.store_manager_phone,
+            }
+        
+        # If we have a main store in the report, use it
+        if report.main_store:
+            context['selected_mainstore'] = {
+                'location': report.main_store.address,
+                'manager_name': report.main_store.manager_name,
+                'manager_phone': report.main_store.manager_phone,
+                'manager_email': report.main_store.manager_email,
+            }
+        
+        # If we have a product in the report, use it
+        if report.product:
+            context['selected_product'] = {
+                'name': report.product.name,
+            }
+        
+        # Add your existing context
         context.update({
             'shops': Shop.objects.all(),
             'products': Product.objects.all(),
@@ -1183,10 +1219,11 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             'shop_stores': ShopStore.objects.all(),
             'shop_form': ShopForm(),
             'product_form': ProductForm(),
-            
             'main_store_form': MainStoreForm(),
             'shop_store_form': ShopStoreForm(),
         })
+        
+
         return context
 
 
@@ -1458,7 +1495,6 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         context = super().get_context_data(**kwargs)
         context.update({
         'total_shops': Shop.objects.count(),
-        'total_stores': Store.objects.count(),
         'total_main_stores': MainStore.objects.count(),
         'total_reports': Report.objects.filter(
         created_at__gte=datetime.now()-timedelta(days=7)).count(),

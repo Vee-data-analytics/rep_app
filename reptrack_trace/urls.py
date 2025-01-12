@@ -8,7 +8,7 @@ from users.views import(
     UserDeleteView, 
     
     )
-
+from . import modal_views
 from .modal_views import (
     create_shop, create_product, create_store, create_main_store, create_shop_store,
 )
@@ -74,7 +74,11 @@ urlpatterns = [
 
     # API URLs
     path('api/get-shop-details/', views.get_shop_details, name='get-shop-details'),
-    #path('api/inventory-status/', views.get_inventory_status, name='api-inventory-status'),
+    path('dynamic-fetch/', modal_views.dynamic_fetch, name='dynamic_fetch'),
+    path('get-shop-details/',     modal_views.get_shop_details, name='get_shop_details'),
+    path('get-mainstore-details/',modal_views.get_mainstore_details, name='get_mainstore_details'),
+    path('get-product-details/',  modal_views.get_product_details, name='get_product_details'),
+    #path('api/inventory-status/',views.get_inventory_status, name='api-inventory-status'),
     
     # Shop Management URLs
     path('admin/shops/add/',views.ShopCreateView.as_view(), name='shop-create'),
