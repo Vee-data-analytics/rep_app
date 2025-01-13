@@ -268,6 +268,7 @@
             </div>
         </div>
     </div>
+
         <script>
             function calculateFinalQuantities() {
                 const reportStage = document.querySelector('[name="report_stage"]').value;
@@ -300,18 +301,7 @@
             
             // Add event listener for report stage changes
             document.querySelector('[name="report_stage"]').addEventListener('change', calculateFinalQuantities);
-        <script>
-    </div>
-    
-     
-      {% if report.needs_topup %}
-            <div class="alert alert-info mt-3">
-                <i class="bi bi-info-circle"></i>
-                Top-up was required for this report
-            </div>
-            {% endif %}
-        </div>
-    </div>
+        </script>
 
 
        <!-- Logout Button -->

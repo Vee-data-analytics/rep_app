@@ -1200,7 +1200,7 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         # If we have a main store in the report, use it
         if report.main_store:
             context['selected_mainstore'] = {
-                'location': report.main_store.location,
+                'address': report.main_store.address,
                 'manager_name': report.main_store.manager_name,
                 'manager_phone': report.main_store.manager_phone,
                 'manager_email': report.main_store.manager_email,
