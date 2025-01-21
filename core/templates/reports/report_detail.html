@@ -76,35 +76,39 @@
                                 <div class="card h-100">
                                     <div class="card-body">
                                         <h6 class="text-muted mb-3">Current Status</h6>
-                                        <p><span class="info-label">Current Quantity:</span> {{ shop_details.current_quantity }}</p>
-                                        <p><span class="info-label">Product:</span> {{ shop_details.product }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h6 class="text-muted mb-3">Requirements</h6>
-                                        <p><span class="info-label">Desired Quantity:</span> {{ shop_details.desired_quantity }}</p>
-                                        <p><span class="info-label">Top-up Needed:</span>
-                                            <span class="status-badge {{ shop_details.needs_topup|yesno:'bg-warning,bg-success' }} text-white">
-                                                {{ shop_details.needs_topup|yesno:'Yes,No' }}
-                                            </span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                    {% if shop_details.photo %}
-                    <div class="col-12">
-                        <h6 class="info-label mb-3">Photo Evidence</h6>
-                        <img src="{{ shop_details.photo.url }}" class="report-img" alt="Shop Photo">
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+                                         <p><span class="info-label">Current Quantity:</span> {{ shop_details.current_quantity }}</p>
+                                         <p><span class="info-label">Product:</span> {{ shop_details.product }}</p>
+                                     </div>
+                                 </div>
+                             </div>
+                             <div class="col-md-4">
+                                 <div class="card h-100">
+                                     <div class="card-body">
+                                         <h6 class="text-muted mb-3">Requirements</h6>
+                                         <p><span class="info-label">Desired Quantity:</span> {{ shop_details.desired_quantity }}</p>
+                                         <p><span class="info-label">Top-up Needed:</span>
+                                             <span class="status-badge {{ shop_details.needs_topup|yesno:'bg-warning,bg-success' }} text-white">
+                                                 {{ shop_details.needs_topup|yesno:'Yes,No' }}
+                                             </span>
+                                         </p>
+                                     </div>
+                                 </div>
+                             </div>
+                       {% if shop_details.photo %}
+                      <div class="col-12">
+                          <h6 class="info-label mb-3">Photo Evidence</h6>
+                          <img src="{{ shop_details.photo.url }}" class="report-img" alt="Shop Photo">
+                     </div>
+                     {% endif %}
+                 </div>
+             </div>
+         </div>
 
                    <!-- Shop Store Details -->
+             <div class="card mb-4">
+              <div class="card-header bg-warning text-white">
+                  <h5 class="mb-0">Shop-store Details</h5>
+                    </div>
                    <div class="col-12">
                        <h6 class="info-label">Quantity Details</h6>
                        <div class="row g-4 mt-1">
