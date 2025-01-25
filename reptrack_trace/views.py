@@ -1030,6 +1030,7 @@ class ReportDetailView(DetailView):
             'needs_topup': report.needs_topup,
             'topup_quantity': report.topup_quantity,
             'photo': report.shop_photo,
+            'photo_taken_at': report.shop_photo_taken_at,
             'comments': report.shop_comments,
         }
 
@@ -1043,6 +1044,7 @@ class ReportDetailView(DetailView):
             'updated': report.was_shop_updated,
             'final_shop_quantity': report.shop_update_quantity,
             'photo': report.shop_store_photo,
+            'photo_taken_at': report.shop_store_photo_taken_at,
             'shop_update_photo': report.shop_photo_update,
             'comments': report.shop_store_comments,
         }
@@ -1058,6 +1060,7 @@ class ReportDetailView(DetailView):
             'quantity_taken': report.quantity_taken_from_main_store,
             'remaining_quantity': report.remaining_main_store_quantity,
             'photo': report.main_store_photo,
+            'photo_taken_at': report.main_store_photo_taken_at,
             'delivered_to_shop_stores': report.delivered_to_shop_stores,
             'was_shop_stores_updated': report.was_shop_stores_updated,
             'quantity_in_shopstores': report.quantity_in_shopstores,
