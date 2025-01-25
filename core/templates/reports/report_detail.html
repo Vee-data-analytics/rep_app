@@ -168,7 +168,112 @@
         </div>
 
          
-            
+         <!-- Main Store Details -->
+<div class="card mb-4">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Main Store Details</h5>
+    </div>
+    <div class="card-body">
+        <div class="col-12">
+            <h6 class="info-label">Quantity Details</h6>
+            <div class="row g-4 mt-1">
+                <!-- Shop Quantities -->
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-3">Shop Quantities</h6>
+                            <p>
+                                <span class="info-label">Delivered to Shop:</span>
+                                {{ main_store_details.delivered_to_shop|default:"Not available" }}
+                            </p>
+                            <p>
+                                <span class="info-label">Total in Shop:</span>
+                                {% if main_store_details.total_quantity_in_shop is not None %}
+                                    {{ main_store_details.total_quantity_in_shop }}
+                                {% elif shop_store_details.final_shop_quantity is not None %}
+                                    {{ shop_store_details.final_shop_quantity }}
+                                
+                                {% elif shop_details.current_quantity is not None %}
+                                    {{ shop_details.current_quantity }}
+                                {% else %}
+                                    Not available
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shop Store Quantities -->
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-3">Shop Store Quantities</h6>
+                            <p>
+                                <span class="info-label">Delivered to Shop Stores:</span>
+                                {{ main_store_details.delivered_to_shop_stores|default:"Not available" }}
+                            </p>
+                            <p>
+                                <span class="info-label">Total in Shop Stores:</span>
+                                {{ main_store_details.quantity_in_shopstores|default:"Not available" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Store Quantities -->
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-3">Main Store Quantities</h6>
+                            <p>
+                                <span class="info-label">Current Quantity:</span>
+                                {{ main_store_details.current_quantity|default:"Not available" }}
+                            </p>
+                            <p>
+                                <span class="info-label">Quantity Taken:</span>
+                                {{ main_store_details.quantity_taken|default:"Not available" }}
+                            </p>
+                            <p>
+                                <span class="info-label">Remaining:</span>
+                                {{ main_store_details.remaining_quantity|default:"Not available" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photos Section -->
+            <div class="row g-4 mt-3">
+                {% if main_store_details.current_shop_store_photo %}
+                <div class="col-md-6">
+                    <h6 class="info-label mb-3">Shop Store Photo</h6>
+                    <img src="{{ main_store_details.current_shop_store_photo.url }}" class="report-img" alt="Current Shop Store Photo">
+                </div>
+                {% endif %}
+
+                {% if main_store_details.current_shop_photo %}
+                <div class="col-md-6">
+                    <h6 class="info-label mb-3">Shop Photo</h6>
+                    <img src="{{ main_store_details.current_shop_photo.url }}" class="report-img" alt="Current Shop Photo">
+                </div>
+                {% endif %}
+
+                {% if main_store_details.photo_taken_at %}
+                <div class="col-12">
+                    <p><span class="info-label">Photo Taken At:</span> {{ main_store_details.photo_taken_at }}</p>
+                </div>
+                {% endif %}
+
+                {% if main_store_details.photo %}
+                <div class="col-12">
+                    <h6 class="info-label mb-3">Main Store Photo</h6>
+                    <img src="{{ main_store_details.photo.url }}" class="report-img" alt="Main Store Photo">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
                             <!-- Main Store Quantities -->
                             <div class="col-md-4">
                                 <div class="card h-100">
@@ -197,66 +302,63 @@
 
                 <!-- Final Shop Quantity -->
                
-                <div class="card mb-4">
-                    <div class="card-header bg-warning text-white">
-                        <h5 class="mb-0">Final Quantities</h5>
+               <!-- Final Quantities -->
+<div class="card mb-4">
+    <div class="card-header bg-warning text-white">
+        <h5 class="mb-0">Final Quantities</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Final Shop Quantity -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="fw-bold">Final Shop Quantity:</label>
+                    <div class="border rounded p-2 bg-light">
+                        {% if main_store_details.total_quantity_in_shop is not None %}
+                            {{ main_store_details.total_quantity_in_shop }}
+                        {% elif shop_store_details.final_shop_quantity is not None %}
+                            {{ shop_store_details.final_shop_quantity }}
+                        {% elif shop_details.current_quantity is not None %}
+                            {{ shop_details.current_quantity }}
+                        {% else %}
+                            Not available
+                        {% endif %}
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <!-- Final Shop Quantity -->
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="fw-bold">Final Shop Quantity:</label>
-                                    <div class="border rounded p-2 bg-light">
-                                        {% if shop_store_details.final_shop_quantity is not None %}
-                                            {{ shop_store_details.final_shop_quantity }}
-                                        {% elif main_store_details.total_quantity_in_shop is not None %}
-                                            {{ main_store_details.total_quantity_in_shop }}
-                                        {% elif shop_details.current_quantity is not None %}
-                                            {{ shop_details.current_quantity }}
-                                        {% else %}
-                                            Not available
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                
-                            <!-- Final Store Quantity -->
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="fw-bold">Final Store Quantity:</label>
-                                    <div class="border rounded p-2 bg-light">
-                                        {% if main_store_details.quantity_in_shopstores is not None %}
-                                            {{ main_store_details.quantity_in_shopstores }}
-                                        {% elif shop_store_details.remaining_quantity is not None %}
-                                            {{ shop_store_details.remaining_quantity }}
-                                        {% else %}
-                                            Not available
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                
-                            
-                
-                      
-    
-                <!-- Final Main-Store Quantity -->
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label class="fw-bold">Final Main-Store Quantity:</label>
-                        <div class="border rounded p-2 bg-light">
-                            {% if main_store_details.remaining_quantity is not None %}
-                                {{ main_store_details.remaining_quantity }}
-                            {% else %}
-                                Not available
-                            {% endif %}
-                        </div>
+                </div>
+            </div>
+
+            <!-- Final Store Quantity -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="fw-bold">Final Store Quantity:</label>
+                    <div class="border rounded p-2 bg-light">
+                        {% if main_store_details.quantity_in_shopstores is not None %}
+                            {{ main_store_details.quantity_in_shopstores }}
+                        {% elif shop_store_details.remaining_quantity is not None %}
+                            {{ shop_store_details.remaining_quantity }}
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Main-Store Quantity -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="fw-bold">Final Main-Store Quantity:</label>
+                    <div class="border rounded p-2 bg-light">
+                        {% if main_store_details.remaining_quantity is not None %}
+                            {{ main_store_details.remaining_quantity }}
+                        {% else %}
+                            Not available
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
     
 
        <!-- Logout Button -->
