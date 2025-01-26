@@ -98,7 +98,8 @@ class Report(models.Model):
     shop_photo_update = models.ImageField(upload_to='shop_photos/', null=True, blank=True)
     shop_update_quantity = models.IntegerField(null=True, blank=True)
     shop_store_photo_taken_at = models.DateTimeField(null=True, blank=True)
-   
+    shop_photo_update_taken_at = models.DateTimeField(null=True, blank=True)
+    
     # Main Store Section
     main_store = models.ForeignKey(MainStore, on_delete=models.CASCADE, null=True, blank=True)
     main_store_quantity = models.IntegerField(null=True, blank=True)
@@ -189,6 +190,9 @@ class Report(models.Model):
         
         if self.current_shop_photo_taken_at and not self.current_shop_photo_taken_at:
             self.current_shop_photo_taken_at  = self.extract_image_metadata(current_shop_photo)
+        
+        if self.shop_photo_update and not self.shop_photo_update_taken_at:
+            self.shop_photo_update_taken_at = self.extract_image_metadata(shop_photo_update)
         
         # Extract metadata for shop_store_photo
         if self.shop_store_photo and not self.shop_store_photo_taken_at:

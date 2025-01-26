@@ -164,6 +164,14 @@
             </div>
             {% endif %}
 
+            <div class="col-12">
+                {% if shop_store_details.photo_taken_at %}
+                    <p><span class="info-label">Photo Taken At:</span> {{ shop_store_details.photo_taken_at }}</p>
+                {% else %}
+                    <p><span class="info-label">Photo Taken At:</span> Not available</p>
+                {% endif %}
+            </div>
+
             {% if shop_store_details.shop_update_photo %}
             <div class="col-md-6">
                 <h6 class="info-label mb-3">Updated Shop Photo</h6>
@@ -175,8 +183,8 @@
         <!-- Photo Taken At -->
         <div class="row g-4 mt-3">
             <div class="col-12">
-                {% if shop_store_details.photo_taken_at %}
-                    <p><span class="info-label">Photo Taken At:</span> {{ shop_store_details.photo_taken_at }}</p>
+                {% if shop_store_details.shop_photo_update_taken_at %}
+                    <p><span class="info-label">Photo Taken At:</span> {{ shop_store_details.shop_photo_update_taken_at }}</p>
                 {% else %}
                     <p><span class="info-label">Photo Taken At:</span> Not available</p>
                 {% endif %}
