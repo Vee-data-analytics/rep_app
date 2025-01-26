@@ -1046,7 +1046,7 @@ class ReportDetailView(DetailView):
             'photo': report.shop_store_photo,
             'photo_taken_at': report.shop_store_photo_taken_at,
             'shop_update_photo': report.shop_photo_update,
-            'shop_photo_update_taken_at':report.shop_photo_update_taken_at,
+            'shop_update_photo_taken_at': report.shop_update_photo_taken_at,
             'comments': report.shop_store_comments,
         }
 
