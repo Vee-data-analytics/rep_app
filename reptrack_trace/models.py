@@ -111,7 +111,9 @@ class Report(models.Model):
     was_shop_stores_updated = models.BooleanField(null=True, blank=True)
     was_shop_m_updated = models.BooleanField(null=True, blank=True)
     current_shop_store_photo = models.ImageField(upload_to='store_photos/', null=True, blank=True)
+    current_shop_store_photo_taken_at=models.DateTimeField(null=True, blank=True)
     current_shop_photo = models.ImageField(upload_to='store_photos/', null=True, blank=True)
+    current_shop_photo_taken_at=models.DateTimeField(null=True, blank=True)
     delivered_to_shop_stores = models.IntegerField(null=True,blank=True)
     quantity_in_shopstores = models.IntegerField(null=True, blank=True)
     delivered_to_shop = models.IntegerField(null=True,blank=True)
@@ -185,9 +187,15 @@ class Report(models.Model):
         if self.shop_photo and not self.shop_photo_taken_at:
             self.shop_photo_taken_at = self.extract_image_metadata(self.shop_photo)
         
+        if self.current_shop_photo_taken_at and not self.current_shop_photo_taken_at:
+            self.current_shop_photo_taken_at  = self.extract_image_metadata(current_shop_photo)
+        
         # Extract metadata for shop_store_photo
         if self.shop_store_photo and not self.shop_store_photo_taken_at:
             self.shop_store_photo_taken_at = self.extract_image_metadata(self.shop_store_photo)
+            
+        if self.current_shop_store_photo and not self.current_shop_store_photo_taken_at:
+            self.current_shop_store_photo_taken_at = self.extract_image_metadata(self.current_shop_store_photo)
         
         # Extract metadata for main_store_photo
         if self.main_store_photo and not self.main_store_photo_taken_at:

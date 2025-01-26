@@ -1069,6 +1069,8 @@ class ReportDetailView(DetailView):
             'was_shop_updated': report.was_shop_m_updated,
             'total_quantity_in_shop': report.total_quantity_in_shop,
             'current_shop_photo': report.current_shop_photo,
+            'current_shop_photo_taken_at':report.current_shop_photo_taken_at,
+            'current_shop_store_photo_taken_at':report.current_shop_store_photo_taken_at,
             'comments': report.main_store_comments,
         }
 
