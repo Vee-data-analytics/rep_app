@@ -168,45 +168,50 @@ class Report(models.Model):
     
     
     def extract_image_metadata(self, image_field):
-      """Extract EXIF metadata from an image field."""
-      try:
-          with Image.open(image_field) as img:
-              exif_data = img._getexif()
-              if exif_data:
-                  for tag_id, value in exif_data.items():
-                      tag = TAGS.get(tag_id, tag_id)
-                      if tag == 'DateTimeOriginal':
-                          # Convert EXIF date string to datetime object
-                          from datetime import datetime
-                          return datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
-      except (AttributeError, KeyError, ValueError):
-          # Handle cases where EXIF data is missing or invalid
-          return None
+        """Extract EXIF metadata from an image field."""
+        try:
+            with Image.open(image_field) as img:
+                exif_data = img._getexif()
+                if exif_data:
+                    for tag_id, value in exif_data.items():
+                        tag = TAGS.get(tag_id, tag_id)
+                        if tag == 'DateTimeOriginal':
+                            # Convert EXIF date string to datetime object
+                            from datetime import datetime
+                            return datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
+        except (AttributeError, KeyError, ValueError, TypeError):
+            return None
 
     def save(self, *args, **kwargs):
-        """Override save method to extract image metadata."""
-        # Extract metadata for shop_photo
+        """Override save method to extract image metadata and handle submissions."""
+        # Handle metadata extraction first
         if self.shop_photo and not self.shop_photo_taken_at:
             self.shop_photo_taken_at = self.extract_image_metadata(self.shop_photo)
         
-        if self.current_shop_photo_taken_at and not self.current_shop_photo_taken_at:
-            self.current_shop_photo_taken_at  = self.extract_image_metadata(current_shop_photo)
+        # Corrected current shop photo logic
+        if self.current_shop_photo and not self.current_shop_photo_taken_at:
+            self.current_shop_photo_taken_at = self.extract_image_metadata(self.current_shop_photo)
         
+        # Corrected shop update photo logic
         if self.shop_photo_update and not self.shop_update_photo_taken_at:
-           self.shop_update_photo_taken_at = self.extract_image_metadata(self.shop_photo_update)
+            self.shop_update_photo_taken_at = self.extract_image_metadata(self.shop_photo_update)
 
-        
-        # Extract metadata for shop_store_photo
+        # Shop store photo logic
         if self.shop_store_photo and not self.shop_store_photo_taken_at:
             self.shop_store_photo_taken_at = self.extract_image_metadata(self.shop_store_photo)
             
         if self.current_shop_store_photo and not self.current_shop_store_photo_taken_at:
             self.current_shop_store_photo_taken_at = self.extract_image_metadata(self.current_shop_store_photo)
         
-        # Extract metadata for main_store_photo
+        # Main store photo logic
         if self.main_store_photo and not self.main_store_photo_taken_at:
             self.main_store_photo_taken_at = self.extract_image_metadata(self.main_store_photo)
-        
+
+        # Handle submission timestamp
+        if self.status == 'submitted' and not self.submitted_at:
+            self.submitted_at = timezone.now()
+
+
         super().save(*args, **kwargs)
 
     def __str__(self):

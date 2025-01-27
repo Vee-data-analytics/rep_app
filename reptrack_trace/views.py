@@ -1045,8 +1045,10 @@ class ReportDetailView(DetailView):
             'final_shop_quantity': report.shop_update_quantity,
             'photo': report.shop_store_photo,
             'photo_taken_at': report.shop_store_photo_taken_at,
-            'shop_update_photo': report.shop_photo_update,
-            'shop_update_photo_taken_at': report.shop_update_photo_taken_at,
+            
+            # Corrected these keys to match template expectations
+            'shop_update_photo': report.shop_photo_update,  # Matches template's shop_update_photo
+            'shop_update_photo_taken_at': report.shop_update_photo_taken_at,  # Matches template's check
             'comments': report.shop_store_comments,
         }
 
