@@ -40,91 +40,145 @@
         </div>
     </div>
 
-    <!-- Current Stock Status -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header p-3">
-                    <h5 class="mb-0">Current Stock Status</h5>
-                </div>
-                <div class="card-body px-0 pb-2">
-                    <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Current Quantity</th>
-                                    <th>Last Updated</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for inventory in current_inventory %}
-                                <tr>
-                                    <td>{{ report.product.name }}</td>
-                                    <td>{{ inventory.quantity }}</td>
-                                    <td>{{ inventory.last_updated|date:"Y-m-d H:i" }}</td>
-                                    <td>
-                                        <span class="badge badge-sm bg-gradient-{% if inventory.needs_restock %}warning{% else %}success{% endif %}">
-                                            {% if inventory.needs_restock %}Needs Restock{% else %}Adequate{% endif %}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Recent Reports -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card my-4">
-                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-                    <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                        <h6 class="text-white text-capitalize ps-3">Recent Reports</h6>
-                    </div>
+<!-- Recent Reports -->
+<div class="row">
+    <div class="col-12">
+        <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">Recent Shop Reports</h6>
                 </div>
-                <div class="card-body px-0 pb-2">
-                    <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Representative</th>
-                                    <th>Product</th>
-                                    <th>Initial Quantity</th>
-                                    <th>Desired Quantity</th>
-                                    <th>Top-up Quantity</th>
-                                    <th>Final Quantity</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for report in reports %}
-                                <tr>
-                                    <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
-                                    <td>{{ report.representative.username }}</td>
-                                    <td>{{ report.product.name }}</td>
-                                    <td>{{ report.shop_current_quantity }}</td>
-                                    <td>{{ report.desired_quantity|default:"0" }}</td>
-                                    <td>{{ report.topup_quantity|default:"0" }}</td>
-                                    <td>{{ report.final_shop_quantity|default:"0" }}</td>
-                                    <td>
-                                        <a href="{% url 'reptrack_trace:report-detail' report.pk %}" 
-                                           class="btn btn-info btn-sm">View Details</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Shop</th>
+                                <th>Representative</th>
+                                <th>Product</th>
+                                <th>Final Quantity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in latest_reports %}
+                            <tr>
+                                <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>{{ report.shop.name }}</td>
+                                <td>{{ report.representative.username }}</td>
+                                <td>{{ report.product.name }}</td>
+                                <td>
+                                    {% if report.shop_store_details.final_shop_quantity is not None %}
+                                        {{ report.shop_store_details.final_shop_quantity }}
+                                    {% elif report.main_store_details.total_quantity_in_shop is not None %}
+                                        {{ report.main_store_details.total_quantity_in_shop }}
+                                    {% elif report.shop_details.current_quantity is not None %}
+                                        {{ report.shop_details.current_quantity }}
+                                    {% else %}
+                                        Not available
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'reptrack_trace:report-detail' report.pk %}" 
+                                       class="btn btn-info btn-sm">View Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
+<!-- Recent Reports -->
+<!-- Recent Reports -->
+<div class="row">
+    <div class="col-12">
+        <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">
+                        {% if report_type == 'shop_store' %}
+                            Recent Shop Store Reports
+                        {% else %}
+                            Recent Shop Reports
+                        {% endif %}
+                    </h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Shop</th>
+                                {% if report_type == 'shop_store' %}
+                                    <th>Store</th>
+                                {% endif %}
+                                <th>Representative</th>
+                                <th>Product</th>
+                                <th>
+                                    {% if report_type == 'shop_store' %}
+                                        Final Store Quantity
+                                    {% else %}
+                                        Final Quantity
+                                    {% endif %}
+                                </th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in latest_reports %}
+                            <tr>
+                                <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>{{ report.shop.name }}</td>
+                                {% if report_type == 'shop_store' %}
+                                    <td>{{ report.store.name }}</td>
+                                {% endif %}
+                                <td>{{ report.representative.username }}</td>
+                                <td>{{ report.product.name }}</td>
+                                <td>
+                                    {% if report_type == 'shop_store' %}
+                                        {% if report.main_store_details.quantity_in_shopstores is not None %}
+                                            {{ report.main_store_details.quantity_in_shopstores }}
+                                        {% elif report.shop_store_details.remaining_quantity is not None %}
+                                            {{ report.shop_store_details.remaining_quantity }}
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    {% else %}
+                                        {% if report.shop_store_details.final_shop_quantity is not None %}
+                                            {{ report.shop_store_details.final_shop_quantity }}
+                                        {% elif report.main_store_details.total_quantity_in_shop is not None %}
+                                            {{ report.main_store_details.total_quantity_in_shop }}
+                                        {% elif report.shop_details.current_quantity is not None %}
+                                            {{ report.shop_details.current_quantity }}
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'reptrack_trace:report-detail' report.pk %}" 
+                                       class="btn btn-info btn-sm">View Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

@@ -276,7 +276,7 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
 
 class ShopStoreReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    template_name = 'admin/shop_store_report.html'
+    template_name = 'admin/shop_reports.html'  # Using the same template as ShopReportsView
     
     def test_func(self):
         return self.request.user.role == User.ADMIN
@@ -295,59 +295,111 @@ class ShopStoreReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
             status='submitted',
             shop_store_manager_confirmed=True
         )
-        shop_stores = ShopStore.objects.filter(is_active=True)
-
+        
         # Apply filters
         if shop_id:
             reports = reports.filter(shop_id=shop_id)
-            shop_stores = shop_stores.filter(shop_id=shop_id)
 
         if store_id:
             reports = reports.filter(store_id=store_id)
-            shop_stores = shop_stores.filter(store_id=store_id)
 
         if start_date and end_date:
             reports = reports.filter(
                 created_at__range=[start_date, end_date]
             )
 
-        # Calculate stock movement summary
-        stock_summary = []
-        for shop_store in shop_stores:
-            shop_reports = reports.filter(
-                shop=shop_store.shop,
-                store=shop_store.store
-            )
+        # Get latest reports for each product per shop-store combination
+        from django.db.models import Max
+        
+        # First, identify the latest report date for each product-shop-store combination
+        latest_report_dates = reports.values('shop_id', 'store_id', 'product_id').annotate(
+            latest_date=Max('created_at')
+        )
+        
+        # Then, get those specific reports and process them
+        latest_reports = []
+        for date_info in latest_report_dates:
+            latest_report = reports.filter(
+                shop_id=date_info['shop_id'],
+                store_id=date_info['store_id'],
+                product_id=date_info['product_id'],
+                created_at=date_info['latest_date']
+            ).first()
             
-            summary = {
-                'shop': shop_store.shop,
-                'store': shop_store.store,
-                'initial_stock': shop_reports.earliest('created_at').shop_store_current_quantity if shop_reports.exists() else 0,
-                'stock_taken': shop_reports.aggregate(
-                    total=Sum('quantity_taken_from_shop_store')
-                )['total'] or 0,
-                'current_stock': shop_reports.latest('created_at').remaining_shop_store_quantity if shop_reports.exists() else 0,
-            }
-            
-            # Calculate status based on current stock
-            if summary['current_stock'] <= 10:
-                summary['status'] = 'Critical'
-            elif summary['current_stock'] <= 50:
-                summary['status'] = 'Low'
-            else:
-                summary['status'] = 'Adequate'
-            
-            stock_summary.append(summary)
+            if latest_report:
+                # Create context dictionaries exactly like in ReportDetailView
+                shop_store_details = {
+                    'name': latest_report.shop,
+                    'manager_confirmed': latest_report.shop_store_manager_confirmed,
+                    'current_quantity': latest_report.shop_store_current_quantity,
+                    'has_sufficient_stock': latest_report.shop_store_has_sufficient_stock,
+                    'quantity_taken': latest_report.quantity_taken_from_shop_store,
+                    'remaining_quantity': latest_report.remaining_shop_store_quantity,
+                    'updated': latest_report.was_shop_updated,
+                    'final_shop_quantity': latest_report.shop_update_quantity,
+                    'photo': latest_report.shop_store_photo,
+                    'photo_taken_at': latest_report.shop_store_photo_taken_at,
+                    'shop_update_photo': latest_report.shop_photo_update,
+                    'shop_update_photo_taken_at': latest_report.shop_update_photo_taken_at,
+                    'comments': latest_report.shop_store_comments,
+                }
+                
+                main_store_details = {
+                    'main_store': latest_report.main_store,
+                    'address': latest_report.main_store.address if latest_report.main_store else None,
+                    'manager_name': latest_report.main_store.manager_name if latest_report.main_store else None,
+                    'manager_phone': latest_report.main_store.manager_phone if latest_report.main_store else None,
+                    'manager_email': latest_report.main_store.manager_email if latest_report.main_store else None,
+                    'current_quantity': latest_report.main_store_quantity,
+                    'quantity_taken': latest_report.quantity_taken_from_main_store,
+                    'remaining_quantity': latest_report.remaining_main_store_quantity,
+                    'photo': latest_report.main_store_photo,
+                    'photo_taken_at': latest_report.main_store_photo_taken_at,
+                    'delivered_to_shop_stores': latest_report.delivered_to_shop_stores,
+                    'was_shop_stores_updated': latest_report.was_shop_stores_updated,
+                    'quantity_in_shopstores': latest_report.quantity_in_shopstores,
+                    'current_shop_store_photo': latest_report.current_shop_store_photo,
+                    'delivered_to_shop': latest_report.delivered_to_shop,
+                    'was_shop_updated': latest_report.was_shop_m_updated,
+                    'total_quantity_in_shop': latest_report.total_quantity_in_shop,
+                    'current_shop_photo': latest_report.current_shop_photo,
+                    'current_shop_photo_taken_at': latest_report.current_shop_photo_taken_at,
+                    'current_shop_store_photo_taken_at': latest_report.current_shop_store_photo_taken_at,
+                    'comments': latest_report.main_store_comments,
+                }
+                
+                shop_details = {
+                    'shop': latest_report.shop,
+                    'address': latest_report.shop.address,
+                    'manager_name': latest_report.shop.manager_name,
+                    'manager_phone': latest_report.shop.manager_phone,
+                    'product': latest_report.product,
+                    'current_quantity': latest_report.shop_current_quantity,
+                    'desired_quantity': latest_report.desired_quantity,
+                    'needs_topup': latest_report.needs_topup,
+                    'topup_quantity': latest_report.topup_quantity,
+                    'photo': latest_report.shop_photo,
+                    'photo_taken_at': latest_report.shop_photo_taken_at,
+                    'comments': latest_report.shop_comments,
+                }
+                
+                # Attach these details to the report object
+                latest_report.shop_store_details = shop_store_details
+                latest_report.main_store_details = main_store_details
+                latest_report.shop_details = shop_details
+                
+                latest_reports.append(latest_report)
 
         context.update({
             'shops': Shop.objects.all(),
-            
+            'stores': Store.objects.all(),
             'selected_shop': shop_id,
             'selected_store': store_id,
             'start_date': start_date,
             'end_date': end_date,
-            'reports': reports.order_by('-created_at'),
-            'stock_summary': stock_summary,
+            'reports': reports.order_by('-created_at'),  # Keep for backward compatibility
+            'latest_reports': latest_reports,  # This matches the structure expected in the template
+            'report_type': 'shop_store',  # Add this to indicate we're viewing shop store reports
         })
         return context
 
@@ -547,18 +599,59 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         current_inventory = []
         for item in inventory_items:
             current_inventory.append({
+                'shop': item.shop,
                 'product': item.product,
                 'quantity': item.quantity,
                 'last_updated': item.last_updated,
                 'needs_restock': item.quantity < item.minimum_quantity if hasattr(item, 'minimum_quantity') else False
             })
 
+        # Get latest reports for each product per shop
+        from django.db.models import Max
+        
+        # First, identify the latest report date for each product-shop combination
+        latest_report_dates = reports.values('shop_id', 'product_id').annotate(
+            latest_date=Max('created_at')
+        )
+        
+        # Then, get those specific reports and process them
+        latest_reports = []
+        for date_info in latest_report_dates:
+            latest_report = reports.filter(
+                shop_id=date_info['shop_id'],
+                product_id=date_info['product_id'],
+                created_at=date_info['latest_date']
+            ).first()
+            
+            if latest_report:
+                # Create shop_store_details and main_store_details for each report
+                # similar to how it's done in the detail view
+                shop_store_details = {
+                    'final_shop_quantity': latest_report.shop_update_quantity,
+                }
+                
+                main_store_details = {
+                    'total_quantity_in_shop': latest_report.total_quantity_in_shop,
+                }
+                
+                shop_details = {
+                    'current_quantity': latest_report.shop_current_quantity,
+                }
+                
+                # Attach these details to the report object
+                latest_report.shop_store_details = shop_store_details
+                latest_report.main_store_details = main_store_details
+                latest_report.shop_details = shop_details
+                
+                latest_reports.append(latest_report)
+
         context.update({
             'shops': Shop.objects.all(),
             'selected_shop': shop_id,
             'start_date': start_date,
             'end_date': end_date,
-            'reports': reports.order_by('-created_at'),
+            'reports': reports.order_by('-created_at'),  # Keep this for backward compatibility
+            'latest_reports': latest_reports,  # New context variable with latest reports by product/shop
             'current_inventory': current_inventory,
         })
         return context
@@ -1418,40 +1511,6 @@ class FinishedReportsView(LoginRequiredMixin, ListView):
         return context
 
 
-
-class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    template_name = 'admin/shop_reports.html'
-    
-    def test_func(self):
-        return self.request.user.role == User.ADMIN
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Get date range from request
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
-        shop_id = self.request.GET.get('shop')
-
-        # Query reports based on filters
-        reports = Report.objects.filter(status='submitted')
-        
-        if start_date and end_date:
-            reports = reports.filter(
-                created_at__range=[start_date, end_date]
-            )
-        
-        if shop_id:
-            reports = reports.filter(shop_id=shop_id)
-
-        context.update({
-            'reports': reports,
-            'shops': Shop.objects.all(),
-            'start_date': start_date,
-            'end_date': end_date,
-            'selected_shop': shop_id
-        })
-        return context
 
 
 class RepresentativeReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
