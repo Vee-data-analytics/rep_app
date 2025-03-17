@@ -383,14 +383,28 @@
             </div>
 
        <!-- Logout Button -->
+
+       {% if user.is_authenticated and user.role == "admin" %}
+       
        <div class="mt-4">
-           <form action="{% url 'reptrack_trace:home' %}" method="post">
-               {% csrf_token %}
-               <button type="submit" class="btn btn-danger w-100">
-                   <i class="bi bi-box-arrow-right me-2"></i>
-                   back to dashboard
-               </button>
+        <form action="{% url 'reptrack_trace:admin-dashboard' %}" method="get">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-box-arrow-right me-2"></i>
+                back to dashboard
+            </button>
+            {% else %}
+           <div class="mt-4">
+             <form action="{% url 'reptrack_trace:home' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    back to dashboard
+                </button>
            </form>
+           </div>
+           {% endif %}
+           
         </body>
         <script>
             function calculateFinalQuantities() {
