@@ -1,0 +1,176 @@
+{% extends 'admin/base_admin.html' %}
+
+
+{% block content %}
+<!-- Recent Reports -->
+<!-- Recent Reports -->
+<!-- Debug Information -->
+<div class="container-fluid py-4">
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header p-3">
+                    <h5 class="mb-0">Shop Reports</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Select Shop</label>
+                            <select name="shop" class="form-select">
+                                <option value="">All Shops</option>
+                                {% for shop in shops %}
+                                <option value="{{ shop.id }}" {% if shop.id|stringformat:"s" == selected_shop %}selected{% endif %}>
+                                    {{ shop.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary d-block w-100">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+<!-- Recent Reports -->
+<div class="row">
+    <div class="col-12">
+        <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">
+                        {% if report_type == 'shop_store' %}
+                            Recent Shop Store Reports
+                        {% else %}
+                            Recent Shop Reports
+                        {% endif %}
+                    </h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                {% if latest_reports %}
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Shop</th>
+                                <th>Representative</th>
+                                <th>Product</th>
+                                <th>
+                                    {% if report_type == 'shop_store' %}
+                                        Final Store Quantity
+                                    {% else %}
+                                        Final Quantity
+                                    {% endif %}
+                                </th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in latest_reports %}
+                            <tr>
+                                <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>{{ report.shop.name }}</td>
+                                <td>{{ report.representative.username }}</td>
+                                <td>{{ report.product.name }}</td>
+                                <td>
+                                    {% if report_type == 'shop_store' %}
+                                        {% if report.remaining_shop_store_quantity is not None %}
+                                            {{ report.remaining_shop_store_quantity }}
+                                        {% elif report.shop_store_current_quantity is not None %}
+                                            {{ report.shop_store_current_quantity }}
+                                        {% elif report.quantity_in_shopstores is not None %}
+                                            {{ report.quantity_in_shopstores }}
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    {% else %}
+                                        {% if report.shop_store_details.final_shop_quantity is not None %}
+                                            {{ report.shop_store_details.final_shop_quantity }}
+                                        {% elif report.main_store_details.total_quantity_in_shop is not None %}
+                                            {{ report.main_store_details.total_quantity_in_shop }}
+                                        {% elif report.shop_details.current_quantity is not None %}
+                                            {{ report.shop_details.current_quantity }}
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'reptrack_trace:report-detail' report.pk %}" 
+                                       class="btn btn-info btn-sm">View Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-4">
+                    <p>No reports found. Possible reasons:</p>
+                    <ul>
+                        <li>No reports with shop store data exist</li>
+                        <li>The reports don't have the remaining_shop_store_quantity field populated</li>
+                        <li>All reports are filtered out by the current criteria</li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if debug_info %}
+<div class="row">
+    <div class="col-12">
+        <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-warning shadow-warning border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">Debug Information</h6>
+                </div>
+            </div>
+            <div class="card-body">
+                <p><strong>ShopStore Count:</strong> {{ debug_info.shop_store_count }}</p>
+                <p><strong>Total Report Count:</strong> {{ debug_info.report_count }}</p>
+                <p><strong>Reports with Shop Store Data:</strong> {{ debug_info.reports_with_shop_store_count }}</p>
+                
+                <h6>ShopStore Objects:</h6>
+                <ul>
+                    {% for store in debug_info.shop_store_debug %}
+                    <li>Shop: {{ store.shop_name }}, Active: {{ store.is_active }}</li>
+                    {% empty %}
+                    <li>No ShopStore objects found</li>
+                    {% endfor %}
+                </ul>
+                
+                <h6>Reports with Shop Store Data:</h6>
+                <ul>
+                    {% for report in debug_info.shop_store_reports %}
+                    <li>ID: {{ report.id }}, Shop: {{ report.shop }}, Product: {{ report.product }}, 
+                        Remaining: {{ report.remaining_qty }}, Created: {{ report.created_at }}</li>
+                    {% empty %}
+                    <li>No reports with shop store data found</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

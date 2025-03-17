@@ -119,6 +119,13 @@
                     </a>
                 </li>
                 <li class="nav-item sub-item">
+                    <a class="nav-link {% if 'shop-store-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+                        href="{% url 'reptrack_trace:shop-store-reports' %}">
+                        <i class="material-symbols-rounded opacity-5">analytics</i>
+                        <span class="nav-link-text ms-1">Shop Stores Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item sub-item">
                     <a class="nav-link {% if 'main-store-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
                         href="{% url 'reptrack_trace:main-store-reports' %}">
                         <i class="material-symbols-rounded opacity-5">monitoring</i>
@@ -135,6 +142,15 @@
             </ul>
         </div>
         <div class="sidenav-footer position-absolute w-100 bottom-0">
+        <div>
+            
+            <h6>
+                {% if user.is_authenticated %}
+                <p>Logged in as:</p> 
+                {{    user.username }}
+                {% endif %}
+            </h6>
+        </div>
         </div>
     </aside>
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
