@@ -61,7 +61,15 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('reptrack_trace:home')  # Replace with the actual dashboard URL
+                
+                # Redirect based on user's role
+                if user.role == User.ADMIN:
+                    return redirect('reptrack_trace:admin-dashboard')
+                elif user.role == User.REPRESENTATIVE:
+                    return redirect('reptrack_trace:home')
+                else:
+                    # Fallback redirect
+                    return redirect('reptrack_trace:home')
             else:
                 messages.error(request, 'Invalid username or password.')
     else:
@@ -182,6 +190,8 @@ class RepresentativePerformanceView(LoginRequiredMixin, UserPassesTestMixin, Tem
 class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'admin/dashboard.html'
     
+
+
     def test_func(self):
         return self.request.user.role == User.ADMIN
 
