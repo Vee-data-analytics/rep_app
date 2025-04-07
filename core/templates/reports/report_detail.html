@@ -325,62 +325,63 @@
             
 
             <!-- Final Store Quantity -->
-            <div class="card mb-4">
-                <div class="card-header bg-warning text-white">
-                    <h5 class="mb-0">Final Quantities</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Final Shop Quantity -->
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="fw-bold">Final Shop Quantity:</label>
-                                <div class="border rounded p-2 bg-light">
-                                    {% if shop_store_details.final_shop_quantity is not None %}
-                                        {{ shop_store_details.final_shop_quantity }}
-                                    {% elif main_store_details.total_quantity_in_shop is not None %}
-                                        {{ main_store_details.total_quantity_in_shop }}
-                                    {% elif shop_details.current_quantity is not None %}
-                                        {{ shop_details.current_quantity }}
-                                    {% else %}
-                                        Not available
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-            
-                        <!-- Final Store Quantity -->
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="fw-bold">Final Store Quantity:</label>
-                                <div class="border rounded p-2 bg-light">
-                                    {% if main_store_details.quantity_in_shopstores is not None %}
-                                        {{ main_store_details.quantity_in_shopstores }}
-                                    {% elif shop_store_details.remaining_quantity is not None %}
-                                        {{ shop_store_details.remaining_quantity }}
-                                    {% else %}
-                                        Not available
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-            
-                        <!-- Final Main-Store Quantity -->
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="fw-bold">Final Main-Store Quantity:</label>
-                                <div class="border rounded p-2 bg-light">
-                                    {% if main_store_details.remaining_quantity is not None %}
-                                        {{ main_store_details.remaining_quantity }}
-                                    {% else %}
-                                        Not available
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
+            <!-- Final Quantities -->
+<div class="card mb-4">
+    <div class="card-header bg-warning text-white">
+        <h5 class="mb-0">Final Quantities</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Final Shop Quantity -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="fw-bold">Final Shop Quantity:</label>
+                    <div class="border rounded p-2 bg-light">
+                        {% if main_store_details.total_quantity_in_shop is not None %}
+                            {{ main_store_details.total_quantity_in_shop }}
+                        {% elif shop_store_details.final_shop_quantity is not None %}
+                            {{ shop_store_details.final_shop_quantity }}
+                        {% elif shop_details.current_quantity is not None %}
+                            {{ shop_details.current_quantity }}
+                        {% else %}
+                            Not available
+                        {% endif %}
                     </div>
                 </div>
             </div>
+
+            <!-- Final Store Quantity -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="fw-bold">Final Store Quantity:</label>
+                    <div class="border rounded p-2 bg-light">
+                        {% if main_store_details.quantity_in_shopstores is not None %}
+                            {{ main_store_details.quantity_in_shopstores }}
+                        {% elif shop_store_details.remaining_quantity is not None %}
+                            {{ shop_store_details.remaining_quantity }}
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Main-Store Quantity -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="fw-bold">Final Main-Store Quantity:</label>
+                    <div class="border rounded p-2 bg-light">
+                        {% if main_store_details.remaining_quantity is not None %}
+                            {{ main_store_details.remaining_quantity }}
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
        <!-- Logout Button -->
 
@@ -439,8 +440,8 @@
             
             // Add event listener for report stage changes
             document.querySelector('[name="report_stage"]').addEventListener('change', calculateFinalQuantities);
-        <script>
-    </div>
+        </script>
+        </div>
     
      
       

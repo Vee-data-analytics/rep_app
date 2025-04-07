@@ -297,18 +297,29 @@
                                         const remainingQuantityInput = document.querySelector('[name="remaining_shop_store_quantity"]');
                                         const shopCurrentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
                                         const shopUpdateQuantityInput = document.querySelector('[name="shop_update_quantity"]');
-                                    
+                                        
+                                        const initialShopQuantity = Number(shopCurrentQuantityInput.value) || 0;
+
                                         function updateCalculations() {
                                             if (wasShopUpdatedInput.checked) {
                                                 const currentQty = Number(currentQuantityInput.value) || 0;
                                                 const takenQty = Number(takenQuantityInput.value) || 0;
                                                 const shopCurrentQty = Number(shopCurrentQuantityInput.value) || 0;
-                                    
+                                        
                                                 // Calculate remaining quantity
                                                 remainingQuantityInput.value = Math.max(0, currentQty - takenQty);
-                                    
+                                        
                                                 // Calculate updated shop quantity
-                                                shopUpdateQuantityInput.value = shopCurrentQty + takenQty;
+                                                const newShopQuantity = shopCurrentQty + takenQty;
+                                                shopUpdateQuantityInput.value = newShopQuantity;
+                                                
+                                                // REMOVE THIS LINE:
+                                                shopCurrentQuantityInput.value = newShopQuantity;
+                                                
+                                                // OR REPLACE WITH:
+                                                // Don't update the shop_current_quantity field directly
+                                                // Instead, set a separate field for the final value
+                                                document.querySelector('[name="final_shop_quantity"]').value = newShopQuantity;
                                             }
                                         }
                                     
@@ -320,12 +331,7 @@
                                         // Initial calculation
                                         updateCalculations();
                                     
-                                        // Update before form submission
-                                        shopStoreForm.addEventListener('submit', function(e) {
-                                            if (wasShopUpdatedInput.checked) {
-                                                updateCalculations();
-                                            }
-                                        });
+                                        
                                     });
                                 </script>
 
@@ -556,26 +562,26 @@
 
                                     // Shop quantity calculation
                                     function calculateShopQuantity() {
-                                    const wasShopUpdated = document.querySelector('[name="was_shop_m_updated"]').checked;
-                                    const deliveredQty = parseFloat(deliveredToShopInput.value) || 0;
-                                    const shopUpdateQty = parseFloat(document.querySelector('[name="shop_update_quantity"]').value) || 0;
-                                    const currentQty = parseFloat(shopCurrentQuantityInput.value) || 0;
-                                
-                                    let totalQty;
-                                    if (wasShopUpdated) {
-                                        // First check if shop_update_quantity is available
-                                        if (shopUpdateQty > 0) {
-                                            totalQty = deliveredQty + shopUpdateQty;
-                                        } else {
-                                            // Fallback to current quantity if shop_update_quantity is 0 or empty
-                                            totalQty = deliveredQty + currentQty;
-                                        }
-                                    } else {
-                                        totalQty = currentQty;
-                                    }
+                                        const wasShopUpdated = document.querySelector('[name="was_shop_m_updated"]').checked;
+                                        const deliveredQty = parseFloat(deliveredToShopInput.value) || 0;
+                                        const shopUpdateQty = parseFloat(document.querySelector('[name="shop_update_quantity"]').value) || 0;
+                                        const currentQty = parseFloat(shopCurrentQuantityInput.value) || 0;
                                     
-                                    totalQuantityInShopInput.value = totalQty;
-                                }
+                                        let totalQty;
+                                        if (wasShopUpdated) {
+                                            // First check if shop_update_quantity is available
+                                            if (shopUpdateQty > 0) {
+                                                totalQty = deliveredQty + shopUpdateQty;
+                                            } else {
+                                                // Fallback to current quantity if shop_update_quantity is 0 or empty
+                                                totalQty = deliveredQty + currentQty;
+                                            }
+                                        } else {
+                                            totalQty = currentQty;
+                                        }
+                                        
+                                        totalQuantityInShopInput.value = totalQty;
+                                    }
                                     
                                     // Add event listeners for main store calculations
                                     mainStoreQuantityInput.addEventListener('input', calculateMainStoreRemaining);
