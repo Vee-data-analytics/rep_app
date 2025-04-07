@@ -562,26 +562,26 @@
 
                                     // Shop quantity calculation
                                     function calculateShopQuantity() {
-                                        const wasShopUpdated = document.querySelector('[name="was_shop_m_updated"]').checked;
-                                        const deliveredQty = parseFloat(deliveredToShopInput.value) || 0;
-                                        const shopUpdateQty = parseFloat(document.querySelector('[name="shop_update_quantity"]').value) || 0;
-                                        const currentQty = parseFloat(shopCurrentQuantityInput.value) || 0;
-                                    
-                                        let totalQty;
-                                        if (wasShopUpdated) {
-                                            // First check if shop_update_quantity is available
-                                            if (shopUpdateQty > 0) {
-                                                totalQty = deliveredQty + shopUpdateQty;
-                                            } else {
-                                                // Fallback to current quantity if shop_update_quantity is 0 or empty
-                                                totalQty = deliveredQty + currentQty;
-                                            }
+                                    const wasShopUpdated = document.querySelector('[name="was_shop_m_updated"]').checked;
+                                    const deliveredQty = parseFloat(deliveredToShopInput.value) || 0;
+                                    const shopUpdateQty = parseFloat(document.querySelector('[name="shop_update_quantity"]').value) || 0;
+                                    const currentQty = parseFloat(shopCurrentQuantityInput.value) || 0;
+                                
+                                    let totalQty;
+                                    if (wasShopUpdated) {
+                                        // First check if shop_update_quantity is available
+                                        if (shopUpdateQty > 0) {
+                                            totalQty = deliveredQty + shopUpdateQty;
                                         } else {
-                                            totalQty = currentQty;
+                                            // Fallback to current quantity if shop_update_quantity is 0 or empty
+                                            totalQty = deliveredQty + currentQty;
                                         }
-                                        
-                                        totalQuantityInShopInput.value = totalQty;
+                                    } else {
+                                        totalQty = currentQty;
                                     }
+                                    
+                                    totalQuantityInShopInput.value = totalQty;
+                                }
                                     
                                     // Add event listeners for main store calculations
                                     mainStoreQuantityInput.addEventListener('input', calculateMainStoreRemaining);
