@@ -341,7 +341,7 @@ class ShopStoreReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
                 shop_store_details['remaining_quantity'] = latest_report.remaining_shop_store_quantity
                 
                 # For main_store_details
-                main_store_details['quantity_in_shopstores'] = latest_report.quantity_in_shopstores
+                main_store_details['updated_quantity_in_shop'] = latest_report.quantity_in_shopstores
                 
                 # Attach these details to the report object
                 latest_report.shop_store_details = shop_store_details
@@ -664,8 +664,8 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             'selected_shop': shop_id,
             'start_date': start_date,
             'end_date': end_date,
-            'reports': reports.order_by('-created_at'),  # Keep this for backward compatibility
-            'latest_reports': latest_reports,  # New context variable with latest reports by product/shop
+            'reports': reports.order_by('-created_at'),
+            'latest_reports': latest_reports,  
             'current_inventory': current_inventory,
         })
         return context
