@@ -91,16 +91,20 @@
                                 <td>{{ report.product.name }}</td>
                                 <td>
                                     {% if report_type == 'shop_store' %}
-                                        {% if report.remaining_shop_store_quantity is not None %}
-                                            {{ report.remaining_shop_store_quantity }}
-                                        {% elif report.shop_store_current_quantity is not None %}
+                                        {% if report.quantity_in_shopstores is not None %}
+                                             {{ report.quantity_in_shopstores }}
+                                       {% elif report.remaining_shop_store_quantity is not None %}
+                                            {{ report.remaining_shop_store_quantity }}    
+                                       {% elif report.shop_store_current_quantity is not None %}
                                             {{ report.shop_store_current_quantity }}
-                                        {% elif report.quantity_in_shopstores is not None %}
-                                            {{ report.quantity_in_shopstores }}
+                                            
+                                            
                                         {% else %}
                                             Not available
                                         {% endif %}
                                     {% else %}
+
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <a href="{% url 'reptrack_trace:report-detail' report.pk %}" 

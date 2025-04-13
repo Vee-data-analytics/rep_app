@@ -73,9 +73,8 @@
                                 <td>{{ report.representative.username }}</td>
                                 <td>{{ report.product.name }}</td>
                                 <td>
-                                    {% if report.shop_store_details.final_shop_quantity is not None %}
-                                        {{ report.shop_store_details.final_shop_quantity }}
-                                    {% elif report.main_store_details.total_quantity_in_shop is not None %}
+                                    
+                                    {% if report.main_store_details.total_quantity_in_shop is not None %}
                                         {{ report.main_store_details.total_quantity_in_shop }}
                                     {% elif report.shop_details.current_quantity is not None %}
                                         {{ report.shop_details.current_quantity }}
