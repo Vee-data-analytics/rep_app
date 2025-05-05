@@ -35,12 +35,17 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     "pwa",
+    "crispy_forms",
+    "crispy_bootstrap5",
 
     # developer apps
     'users',
     'reptrack_trace',
     'reports',
 ]
+
+
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 
 PWA_APP_NAME = 'Reps Track and Trace'

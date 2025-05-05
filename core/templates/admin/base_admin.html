@@ -100,14 +100,7 @@
                         <span class="nav-link-text ms-1">Products</span>
                     </a>
                 </li>
-                <li class="nav-item sub-item">
-                    <a class="nav-link {% if 'admin-main-store-list' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'reptrack_trace:admin-main-store-list' %}">
-                        <i class="material-symbols-rounded opacity-5">warehouse</i>
-                        <span class="nav-link-text ms-1">Main Stores</span>
-                    </a>
-                </li>
-
+                
                 <li class="nav-item">
                     <h6 class="section-title">Reports</h6>
                 </li>
@@ -118,20 +111,7 @@
                         <span class="nav-link-text ms-1">Shop Reports</span>
                     </a>
                 </li>
-                <li class="nav-item sub-item">
-                    <a class="nav-link {% if 'shop-store-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'reptrack_trace:shop-store-reports' %}">
-                        <i class="material-symbols-rounded opacity-5">analytics</i>
-                        <span class="nav-link-text ms-1">Shop Stores Reports</span>
-                    </a>
-                </li>
-                <li class="nav-item sub-item">
-                    <a class="nav-link {% if 'main-store-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
-                        href="{% url 'reptrack_trace:main-store-reports' %}">
-                        <i class="material-symbols-rounded opacity-5">monitoring</i>
-                        <span class="nav-link-text ms-1">Main Store Reports</span>
-                    </a>
-                </li>
+                
                 <li class="nav-item sub-item">
                     <a class="nav-link {% if 'rep-reports' in request.path %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
                         href="{% url 'reptrack_trace:rep-reports' %}">

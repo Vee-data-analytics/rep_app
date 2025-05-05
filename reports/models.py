@@ -26,13 +26,6 @@ class Report(models.Model):
         on_delete=models.CASCADE, 
         related_name='reports_for_product'  # Updated
     )
-    main_store = models.ForeignKey(
-        MainStore, 
-        on_delete=models.CASCADE, 
-        related_name='reports_for_main_store',  # Updated
-        null=True, 
-        blank=True
-    )
     
     # Shop section
     shop_current_quantity = models.IntegerField()

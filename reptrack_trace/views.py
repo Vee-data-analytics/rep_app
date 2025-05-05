@@ -4,8 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView,FormView, CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
 from django.urls import reverse_lazy
-from .models import Product,Shop, Report,ShopStore, MainStore
-from .forms import  ShopForm, ReportForm, ProductForm,MainStoreForm
+from .models import Product,Shop, Report
+from .forms import  ShopForm, ReportForm, ProductForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth import logout 
@@ -33,7 +33,7 @@ from django.utils.timezone import localtime
 import json
 from reportlab.lib.units import inch
 
-from .models import Report, Shop, MainStore, Inventory, ShopStore, User
+from .models import Report, Shop, User
 from django.core.serializers.json import DjangoJSONEncoder
 from .models import Report
 from django.views.generic import TemplateView
@@ -597,8 +597,7 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
         # Base querysets
         reports = Report.objects.filter(status='submitted')
-        inventory_items = Inventory.objects.filter(location_type='shop')
-
+        
         # Apply filters
         if shop_id:
             reports = reports.filter(shop_id=shop_id)
@@ -609,17 +608,7 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
                 created_at__range=[start_date, end_date]
             )
 
-        # Get current inventory status
-        current_inventory = []
-        for item in inventory_items:
-            current_inventory.append({
-                'shop': item.shop,
-                'product': item.product,
-                'quantity': item.quantity,
-                'last_updated': item.last_updated,
-                'needs_restock': item.quantity < item.minimum_quantity if hasattr(item, 'minimum_quantity') else False
-            })
-
+        
         # Get latest reports for each product per shop
         from django.db.models import Max
         
@@ -640,21 +629,11 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             if latest_report:
                 # Create shop_store_details and main_store_details for each report
                 # similar to how it's done in the detail view
-                shop_store_details = {
-                    'final_shop_quantity': latest_report.shop_update_quantity,
-                }
-                
-                main_store_details = {
-                    'total_quantity_in_shop': latest_report.total_quantity_in_shop,
-                }
                 
                 shop_details = {
                     'current_quantity': latest_report.shop_current_quantity,
                 }
                 
-                # Attach these details to the report object
-                latest_report.shop_store_details = shop_store_details
-                latest_report.main_store_details = main_store_details
                 latest_report.shop_details = shop_details
                 
                 latest_reports.append(latest_report)
@@ -666,7 +645,7 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             'end_date': end_date,
             'reports': reports.order_by('-created_at'),
             'latest_reports': latest_reports,  
-            'current_inventory': current_inventory,
+           
         })
         return context
 
@@ -810,19 +789,6 @@ class ReportDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('reptrack_trace:home')
     
 
-class MainStoreCreateView(CreateView):
-    model = MainStore
-    form_class = MainStoreForm
-    template_name = 'reports/report_form.html'
-
-    def get_success_url(self):
-        return self.request.META.get('HTTP_REFERER', '/')
-
-    def form_valid(self, form):
-        main_store = form.save()
-        messages.success(self.request, f'Main Store "{main_store.name}" created successfully')
-        return super().form_valid(form)
-
 
 
     
@@ -919,33 +885,6 @@ class AdminProductDeleteView(AdminRequiredMixin, DeleteView):
     template_name = 'admin/productdelete.html'
     success_url = reverse_lazy('reptrack_trace:admin-product-list')
 
-# Main Store Management
-class AdminMainStoreCreateView(AdminRequiredMixin, CreateView):
-    model = MainStore
-    form_class = MainStoreForm
-    template_name = 'admin/mainstore_create.html'
-    success_url = reverse_lazy('reptrack_trace:admin-main-store-list')
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, f'Main Store "{self.object.name}" created successfully')
-        return response
-
-class AdminMainStoreUpdateView(AdminRequiredMixin, UpdateView):
-    model = MainStore
-    form_class = MainStoreForm
-    template_name = 'admin/main_storeupdate.html'
-    success_url = reverse_lazy('reptrack_trace:admin-main-store-list')
-
-class AdminMainStoreListView(AdminRequiredMixin, ListView):
-    model = MainStore
-    template_name = 'admin/mainstorelist.html'
-    context_object_name = 'main_stores'
-
-class AdminMainStoreDeleteView(AdminRequiredMixin, DeleteView):
-    model = MainStore
-    template_name = 'admin/main-store-delete.html'
-    success_url = reverse_lazy('reptrack_trace:admin-main-store-list')
 
 
 class ReportCreateView(FormView):
@@ -961,15 +900,6 @@ class ReportCreateView(FormView):
         initial.update(unsaved_data)
            
         # Prepopulate with shop data if available
-        
-        main_store_id = self.request.GET.get('main_store') or self.request.POST.get('main_store')
-        if main_store_id:
-            try:
-                main_store = MainStore.objects.get(id=main_store_id)
-                initial.update({'main_store': main_store.id})
-            except MainStore.DoesNotExist:
-                pass
-        
         shop_id = self.request.GET.get('shop') or self.request.POST.get('shop')
         if shop_id:
             try:
@@ -1013,22 +943,7 @@ class ReportCreateView(FormView):
         else:
             context['selected_shop'] = None
 
-        # Fetch selected main store data
-        selected_main_store_id = self.request.GET.get('main_store') or self.request.POST.get('main_store')
-        if selected_main_store_id:
-            try:
-                selected_mainstore = MainStore.objects.get(id=selected_main_store_id)
-                context['selected_mainstore'] = {
-                    'location': selected_mainstore.address,
-                    'manager_name': selected_mainstore.manager_name,
-                    'manager_phone': selected_mainstore.manager_phone,
-                    'manager_email': selected_mainstore.manager_email
-                }
-            except MainStore.DoesNotExist:
-                context['selected_mainstore'] = None
-        else:
-            context['selected_mainstore'] = None
-
+        
         # Fetch selected product data
         selected_product_id = self.request.GET.get('product') or self.request.POST.get('product')
         if selected_product_id:
@@ -1046,12 +961,9 @@ class ReportCreateView(FormView):
         context.update({
             'shops': Shop.objects.all(),
             'products': Product.objects.all(),
-            'main_stores': MainStore.objects.all(),
-            'shop_stores': ShopStore.objects.all(),
             'shop_form': ShopForm(),
             'product_form': ProductForm(),
-            'main_store_form': MainStoreForm(),
-            'shop_store_form': ShopStoreForm(),
+            
         })
         
         return context
@@ -1064,9 +976,7 @@ class ReportCreateView(FormView):
             modal_forms = {
                 'shop_form': ShopForm,
                 'product_form': ProductForm,
-                'store_form': StoreForm,
-                'main_store_form': MainStoreForm,
-                'shop_store_form': ShopStoreForm,
+                
             }
     
             if form_key in modal_forms:
@@ -1092,6 +1002,12 @@ class ReportCreateView(FormView):
         if form.is_valid():
             report = form.save(commit=False)
             report.representative = request.user
+
+            if 'stock_file_photo' in request.FILES:
+                report.stock_file_photo = request.FILES['stock_file_photo']
+            if 'po_photo' in request.FILES:
+                report.po_photo = request.FILES['po_photo']
+
     
             submission_type = request.POST.get('submission_type', 'draft')
             report.status = 'submitted' if submission_type == 'submit' else 'draft'
@@ -1133,56 +1049,25 @@ class ReportDetailView(DetailView):
             'manager_phone': report.shop.manager_phone,
             'product': report.product,
             'current_quantity': report.shop_current_quantity,
-            'desired_quantity': report.desired_quantity,
-            'needs_topup': report.needs_topup,
-            'topup_quantity': report.topup_quantity,
+            'stock_file_quantity': report.stock_file_quantity,
             'photo': report.shop_photo,
             'photo_taken_at': report.shop_photo_taken_at,
             'comments': report.shop_comments,
+
+            'before_merch_photo_1': report.before_merch_photo_1,
+            'before_merch_photo_2': report.before_merch_photo_2,
+            'before_merch_photo_3': report.before_merch_photo_3,
+            'before_merch_photo_4': report.before_merch_photo_4,
+            'before_merch_photo_5': report.before_merch_photo_5,
+            # After report 
+            'after_merch_photo_1': report.after_merch_photo_1,
+            'after_merch_photo_2': report.after_merch_photo_2,
+            'after_merch_photo_3': report.after_merch_photo_3,
+            'after_merch_photo_4': report.after_merch_photo_4,
+            'after_merch_photo_5': report.after_merch_photo_5,
         }
 
-        context['shop_store_details'] = {
-            'name': report.shop,
-            'manager_confirmed': report.shop_store_manager_confirmed,
-            'current_quantity': report.shop_store_current_quantity,
-            'has_sufficient_stock': report.shop_store_has_sufficient_stock,
-            'quantity_taken': report.quantity_taken_from_shop_store,
-            'remaining_quantity': report.remaining_shop_store_quantity,
-            'updated': report.was_shop_updated,
-            'final_shop_quantity': report.shop_update_quantity,
-            'photo': report.shop_store_photo,
-            'photo_taken_at': report.shop_store_photo_taken_at,
-            
-            # Corrected these keys to match template expectations
-            'shop_update_photo': report.shop_photo_update,  # Matches template's shop_update_photo
-            'shop_update_photo_taken_at': report.shop_update_photo_taken_at,  # Matches template's check
-            'comments': report.shop_store_comments,
-        }
-
-
-        context['main_store_details'] = {
-            'main_store': report.main_store,
-            'address': report.main_store.address if report.main_store else None,
-            'manager_name': report.main_store.manager_name if report.main_store else None,
-            'manager_phone': report.main_store.manager_phone if report.main_store else None,
-            'manager_email': report.main_store.manager_email if report.main_store else None,
-            'current_quantity': report.main_store_quantity,
-            'quantity_taken': report.quantity_taken_from_main_store,
-            'remaining_quantity': report.remaining_main_store_quantity,
-            'photo': report.main_store_photo,
-            'photo_taken_at': report.main_store_photo_taken_at,
-            'delivered_to_shop_stores': report.delivered_to_shop_stores,
-            'was_shop_stores_updated': report.was_shop_stores_updated,
-            'quantity_in_shopstores': report.quantity_in_shopstores,
-            'current_shop_store_photo': report.current_shop_store_photo,
-            'delivered_to_shop': report.delivered_to_shop,
-            'was_shop_updated': report.was_shop_m_updated,
-            'total_quantity_in_shop': report.total_quantity_in_shop,
-            'current_shop_photo': report.current_shop_photo,
-            'current_shop_photo_taken_at':report.current_shop_photo_taken_at,
-            'current_shop_store_photo_taken_at':report.current_shop_store_photo_taken_at,
-            'comments': report.main_store_comments,
-        }
+        
 
         context['general_info'] = {
             'status': report.status,
@@ -1577,14 +1462,12 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         context = super().get_context_data(**kwargs)
         context.update({
         'total_shops': Shop.objects.count(),
-        'total_main_stores': MainStore.objects.count(),
         'total_reports': Report.objects.filter(
         created_at__gte=datetime.now()-timedelta(days=7)).count(),
         'recent_reports': Report.objects.all().order_by('-created_at')[:5],
         'total_representatives': User.objects.filter(role=User.REPRESENTATIVE).count(),
         'recent_reports': Report.objects.filter(status='submitted').order_by('-created_at')[:5],
         'pending_reports': Report.objects.filter(status='draft').count(),
-        #'inventory_alerts': self.get_inventory_alerts(),
         })
         return context
 

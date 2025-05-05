@@ -36,12 +36,7 @@ urlpatterns = [
     path('create-shop/', create_shop, name='create_shop'),
     path('create-product/', create_product, name='create_product'),
     path('create-store/', create_store, name='create_store'),
-    path('create-main-store/', create_main_store, name='create_main_store'),
-    path('create-shop-store/', create_shop_store, name='create_shop_store'),
-
     
-    
-    path('main-stores/create/', views.MainStoreCreateView.as_view(), name='main-store-create'),
     path('reports/<uuid:pk>/', views.ReportUpdateView.as_view(), name='report-update'),
     path('reports/<uuid:pk>/pdf/', views.download_report_pdf, name='download_report'),
     
@@ -67,16 +62,12 @@ urlpatterns = [
     path('admin/products/<int:pk>/update/', views.AdminProductUpdateView.as_view(), name='admin-product-update'),
     path('admin/products/<int:pk>/delete/', views.AdminProductDeleteView.as_view(), name='admin-product-delete'),
 
-    path('admin/main-stores/', views.AdminMainStoreListView.as_view(), name='admin-main-store-list'),
-    path('admin/main-stores/create/', views.AdminMainStoreCreateView.as_view(), name='admin-main-store-create'),
-    path('admin/main-stores/<int:pk>/update/', views.AdminMainStoreUpdateView.as_view(), name='admin-main-store-update'),
-    path('admin/main-stores/<int:pk>/delete/', views.AdminMainStoreDeleteView.as_view(), name='admin-main-store-delete'),
 
     # API URLs
     path('api/get-shop-details/', views.get_shop_details, name='get-shop-details'),
     path('dynamic-fetch/', modal_views.dynamic_fetch, name='dynamic_fetch'),
     path('get-shop-details/',     modal_views.get_shop_details, name='get_shop_details'),
-    path('get-mainstore-details/',modal_views.get_mainstore_details, name='get_mainstore_details'),
+#    path('get-mainstore-details/',modal_views.get_mainstore_details, name='get_mainstore_details'),
     path('get-product-details/',  modal_views.get_product_details, name='get_product_details'),
     #path('api/inventory-status/',views.get_inventory_status, name='api-inventory-status'),
     

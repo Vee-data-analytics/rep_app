@@ -6,9 +6,8 @@ import json
 
 from django.views.decorators.csrf import csrf_exempt
 from .forms import  (
-    ProductForm,ShopForm,
-    MainStoreForm,
-    ShopStoreForm,)
+    ProductForm,
+    ShopForm)
 
 import logging
 
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from .models import Product, MainStore, Shop
+from .models import Product,  Shop
 
 def get_shop_details(request):
     shop_id = request.GET.get('shop')
@@ -26,13 +25,6 @@ def get_shop_details(request):
     except Shop.DoesNotExist:
         return HttpResponse('')
 
-def get_mainstore_details(request):
-    mainstore_id = request.GET.get('main_store')
-    try:
-        mainstore = MainStore.objects.get(id=mainstore_id)
-        return render(request, 'partials/mainstore_details.html', {'mainstore': mainstore})
-    except MainStore.DoesNotExist:
-        return HttpResponse('')
 
 def get_product_details(request):
     product_id = request.GET.get('product')

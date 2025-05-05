@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-
+{% load crispy_forms_tags %}
 
 <style>
     /* Shop Section - Orange theme */
@@ -42,6 +42,26 @@
         margin: 0;
         color: inherit;
     }
+
+    .custom-file-input-container {
+    position: relative;
+    }
+    
+    .image-preview {
+        margin-top: 10px;
+        max-width: 200px;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+    
+    .form-control[type="file"] {
+        padding: 0.375rem 0.75rem;
+    }
+
 </style>
 
 <div class="container mt-4">
@@ -60,10 +80,10 @@
                             <!-- Shop Section -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="shopSectionHeader">
-                                    <button class="accordion-button shop" type="button" 
-                                            data-bs-toggle="collapse" 
-                                            data-bs-target="#shopSection" 
-                                            aria-expanded="true" 
+                                    <button class="accordion-button shop" type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#shopSection"
+                                            aria-expanded="true"
                                             aria-controls="shopSection">
                                         <h5>Shop Information</h5>
                                     </button>
@@ -84,7 +104,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Shop Auto-Populated Fields -->
                                             <div class="row mb-3">
                                                 <div class="col-md-6">
@@ -100,9 +120,9 @@
                                                     <input type="text" id="shopManagerPhone" class="form-control" value="{{ selected_shop.manager_phone|default:'' }}" readonly>
                                                 </div>
                                             </div>
-                                            
-                                                                                        
-                                                                                        
+
+
+
                                             <div class="col-md-6 mb-3">
                                                 <label for="id_product" class="form-label">Select Product</label>
                                                 <div class="input-group">
@@ -112,43 +132,80 @@
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Current Stock Quantity</label>
-                                                {{ form.shop_current_quantity }}
-                                            </div>
-                                            
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Shop Shelf Photo</label>
-                                                {{ form.shop_photo }}
-                                            </div>
+                                        <!-- Shop Section Fields -->
+<!-- Shop Section with Fixed Fields -->
+<div class="col-md-6 mb-3">
+    <label class="form-label">Stock File Quantity</label>
+    {{ form.stock_file_quantity }}
+    <small class="form-text text-muted">{{ form.stock_file_quantity.help_text }}</small>
+</div>
+
+<div class="col-md-6 mb-3" id="currentQuantityField">
+    <label class="form-label">Current Quantity Found</label>
+    {{ form.shop_current_quantity }}
+    <small class="form-text text-muted">{{ form.shop_current_quantity.help_text }}</small>
+</div>
 
 
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Desired Stock Quantity</label>
-                                                {{ form.desired_quantity }}
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <div class="form-check">
-                                                    {{ form.needs_topup }}
-                                                    <label class="form-check-label">Tick to get Top-up  quantity</label>
-                                                </div>
-                                            </div>
+<!-- Stock File Photo -->
+<div class="row image-fields">
+            {% crispy form.image_helper %}
+        </div>
+<div class="col-md-6 mb-3">
+    <label class="form-label">Stock File Photo</label>
+    {{ form.stock_file_photo }}
+    {% if form.instance.stock_file_photo %}
+        <div class="mt-2">
+            <img src="{{ form.instance.stock_file_photo.url }}" class="img-fluid rounded" style="max-height: 200px;">
+        </div>
+    {% endif %}
+  
+    {% if form.stock_file_photo.errors %}
+        <div class="invalid-feedback d-block">
+            {{ form.stock_file_photo.errors }}
+        </div>
+    {% endif %}
+</div>
 
+<div class="col-md-6 mb-3">
+    <label class="form-label">Discrepancy</label>
+    <input type="text" class="form-control" value="{{ form.instance.discrepancy|default:'0' }}" readonly>
+    <small class="form-text text-muted">Calculated: Stock File Quantity - Current Quantity Found</small>
+</div>
 
-                                            <div class="col-md-6 mb-3" id="topupQuantityField">
-                                                <label class="form-label">Desired Top-up Quantity</label>
-                                                {{ form.topup_quantity }}
-                                                <small class="form-text text-muted">Calculated: Desired - Current Quantity</small>
-                                            </div>
-                                            
+<!-- PO Photo -->
+
+<div class="row image-fields">
+    {% crispy form.image_helper %}
+</div>
+<div class="col-md-6 mb-3">
+    <label class="form-label">PO Photo</label>
+    {{ form.po_photo }}
+    {% if form.instance.po_photo %}
+        <div class="mt-2">
+            <img src="{{ form.instance.po_photo.url }}" class="img-fluid rounded" style="max-height: 200px;">
+        </div>
+    {% endif %}
+    {% if form.po_photo.errors %}
+        <div class="invalid-feedback d-block">
+            {{ form.po_photo.errors }}
+        </div>
+    {% endif %}
+</div>
+
+<div class="col-md-6 mb-3">
+    <label class="form-label">Comments</label>
+    {{ form.shop_comments }}
+    <small class="form-text text-muted">{{ form.shop_comments.help_text }}</small>
+</div>
+
                                             <script>
                                             document.addEventListener('DOMContentLoaded', function() {
                                                 const currentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
                                                 const desiredQuantityInput = document.querySelector('[name="desired_quantity"]');
                                                 const topupQuantityInput = document.querySelector('[name="topup_quantity"]');
                                                 const needsTopupCheckbox = document.querySelector('[name="needs_topup"]');
-                                            
+
                                                 function calculateTopup() {
                                                     if (needsTopupCheckbox.checked) {
                                                         const current = parseInt(currentQuantityInput.value) || 0;
@@ -156,12 +213,62 @@
                                                         topupQuantityInput.value = Math.max(0, desired - current);
                                                     }
                                                 }
-                                            
+
                                                 [currentQuantityInput, desiredQuantityInput, needsTopupCheckbox].forEach(input => {
                                                     input.addEventListener('change', calculateTopup);
                                                 });
                                             });
                                             </script>
+
+                                            <script>
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                  const fileInputs = document.querySelectorAll('input[type="file"][accept="image/*"]');
+                                                  
+                                                  fileInputs.forEach(input => {
+                                                      input.addEventListener('change', function(e) {
+                                                          const file = e.target.files[0];
+                                                          if (file) {
+                                                              const preview = input.closest('.custom-file-input-container')
+                                                                                 .querySelector('.image-preview img');
+                                                              if (preview) {
+                                                                  preview.src = URL.createObjectURL(file);
+                                                                  preview.parentElement.style.display = 'block';
+                                                              }
+                                                          }
+                                                      });
+                                                  });
+                                              });
+                                            </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInputs = document.querySelectorAll('input[type="file"][accept="image/*"]');
+        
+        imageInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    let previewContainer = this.nextElementSibling;
+                    if (!previewContainer || !previewContainer.classList.contains('mt-2')) {
+                        previewContainer = document.createElement('div');
+                        previewContainer.className = 'mt-2';
+                        this.parentNode.insertBefore(previewContainer, this.nextSibling);
+                    }
+                    
+                    let previewImg = previewContainer.querySelector('img');
+                    if (!previewImg) {
+                        previewImg = document.createElement('img');
+                        previewImg.className = 'img-fluid rounded';
+                        previewImg.style.maxHeight = '200px';
+                        previewContainer.appendChild(previewImg);
+                    }
+                    
+                    previewImg.src = URL.createObjectURL(file);
+                }
+            });
+        });
+    });
+    </script>
                                             <div class="mb-3">
                                                 <div class="col-md-6 mb-3">
                                                 <label class="form-label">Shop Comments</label>
@@ -173,440 +280,310 @@
                                 </div>
                             </div>
 
-                            <!-- Shop Stores Section -->
+                            <!-- Merchandising Section -->
                             <div class="accordion-item">
-                                <h2 class="accordion-header" id="shopStoresSectionHeader">
-                                    <button class="accordion-button collapsed shop-stores" type="button" 
-                                            data-bs-toggle="collapse" 
-                                            data-bs-target="#shopStoresSection" 
-                                            aria-expanded="false" 
-                                            aria-controls="shopStoresSection">
-                                        <h5>Shop Stores Information</h5>
+                                <h2 class="accordion-header" id="merchandisingSectionHeader">
+                                    <button class="accordion-button merchandising collapsed" type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#merchandisingSection"
+                                            aria-expanded="false"
+                                            aria-controls="merchandisingSection">
+                                        <h5>Merchandising Photos</h5>
                                     </button>
                                 </h2>
-                                <div id="shopStoresSection" class="accordion-collapse collapse" aria-labelledby="shopStoresSectionHeader" data-bs-parent="#reportSections">
+                                <div id="merchandisingSection" class="accordion-collapse collapse"
+                                     aria-labelledby="merchandisingSectionHeader"
+                                     data-bs-parent="#reportSections">
                                     <div class="accordion-body">
-                                        <div class="row">
+                                        <!-- Before Merchandising Photos -->
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold mb-3">Before Merchandising</h6>
+                                            <div class="row g-3">
+                                                {% for i in '12345'|make_list %}
+                                                <div class="col-md-4">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <label class="form-label">Photo {{i}}</label>
+                                                            <div class="photo-input-group">
+                                                                <!-- Hidden file input -->
+                                                                {{ form.before_merch_photo_|add:i }}
 
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label for="shopAddress" class="form-label">Shop-store Name</label>
-                                                    <input type="text" id="shopAddress" class="form-control" value="{{ selected_shop.name | default:'' }}" readonly>
-                                                </div>
+                                                                <!-- Photo Action Buttons -->
+                                                                <div class="d-grid gap-2">
+                                                                    <button type="button" class="btn btn-primary capture-photo"
+                                                                            data-target="before_merch_photo_{{i}}">
+                                                                        <i class="bi bi-camera-fill"></i> Take Photo
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-primary upload-photo"
+                                                                            data-target="before_merch_photo_{{i}}">
+                                                                        <i class="bi bi-upload"></i> Upload Photo
+                                                                    </button>
+                                                                </div>
 
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label for="shopAddress" class="form-label">Shop Address</label>
-                                                    <input type="text" id="shopAddress" class="form-control" value="{{ selected_shop.address | default:'' }}" readonly>
+                                                                <!-- Preview Container -->
+                                                                <div id="before-merch-preview-{{i}}" class="image-preview">
+                                                                    <span class="placeholder">No image selected</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <label for="shopManagerName" class="form-label">Manager Name</label>
-                                                    <input type="text" id="shopManagerName" class="form-control" value="{{ selected_shop.stores_manager | default:'' }}" readonly>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="shopManagerphone" class="form-label">Manager Phone</label>
-                                                <input type="text" id="shopManagerPhone" class="form-control" value="{{ selected_shop.stores_manager_phone|default:'' }}" readonly>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Shop-Store Shelf Photo</label>
-                                                {{ form.shop_store_photo }}
-                                            </div>
-                                            
-
-                                            <div class="mb-3">
-                                                <div class="form-check">
-                                                <label class="form-check-label">Tick if shop-stores has sufficient stock.</label>
-                                                {{ form.shop_store_has_sufficient_stock }}
+                                                {% endfor %}
                                             </div>
                                         </div>
-                                        
 
+                                        <!-- After Merchandising Photos -->
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold mb-3">After Merchandising</h6>
+                                            <div class="row g-3">
+                                                {% for i in '12345'|make_list %}
+                                                <div class="col-md-4">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <label class="form-label">Photo {{i}}</label>
+                                                            <div class="photo-input-group">
+                                                                <!-- File input -->
+                                                                <input type="file"
+                                                                       name="before_merch_photo_{{i}}"
+                                                                       id="before_merch_photo_{{i}}"
+                                                                       accept="image/*"
+                                                                       class="form-control d-none"
+                                                                       data-preview="before-merch-preview-{{i}}">
 
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Current quantity from Shop-Store</label>
-                                                {{ form.shop_store_current_quantity }}
-                                            </div>
+                                                                <!-- Photo Action Buttons -->
+                                                                <div class="d-grid gap-2">
+                                                                    <button type="button" class="btn btn-primary capture-photo"
+                                                                            data-target="before_merch_photo_{{i}}">
+                                                                        <i class="bi bi-camera-fill"></i> Take Photo
+                                                                    </button>
+                                                                    <label class="btn btn-outline-primary mb-0" for="before_merch_photo_{{i}}">
+                                                                        <i class="bi bi-upload"></i> Upload Photo
+                                                                    </label>
+                                                                </div>
 
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Quantity Taken from Shop-Store</label>
-                                                {{ form.quantity_taken_from_shop_store }}
-                                            </div>
-
-
-                                            <div class=" mb-3">
-                                                <div class="form-check">
-                                                  <label class="form-check-label">Tick to calculate updated shop quantity </label>
-                                                   {{ form.was_shop_updated }}
-                                                 </div>
-                                              </div>                                            
-
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Remaining Shop-Store Quantity</label>
-                                                {{ form.remaining_shop_store_quantity }}
-                                            </div>
-
-
-                                            
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label"> If updated, provide Shop shelf Image</label>
-                                                {{ form.shop_photo_update }}
-                                            </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Final shop quantity</label>
-                                                {{ form.shop_update_quantity}}
-                                            </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Shop-Store Comments</label>
-                                                {{ form.shop_store_comments }}
+                                                                <!-- Preview Container -->
+                                                                <div id="before-merch-preview-{{i}}" class="image-preview mt-2">
+                                                                    <span class="placeholder">No image selected</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const currentQuantityInput = document.querySelector('[name="shop_store_current_quantity"]');
-                                    const desiredQuantityInput = document.querySelector('[name="quantity_taken_from_shop_store"]');
-                                    const topupQuantityInput = document.querySelector('[name="remaining_shop_store_quantity"]');
-                                    const needsTopupCheckbox = document.querySelector('[name="was_shop_updated"]');
-                                
-                                    function calculateTopup() {
-                                        if (needsTopupCheckbox.checked) {
-                                            const current = parseInt(currentQuantityInput.value) || 0;
-                                            const desired = parseInt(desiredQuantityInput.value) || 0;
-                                            topupQuantityInput.value = Math.max(0,  current-desired);
-                                        }
-                                    }
-                                
-                                    [currentQuantityInput, desiredQuantityInput, needsTopupCheckbox].forEach(input => {
-                                        input.addEventListener('change', calculateTopup);
-                                    });
-                                });
-                                </script>
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        const shopStoreForm = document.getElementById('reportForm');
-                                        
-                                        // Get all relevant input fields
-                                        const wasShopUpdatedInput = document.querySelector('[name="was_shop_updated"]');
-                                        const currentQuantityInput = document.querySelector('[name="shop_store_current_quantity"]');
-                                        const takenQuantityInput = document.querySelector('[name="quantity_taken_from_shop_store"]');
-                                        const remainingQuantityInput = document.querySelector('[name="remaining_shop_store_quantity"]');
-                                        const shopCurrentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
-                                        const shopUpdateQuantityInput = document.querySelector('[name="shop_update_quantity"]');
-                                        
-                                        const initialShopQuantity = Number(shopCurrentQuantityInput.value) || 0;
 
-                                        function updateCalculations() {
-                                            if (wasShopUpdatedInput.checked) {
-                                                const currentQty = Number(currentQuantityInput.value) || 0;
-                                                const takenQty = Number(takenQuantityInput.value) || 0;
-                                                const shopCurrentQty = Number(shopCurrentQuantityInput.value) || 0;
-                                        
-                                                // Calculate remaining quantity
-                                                remainingQuantityInput.value = Math.max(0, currentQty - takenQty);
-                                        
-                                                // Calculate updated shop quantity
-                                                const newShopQuantity = shopCurrentQty + takenQty;
-                                                shopUpdateQuantityInput.value = newShopQuantity;
-                                                
-                                                // REMOVE THIS LINE:
-                                                shopCurrentQuantityInput.value = newShopQuantity;
-                                                
-                                                // OR REPLACE WITH:
-                                                // Don't update the shop_current_quantity field directly
-                                                // Instead, set a separate field for the final value
-                                                document.querySelector('[name="final_shop_quantity"]').value = newShopQuantity;
-                                            }
-                                        }
-                                    
-                                        // Add event listeners
-                                        wasShopUpdatedInput.addEventListener('change', updateCalculations);
-                                        currentQuantityInput.addEventListener('input', updateCalculations);
-                                        takenQuantityInput.addEventListener('input', updateCalculations);
-                                        
-                                        // Initial calculation
-                                        updateCalculations();
-                                    
-                                        
-                                    });
-                                </script>
-
-                            
-                            <!-- Main stores section -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="mainStoreSectionHeader">
-                                    <button class="accordion-button collapsed main-store" type="button" 
-                                            data-bs-toggle="collapse" 
-                                            data-bs-target="#mainStoreSection" 
-                                            aria-expanded="false" 
-                                            aria-controls="mainStoreSection">
-                                        <h5>Main Store Information</h5>
-                                    </button>
-                                </h2>
-                                <div id="mainStoreSection" class="accordion-collapse collapse" aria-labelledby="mainStoreSectionHeader" data-bs-parent="#reportSections">
-                                    <div class="accordion-body">
-                                        <!-- Main Store Selection and Details -->
-                                        <div class="row mb-4">
-                                            <div class="col-12 mb-3">
-                                                <label for="id_main_store" class="form-label">Select Main Store</label>
-                                                <div class="input-group">
-                                                    {{ form.main_store }}
-                                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addMainStoreModal">
-                                                        Add Main Store
-                                                    </button>
-                                                </div>
-                                            </div>
-                                
-                                            <!-- Auto-populated Main Store Details -->
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label for="mainstoreAddress" class="form-label">Main Store Address</label>
-                                                    <input type="text" id="mainstoreAddress" class="form-control" value="{{ selected_mainstore.location|default:'' }}" readonly>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="mainstoreManagerName" class="form-label">Manager Name</label>
-                                                    <input type="text" id="mainstoreManagerName" class="form-control" value="{{ selected_mainstore.manager_name|default:'' }}" readonly>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="mainstoreManagerPhone" class="form-label">Manager Phone</label>
-                                                    <input type="text" id="mainstoreManagerPhone" class="form-control" value="{{ selected_mainstore.manager_phone|default:'' }}" readonly>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="mainstoreManagerEmail" class="form-label">Manager Email</label>
-                                                    <input type="text" id="mainstoreManagerEmail" class="form-control" value="{{ selected_mainstore.manager_email|default:'' }}" readonly>
-                                                </div>
-                                            </div>
-                                
-                                        <!-- Product Information and Quantities -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="productName" class="form-label">Product Name</label>
-                                            <input type="text" id="productName" class="form-control" value="{{ selected_product.name|default:'' }}" readonly>
+                            <!-- Camera Modal -->
+                            <div class="modal fade" id="cameraModal" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Take Photo</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Main Store Current Quantity</label>
-                                                {{ form.main_store_quantity }}
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Quantity Taken from Main Store</label>
-                                                {{ form.quantity_taken_from_main_store }}
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Remaining Main Store Quantity</label>
-                                                {{ form.remaining_main_store_quantity }}
-                                            </div>
+                                        <div class="modal-body text-center">
+                                            <video id="video" autoplay playsinline class="img-fluid"></video>
+                                            <canvas id="canvas" style="display: none;"></canvas>
                                         </div>
-                                
-                                        <!-- Photo Evidence and Comments -->
-                                        <div class="row mb-4">
-                                            <div class="col-12 mb-3">
-                                                <label class="form-label">Main Store Photo Evidence</label>
-                                                {{ form.main_store_photo }}
-                                            </div>
-                                           
-                                
-                                        <!-- Shop Store and Shop Distribution -->
-                                        <div class="row mb-4">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Quantity Delivered to Shop Store</label>
-                                                {{ form.delivered_to_shop_stores }}
-                                            </div>
-
-                                                <div class="mb-3">
-                                                    <div class="form-check">
-                                                    <label class="form-check-label">Tick to get updated shop-stores quantity updated? </label>
-                                                    {{ form.was_shop_stores_updated }}
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Total Quantity in Shop Store</label>
-                                                {{ form.quantity_in_shopstores }}
-                                            </div>
-                                                  
-                                        <!-- Photo Evidence for Updates -->
-                                        <div class="row mb-4">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Current Shop Store Photo</label>
-                                                {{ form.current_shop_store_photo }}
-                                            </div>
-
-
-
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Quantity Delivered to Shop</label>
-                                                {{ form.delivered_to_shop }}
-                                            </div>
-
-                                        <div class="mb-3">
-                                            <div class="form-check">
-                                            <label class="form-check-label">Tick to get updated quantity?</label>
-                                            {{ form.was_shop_m_updated }}
-                                          </div>
-                                        </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Total Quantity in Shop</label>
-                                                {{ form.total_quantity_in_shop }}
-                                            </div>
-                                        </div>
-                                         
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Current Shop Photo</label>
-                                            {{ form.current_shop_photo }}
-                                        </div>    
-                                
-
-                                            <div class="col-12 mb-3">
-                                                <label class="form-label">Main Store Comments</label>
-                                                {{ form.main_store_comments }}
-                                            </div>
-                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-primary" id="captureBtn">
+                                                <i class="bi bi-camera-fill"></i> Capture
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                                <script>
-                                    console.log('Testing script load'); // This will confirm if any JavaScript runs at all
-                                    
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        // Debug logs
-                                        console.log('DOM loaded');
-                                        
-                                        // Get the selects
-                                        const shopSelect = document.querySelector('select[name="shop"]');
-                                        const mainStoreSelect = document.querySelector('select[name="main_store"]');
-                                        const productSelect = document.querySelector('select[name="product"]');
-                                        
-                                        console.log('Found selects:', { shopSelect, mainStoreSelect, productSelect });
-                                    
-                                        // Simple change handlers
-                                        shopSelect?.addEventListener('change', async function() {
-                                            console.log('Shop changed:', this.value);
-                                            const response = await fetch(`/track-n-trace/dynamic-fetch/?shop=${this.value}`);
-                                            const data = await response.json();
-                                            if (data.selected_shop) {
-                                                document.getElementById('shopAddress').value = data.selected_shop.address || '';
-                                                document.getElementById('shopManagerName').value = data.selected_shop.manager_name || '';
-                                                document.getElementById('shopManagerPhone').value = data.selected_shop.manager_phone || '';
-                                            }
-                                        });
-                                    
-                                        mainStoreSelect?.addEventListener('change', async function() {
-                                            console.log('Main store changed:', this.value);
-                                            const response = await fetch(`/track-n-trace/dynamic-fetch/?main_store=${this.value}`);
-                                            const data = await response.json();
-                                            if (data.selected_mainstore) {
-                                                document.getElementById('mainstoreAddress').value = data.selected_mainstore.location || '';
-                                                document.getElementById('mainstoreManagerName').value = data.selected_mainstore.manager_name || '';
-                                                document.getElementById('mainstoreManagerPhone').value = data.selected_mainstore.manager_phone || '';
-                                                document.getElementById('mainstoreManagerEmail').value = data.selected_mainstore.manager_email || '';
-                                            }
-                                        });
-                                    
-                                        productSelect?.addEventListener('change', async function() {
-                                            console.log('Product changed:', this.value);
-                                            const response = await fetch(`/track-n-trace/dynamic-fetch/?product=${this.value}`);
-                                            const data = await response.json();
-                                            if (data.selected_product) {
-                                                document.getElementById('productName').value = data.selected_product.name || '';
-                                            }
-                                        });
-                                    });
-                                    </script>
-                            
+                            </div>
 
-
-                                </div>
-                                <script>
-                                    // Get form elements
-                                    const mainStoreQuantityInput = document.querySelector('[name="main_store_quantity"]');
-                                    const quantityTakenInput = document.querySelector('[name="quantity_taken_from_main_store"]');
-                                    const remainingMainStoreInput = document.querySelector('[name="remaining_main_store_quantity"]');
-                                    
-                                    // Shop stores related elements
-                                    const wasShopStoresUpdatedSelect = document.querySelector('[name="was_shop_stores_updated"]');
-                                    const deliveredToShopStoresInput = document.querySelector('[name="delivered_to_shop_stores"]');
-                                    const remainingShopStoreQuantityInput = document.querySelector('[name="remaining_shop_store_quantity"]');
-                                    const quantityInShopStoresInput = document.querySelector('[name="quantity_in_shopstores"]');
-                                    
-                                    // Shop quantity related elements
-                                    const wasShopUpdatedSelect = document.querySelector('[name="was_shop_m_updated"]');
-                                    const deliveredToShopInput = document.querySelector('[name="delivered_to_shop"]');
-                                    const shopCurrentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
-                                    const totalQuantityInShopInput = document.querySelector('[name="total_quantity_in_shop"]');
-                                    
-                                    
-                                    // Main store calculation
-                                    function calculateMainStoreRemaining() {
-                                        const mainStoreQty = parseFloat(mainStoreQuantityInput.value) || 0;
-                                        const quantityTaken = parseFloat(quantityTakenInput.value) || 0;
-                                        const remaining = mainStoreQty - quantityTaken;
-                                        remainingMainStoreInput.value = remaining;
-                                    }
-                                    
-                                    function calculateShopStores() {
-                                        const wasShopStoresUpdated = document.querySelector('[name="was_shop_stores_updated"]').checked;
-                                        
-                                        if (wasShopStoresUpdated) {
-                                            const deliveredQty = parseFloat(deliveredToShopStoresInput.value) || 0;
-                                            const remainingQty = parseFloat(remainingShopStoreQuantityInput.value) || 0;
-                                            const total = deliveredQty + remainingQty;
-                                            quantityInShopStoresInput.value = total;
-                                        } else {
-                                            quantityInShopStoresInput.value = '';
-                                        }
-                                    }
-
-                                    // Shop quantity calculation
-                                    function calculateShopQuantity() {
-                                    const wasShopUpdated = document.querySelector('[name="was_shop_m_updated"]').checked;
-                                    const deliveredQty = parseFloat(deliveredToShopInput.value) || 0;
-                                    const shopUpdateQty = parseFloat(document.querySelector('[name="shop_update_quantity"]').value) || 0;
-                                    const currentQty = parseFloat(shopCurrentQuantityInput.value) || 0;
-                                
-                                    let totalQty;
-                                    if (wasShopUpdated) {
-                                        // First check if shop_update_quantity is available
-                                        if (shopUpdateQty > 0) {
-                                            totalQty = deliveredQty + shopUpdateQty;
-                                        } else {
-                                            // Fallback to current quantity if shop_update_quantity is 0 or empty
-                                            totalQty = deliveredQty + currentQty;
-                                        }
-                                    } else {
-                                        totalQty = currentQty;
-                                    }
-                                    
-                                    totalQuantityInShopInput.value = totalQty;
+                            <style>
+                                /* Hide the default file input */
+                                input[type="file"] {
+                                    display: none;
                                 }
-                                    
-                                    // Add event listeners for main store calculations
-                                    mainStoreQuantityInput.addEventListener('input', calculateMainStoreRemaining);
-                                    quantityTakenInput.addEventListener('input', calculateMainStoreRemaining);
-                                    
-                                    // Add event listeners for shop stores calculations
-                                    wasShopStoresUpdatedSelect.addEventListener('change', calculateShopStores);
-                                    deliveredToShopStoresInput.addEventListener('input', calculateShopStores);
-                                    remainingShopStoreQuantityInput.addEventListener('input', calculateShopStores);
-                                    
-                                    // Add event listeners for shop quantity calculations
-                                    wasShopUpdatedSelect.addEventListener('change', calculateShopQuantity);
-                                    deliveredToShopInput.addEventListener('input', calculateShopQuantity);
-                                    shopCurrentQuantityInput.addEventListener('input', calculateShopQuantity);
-                                    
-                                    // Initial calculations
-                                    calculateMainStoreRemaining();
-                                    calculateShopStores();
-                                    calculateShopQuantity();
-                                </script>
-                                
-                                </div>
+
+                                /* Merchandising Section Theme */
+                                .accordion-button.merchandising {
+                                    background-color: #f3f0ff;
+                                }
+                                .accordion-button.merchandising:not(.collapsed) {
+                                    background-color: #7950f2;
+                                    color: white;
+                                }
+
+                                /* Card Styles */
+                                .card {
+                                    border: 1px solid rgba(0,0,0,.125);
+                                    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+                                }
+
+                                /* Photo Input Group */
+                                .photo-input-group {
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: 0.5rem;
+                                }
+
+                                /* Image Preview Styles */
+                                .image-preview {
+                                    min-height: 150px;
+                                    border: 1px dashed #dee2e6;
+                                    border-radius: 4px;
+                                    padding: 0.5rem;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    background-color: #f8f9fa;
+                                    margin-top: 0.5rem;
+                                    overflow: hidden;
+                                }
+
+                                .image-preview img {
+                                    max-width: 100%;
+                                    max-height: 150px;
+                                    object-fit: contain;
+                                }
+
+                                .image-preview .placeholder {
+                                    color: #6c757d;
+                                    font-size: 0.875rem;
+                                }
+
+                                /* Button Styles */
+                                .btn i {
+                                    margin-right: 0.25rem;
+                                }
+
+                                .photo-input-group {
+                                    margin-bottom: 1rem;
+                                }
+
+                                .image-preview {
+                                    min-height: 150px;
+                                    border: 1px dashed #dee2e6;
+                                    border-radius: 4px;
+                                    margin-top: 1rem;
+                                    padding: 0.5rem;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    background-color: #f8f9fa;
+                                }
+
+                                .image-preview img {
+                                    max-width: 100%;
+                                    max-height: 200px;
+                                    object-fit: contain;
+                                }
+
+                                .remove-photo {
+                                    z-index: 1;
+                                }
+                            </style>
+
+                            <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                let currentPhotoInput = null;
+                                let stream = null;
+
+                                // Handle upload button clicks
+                                document.querySelectorAll('.upload-photo').forEach(button => {
+                                    button.addEventListener('click', () => {
+                                        const fileInput = document.querySelector(`[name="${button.dataset.target}"]`);
+                                        fileInput.click();
+                                    });
+                                });
+
+                                // Handle camera capture button clicks
+                                document.querySelectorAll('.capture-photo').forEach(button => {
+                                    button.addEventListener('click', async () => {
+                                        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                                            alert('Camera access is not supported by your browser');
+                                            return;
+                                        }
+
+                                        currentPhotoInput = document.querySelector(`[name="${button.dataset.target}"]`);
+                                        const modal = new bootstrap.Modal(document.getElementById('cameraModal'));
+
+                                        try {
+                                            stream = await navigator.mediaDevices.getUserMedia({
+                                                video: { facingMode: 'environment' },
+                                                audio: false
+                                            });
+                                            const video = document.getElementById('video');
+                                            video.srcObject = stream;
+                                            modal.show();
+                                        } catch (err) {
+                                            alert('Error accessing camera: ' + err.message);
+                                        }
+                                    });
+                                });
+
+                                // Handle photo capture
+                                document.getElementById('captureBtn').addEventListener('click', () => {
+                                    const video = document.getElementById('video');
+                                    const canvas = document.getElementById('canvas');
+                                    const context = canvas.getContext('2d');
+
+                                    canvas.width = video.videoWidth;
+                                    canvas.height = video.videoHeight;
+                                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                                    canvas.toBlob(blob => {
+                                        const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                                        const dataTransfer = new DataTransfer();
+                                        dataTransfer.items.add(file);
+                                        currentPhotoInput.files = dataTransfer.files;
+                                        currentPhotoInput.dispatchEvent(new Event('change'));
+
+                                        const modal = bootstrap.Modal.getInstance(document.getElementById('cameraModal'));
+                                        modal.hide();
+                                    }, 'image/jpeg', 0.8);
+                                });
+
+                                // Clean up camera when modal is closed
+                                document.getElementById('cameraModal').addEventListener('hidden.bs.modal', () => {
+                                    if (stream) {
+                                        stream.getTracks().forEach(track => track.stop());
+                                    }
+                                });
+
+                                // Handle file input changes
+                                document.querySelectorAll('input[type="file"]').forEach(input => {
+                                    input.addEventListener('change', function() {
+                                        const previewId = this.name.replace('_photo_', '-preview-');
+                                        const previewDiv = document.getElementById(previewId);
+
+                                        if (this.files && this.files[0]) {
+                                            const reader = new FileReader();
+                                            reader.onload = function(e) {
+                                                previewDiv.innerHTML = `
+                                                    <img src="${e.target.result}" class="img-fluid" alt="Preview">
+                                                    <button type="button" class="btn btn-sm btn-danger remove-photo position-absolute top-0 end-0 m-2">
+                                                        <i class="bi bi-x"></i>
+                                                    </button>
+                                                `;
+
+                                                // Add remove button functionality
+                                                previewDiv.querySelector('.remove-photo').addEventListener('click', () => {
+                                                    input.value = '';
+                                                    previewDiv.innerHTML = '<span class="placeholder">No image selected</span>';
+                                                });
+                                            };
+                                            reader.readAsDataURL(this.files[0]);
+                                        } else {
+                                            previewDiv.innerHTML = '<span class="placeholder">No image selected</span>';
+                                        }
+                                    });
+                                });
+                            });
+                            </script>
+
                                 <!-- Hidden input for submission type -->
                                <input type="hidden" name="submission_type" id="submission_type" value="">
-                               
+
                               <!-- Action buttons -->
                               <div class="btn-group" role="group">
                                   <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#draftModal">
@@ -622,8 +599,8 @@
                               </div>
                          </div>
                     </div>
-                    
-            
+
+
                     <!-- Back to dash board Button -->
                     <div class="mt-4">
                         <form action="{% url 'reptrack_trace:home' %}" method="post">
@@ -634,8 +611,8 @@
                             </button>
                         </form>
                      </div>
-                    
-                    
+
+
                                                    <!-- Draft Modal -->
                               <div class="modal fade" id="draftModal" tabindex="-1">
                                   <div class="modal-dialog">
@@ -657,7 +634,7 @@
                                       </div>
                                   </div>
                               </div>
-                              
+
                               <!-- Submit Modal -->
                               <div class="modal fade" id="submitModal" tabindex="-1">
                                   <div class="modal-dialog">
@@ -682,15 +659,15 @@
                                       </div>
                                   </div>
                               </div>
-                              
+
                               <script>
                                 document.addEventListener('DOMContentLoaded', function() {
                                     const form = document.getElementById('reportForm');
-                                    
+
                                     function handleButtonState(button, isSubmitting) {
                                         const spinner = button.querySelector('.spinner-border');
                                         const text = button.querySelector('.button-text');
-                                        
+
                                         button.disabled = isSubmitting;
                                         if (spinner) {
                                             spinner.classList.toggle('d-none', !isSubmitting);
@@ -699,15 +676,15 @@
                                             text.style.opacity = isSubmitting ? '0.5' : '1';
                                         }
                                     }
-                                    
+
                                     // Handle form submission
                                     form.addEventListener('submit', async function(e) {
                                         e.preventDefault();
-                                        
+
                                         // Get the clicked button's submission type
                                         const submittedButton = document.activeElement;
                                         const submissionType = submittedButton.value;
-                                        
+
                                         // Create or update hidden input for submission type
                                         let submissionTypeInput = form.querySelector('input[name="submission_type"]');
                                         if (!submissionTypeInput) {
@@ -717,22 +694,22 @@
                                             form.appendChild(submissionTypeInput);
                                         }
                                         submissionTypeInput.value = submissionType;
-                                        
+
                                         // Show loading state on all submit buttons
                                         document.querySelectorAll('.submit-btn').forEach(button => {
                                             handleButtonState(button, true);
                                         });
-                                        
+
                                         try {
                                             // Add a small delay to ensure the loading state is visible
                                             await new Promise(resolve => setTimeout(resolve, 500));
-                                            
+
                                             // Create form data
                                             const formData = new FormData(form);
-                                            
+
                                             // Submit the form programmatically
                                             form.submit();
-                                            
+
                                             // Keep the modal open for a brief moment to show the loading state
                                             setTimeout(() => {
                                                 const modal = bootstrap.Modal.getInstance(submittedButton.closest('.modal'));
@@ -746,12 +723,12 @@
                                             document.querySelectorAll('.submit-btn').forEach(button => {
                                                 handleButtonState(button, false);
                                             });
-                                            
+
                                             // Optionally show an error message to the user
                                             alert('There was an error submitting the form. Please try again.');
                                         }
                                     });
-                                    
+
                                     // Reset button states when modal is closed
                                     document.querySelectorAll('.modal').forEach(modalEl => {
                                         modalEl.addEventListener('hidden.bs.modal', function() {
@@ -762,149 +739,15 @@
                                     });
                                 });
                               </script>
-                       
-                      <!-- Add Shop-->
-
-                      <div class="modal fade" id="addShopModal" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Add Shop</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form hx-post="{% url 'reptrack_trace:create_shop' %}"
-                                      hx-target="#shopFormContent"
-                                      hx-swap="innerHTML">
-                                    {% csrf_token %}
-                                    <div class="modal-body">
-                                        <div id="shopFormContent">
-                                            {% include 'reports/partials/modal_form.html' with form=shop_form modal_id='addShopModal' %}
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="submit" class="btn btn-primary">Save Shop</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                                                                   
-                                  <!-- Add Product Modal -->
-                                  <div class="modal fade" id="addProductModal" tabindex="-1">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Add New Product</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <form hx-post="{% url 'reptrack_trace:create_product' %}"
-                                                  hx-target="#productFormContent"
-                                                  hx-swap="innerHTML">
-                                                {% csrf_token %}
-                                                <div class="modal-body">
-                                                    <div id="productFormContent">
-                                                        {% include 'reports/partials/product_form.html' %}
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                    <button type="submit" class="btn btn-primary">Save Product</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                    <!-- Add Store Modal -->
-                
-                           <div class="modal fade" id="newStoreModal" tabindex="-1">
-                               <div class="modal-dialog modal-lg">
-                                   <div class="modal-content">
-                                       <div class="modal-header">
-                                           <h5 class="modal-title">Add New Store</h5>
-                                           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                       </div>
-                                       <form hx-post="{% url 'reptrack_trace:create_store' %}"
-                                             hx-target="#storeFormContent"
-                                             hx-swap="innerHTML">
-                                           {% csrf_token %}
-                                           <div class="modal-body">
-                                               <div id="storeFormContent">
-                                                   {% include 'reports/partials/modal_form.html' with form=store_form modal_id='newStoreModal' %}
-                                               </div>
-                                           </div>
-                                           <div class="modal-footer">
-                                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                               <button type="submit" class="btn btn-primary">Save Store</button>
-                                           </div>
-                                       </form>
-                                   </div>
-                               </div>
-                           </div>
-                           
-                           <!-- Main Store Modal -->
-                           <div class="modal fade" id="addMainStoreModal" tabindex="-1">
-                               <div class="modal-dialog modal-lg">
-                                   <div class="modal-content">
-                                       <div class="modal-header">
-                                           <h5 class="modal-title">Add New Main Store</h5>
-                                           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                       </div>
-                                       <form hx-post="{% url 'reptrack_trace:create_main_store' %}"
-                                             hx-target="#mainStoreFormContent"
-                                             hx-swap="innerHTML">
-                                           {% csrf_token %}
-                                           <div class="modal-body">
-                                               <div id="mainStoreFormContent">
-                                                   {% include 'reports/partials/modal_form.html' with form=main_store_form modal_id='addMainStoreModal' %}
-                                               </div>
-                                           </div>
-                                           <div class="modal-footer">
-                                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                               <button type="submit" class="btn btn-primary">Save Main Store</button>
-                                           </div>
-                                       </form>
-                                   </div>
-                               </div>
-                           </div>
-
-                           <!-- Shop Store Modal -->
-                           <div class="modal fade" id="newShopStoreModal" tabindex="-1">
-                               <div class="modal-dialog modal-lg">
-                                   <div class="modal-content">
-                                       <div class="modal-header">
-                                           <h5 class="modal-title">Add New Shop Store</h5>
-                                           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                       </div>
-                                       <form hx-post="{% url 'reptrack_trace:create_shop_store' %}"
-                                             hx-target="#shopStoreFormContent"
-                                             hx-swap="innerHTML">
-                                           {% csrf_token %}
-                                           <div class="modal-body">
-                                               <div id="shopStoreFormContent">
-                                                   {% include 'reports/partials/modal_form.html' with form=shop_store_form modal_id='newShopStoreModal' %}
-                                               </div>
-                                           </div>
-                                           <div class="modal-footer">
-                                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                               <button type="submit" class="btn btn-primary">Save Shop Store</button>
-                                           </div>
-                                       </form>
-                                   </div>
-                               </div>
-                           </div>
-              
-                
 
 
-               
-                
-                
+
+
+
+
                 {% endblock %}
 
-    
+
 {% block scripts %}
 
 
@@ -914,18 +757,18 @@
 
 <script>
         console.log('Testing script load'); // This will confirm if any JavaScript runs at all
-        
+
         document.addEventListener('DOMContentLoaded', function() {
             // Debug logs
             console.log('DOM loaded');
-            
+
             // Get the selects
             const shopSelect = document.querySelector('select[name="shop"]');
             const mainStoreSelect = document.querySelector('select[name="main_store"]');
             const productSelect = document.querySelector('select[name="product"]');
-            
+
             console.log('Found selects:', { shopSelect, mainStoreSelect, productSelect });
-        
+
             // Simple change handlers
             shopSelect?.addEventListener('change', async function() {
                 console.log('Shop changed:', this.value);
@@ -937,7 +780,7 @@
                     document.getElementById('shopManagerPhone').value = data.selected_shop.manager_phone || '';
                 }
             });
-        
+
             mainStoreSelect?.addEventListener('change', async function() {
                 console.log('Main store changed:', this.value);
                 const response = await fetch(`/track-n-trace/dynamic-fetch/?main_store=${this.value}`);
@@ -949,7 +792,7 @@
                     document.getElementById('mainstoreManagerEmail').value = data.selected_mainstore.manager_email || '';
                 }
             });
-        
+
             productSelect?.addEventListener('change', async function() {
                 console.log('Product changed:', this.value);
                 const response = await fetch(`/track-n-trace/dynamic-fetch/?product=${this.value}`);
@@ -989,7 +832,7 @@
     });
 </script>
 
- 
+
 
 
 {% endblock %}
