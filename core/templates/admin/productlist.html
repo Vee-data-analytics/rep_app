@@ -34,8 +34,10 @@
                                     <td>{{ product.price }}</td>
                                     <td>{{ product.stock }}</td>
                                     <td>
+                                        
                                         <a href="{% url 'reptrack_trace:admin-product-update' product.pk %}" class="btn btn-info btn-sm">Edit</a>
                                         <a href="{% url 'reptrack_trace:admin-product-delete' product.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                                                                           
                                     </td>
                                 </tr>
                                 {% endfor %}

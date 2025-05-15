@@ -7,6 +7,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 import uuid
 
+
 class Shop(models.Model):
     """Model for storing shop information"""
     name = models.CharField(max_length=255,null=True, blank=True)
@@ -50,7 +51,6 @@ class Report(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     representative = models.ForeignKey(User, on_delete=models.CASCADE) 
-
     
     shop = models.ForeignKey('Shop', on_delete=models.CASCADE)
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
@@ -60,7 +60,7 @@ class Report(models.Model):
     )
     
     stock_file_photo = models.ImageField(
-        upload_to='stock_file_photos/', # Changed upload_to for clarity
+        upload_to='stock_file_photos/', 
         help_text="Picture of the physical stock file/sheet (Previously 'Shop Shelf Photo')."
     )
 
@@ -69,11 +69,14 @@ class Report(models.Model):
         help_text="Comment or resolution for any stock discrepancy found (Maps to 'Comment/Resolution' in PDF)."
     )
 
+    # Option 1: Keep as a database field, but make it nullable and blank-able
     discrepancy = models.IntegerField(
-        help_text=" Auto fill discrepancy "
+        null=True, blank=True,
+        help_text="Auto calculated discrepancy between stock file and current quantity"
     )
 
-    stock_file_quantity = models.IntegerField(null=True,
+    stock_file_quantity = models.IntegerField(
+        null=True,
         help_text="Quantity written on the stock file."
     )
     
@@ -85,7 +88,6 @@ class Report(models.Model):
     
     shop_photo_taken_at = models.DateTimeField(null=True, blank=True, auto_now=True)
 
-
     # --- Merchandizing Section (Added from PDF) ---
     
     # Before Photos
@@ -95,17 +97,15 @@ class Report(models.Model):
     before_merch_photo_4 = models.ImageField(upload_to='merch_photos/', null=True, blank=True)
     before_merch_photo_5 = models.ImageField(upload_to='merch_photos/', null=True, blank=True)
 
-
     # After Photos
     after_merch_photo_1 = models.ImageField(upload_to='merch_photos/', null=True, blank=True)
     after_merch_photo_2 = models.ImageField(upload_to='merch_photos/', null=True, blank=True)
     after_merch_photo_3 = models.ImageField(upload_to='merch_photos/', null=True, blank=True)
     after_merch_photo_4 = models.ImageField(upload_to='merch_photos/', null=True, blank=True)
     after_merch_photo_5 = models.ImageField(upload_to='merch_photos/', null=True, blank=True)
+    
     # Merchandising Comment
     merchandising_comment = models.TextField(blank=True, help_text="Comments on merchandising actions taken.")
-    # Optional: Add timestamps for merchandising photos if needed
-
 
     # --- General fields ---
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
@@ -113,18 +113,6 @@ class Report(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
 
-    '''
-    @property
-    def discrepancy(self):
-        """Calculates the stock discrepancy based on new fields."""
-        # Uses new 'stock_file_quantity' and preserved 'shop_current_quantity'
-        if self.stock_file_quantity is not None and self.shop_current_quantity is not None:
-            return self.stock_file_quantity - self.shop_current_quantity
-        return None'''
-
-    
-    # Optional: Keep the EXIF extraction method if you plan to use it
-    # def extract_image_metadata(self, image_field): ...
 
 
     def __str__(self):

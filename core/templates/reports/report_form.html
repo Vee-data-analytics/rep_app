@@ -43,10 +43,7 @@
         color: inherit;
     }
 
-    .custom-file-input-container {
-    position: relative;
-    }
-    
+    /* Image preview styling */
     .image-preview {
         margin-top: 10px;
         max-width: 200px;
@@ -56,12 +53,17 @@
         width: 100%;
         height: auto;
         border-radius: 4px;
-    }
-    
-    .form-control[type="file"] {
-        padding: 0.375rem 0.75rem;
+        max-height: 200px;
     }
 
+    /* Merchandising Section Theme */
+    .accordion-button.merchandising {
+        background-color: #f3f0ff;
+    }
+    .accordion-button.merchandising:not(.collapsed) {
+        background-color: #7950f2;
+        color: white;
+    }
 </style>
 
 <div class="container mt-4">
@@ -74,704 +76,444 @@
                 </div>
                 <form method="post" enctype="multipart/form-data" id="reportForm">
                     {% csrf_token %}
-                        <!-- Accordion for Report Sections -->
-                        <div class="accordion" id="reportSections">
+                    <!-- Accordion for Report Sections -->
+                    <div class="accordion" id="reportSections">
 
-                            <!-- Shop Section -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="shopSectionHeader">
-                                    <button class="accordion-button shop" type="button"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#shopSection"
-                                            aria-expanded="true"
-                                            aria-controls="shopSection">
-                                        <h5>Shop Information</h5>
-                                    </button>
-                                </h2>
-                                <div id="shopSection" class="accordion-collapse collapse show" aria-labelledby="shopSectionHeader" data-bs-parent="#reportSections">
-                                    <div class="accordion-body">
-                                        <div class="row">
-                                            <!-- Shop Selection -->
-                                            <!-- Shop Section -->
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label for="id_shop" class="form-label">Select Shop</label>
-                                                    <div class="input-group">
-                                                        {{ form.shop }}
-                                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addShopModal">
-                                                            Add Shop
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Shop Auto-Populated Fields -->
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label for="shopAddress" class="form-label">Shop Address</label>
-                                                    <input type="text" id="shopAddress" class="form-control" value="{{ selected_shop.address|default:'' }}" readonly>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="shopManagerName" class="form-label">Manager Name</label>
-                                                    <input type="text" id="shopManagerName" class="form-control" value="{{ selected_shop.manager_name|default:'' }}" readonly>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="shopManagerPhone" class="form-label">Manager Phone</label>
-                                                    <input type="text" id="shopManagerPhone" class="form-control" value="{{ selected_shop.manager_phone|default:'' }}" readonly>
-                                                </div>
-                                            </div>
-
-
-
-                                            <div class="col-md-6 mb-3">
-                                                <label for="id_product" class="form-label">Select Product</label>
+                        <!-- Shop Section -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="shopSectionHeader">
+                                <button class="accordion-button shop" type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#shopSection"
+                                        aria-expanded="true"
+                                        aria-controls="shopSection">
+                                    <h5>Shop Information</h5>
+                                </button>
+                            </h2>
+                            <div id="shopSection" class="accordion-collapse collapse show" aria-labelledby="shopSectionHeader" data-bs-parent="#reportSections">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <!-- Shop Selection -->
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="id_shop" class="form-label">Select Shop</label>
                                                 <div class="input-group">
-                                                    {{ form.product }}
-                                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                                                        Add Product
+                                                    {{ form.shop }}
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addShopModal">
+                                                        Add Shop
                                                     </button>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <!-- Shop Auto-Populated Fields -->
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="shopAddress" class="form-label">Shop Address</label>
+                                                <input type="text" id="shopAddress" class="form-control" value="{{ selected_shop.address|default:'' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="shopManagerName" class="form-label">Manager Name</label>
+                                                <input type="text" id="shopManagerName" class="form-control" value="{{ selected_shop.manager_name|default:'' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="shopManagerPhone" class="form-label">Manager Phone</label>
+                                                <input type="text" id="shopManagerPhone" class="form-control" value="{{ selected_shop.manager_phone|default:'' }}" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_product" class="form-label">Select Product</label>
+                                            <div class="input-group">
+                                                {{ form.product }}
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                                    Add Product
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
                                         <!-- Shop Section Fields -->
-<!-- Shop Section with Fixed Fields -->
-<div class="col-md-6 mb-3">
-    <label class="form-label">Stock File Quantity</label>
-    {{ form.stock_file_quantity }}
-    <small class="form-text text-muted">{{ form.stock_file_quantity.help_text }}</small>
-</div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Stock File Quantity</label>
+                                            {{ form.stock_file_quantity }}
+                                            <small class="form-text text-muted">{{ form.stock_file_quantity.help_text }}</small>
+                                        </div>
 
-<div class="col-md-6 mb-3" id="currentQuantityField">
-    <label class="form-label">Current Quantity Found</label>
-    {{ form.shop_current_quantity }}
-    <small class="form-text text-muted">{{ form.shop_current_quantity.help_text }}</small>
-</div>
+                                        <div class="col-md-6 mb-3" id="currentQuantityField">
+                                            <label class="form-label">Current Quantity Found</label>
+                                            {{ form.shop_current_quantity }}
+                                            <small class="form-text text-muted">{{ form.shop_current_quantity.help_text }}</small>
+                                        </div>
 
+                                        <!-- Stock File Photo - Standard Django Implementation -->
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Stock File Photo</label>
+                                            {{ form.stock_file_photo }}
+                                            {% if form.stock_file_photo.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.stock_file_photo.errors }}
+                                                </div>
+                                            {% endif %}
+                                            {% if form.instance.stock_file_photo %}
+                                                <div class="mt-2">
+                                                    <img src="{{ form.instance.stock_file_photo.url }}" class="img-fluid rounded" style="max-height: 200px;">
+                                                </div>
+                                            {% endif %}
+                                            <div id="stock-file-preview" class="image-preview mt-2" style="display: none;">
+                                                <img src="" class="img-fluid" alt="Preview">
+                                            </div>
+                                        </div>
 
-<!-- Stock File Photo -->
-<div class="row image-fields">
-            {% crispy form.image_helper %}
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Discrepancy</label>
+                                            <input type="text" class="form-control" value="{{ form.instance.discrepancy|default:'0' }}" readonly>
+                                            <small class="form-text text-muted">Calculated: Stock File Quantity - Current Quantity Found</small>
+                                        </div>
+
+                                        <!-- PO Photo - Standard Django Implementation -->
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">PO Photo</label>
+                                            {{ form.po_photo }}
+                                            {% if form.po_photo.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.po_photo.errors }}
+                                                </div>
+                                            {% endif %}
+                                            {% if form.instance.po_photo %}
+                                                <div class="mt-2">
+                                                    <img src="{{ form.instance.po_photo.url }}" class="img-fluid rounded" style="max-height: 200px;">
+                                                </div>
+                                            {% endif %}
+                                            <div id="po-photo-preview" class="image-preview mt-2" style="display: none;">
+                                                <img src="" class="img-fluid" alt="Preview">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Comments</label>
+                                            {{ form.shop_comments }}
+                                            <small class="form-text text-muted">{{ form.shop_comments.help_text }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% comment %} merchandising_section.html {% endcomment %}
+
+<!-- Merchandising Section -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="merchandisingSectionHeader">
+        <button class="accordion-button merchandising collapsed" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#merchandisingSection"
+                aria-expanded="false"
+                aria-controls="merchandisingSection">
+            <h5>Merchandising Photos</h5>
+        </button>
+    </h2>
+    <div id="merchandisingSection" class="accordion-collapse collapse"
+         aria-labelledby="merchandisingSectionHeader"
+         data-bs-parent="#reportSections">
+        <div class="accordion-body">
+            <!-- Before Merchandising Photos -->
+            <div class="mb-4">
+                <h6 class="fw-bold mb-3">Before Merchandising</h6>
+                <div class="row g-3">
+                    {% for index, field, field_value in form.before_photos %}
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <label class="form-label">Photo {{ index }}</label>
+                                <div class="mb-2">
+                                    <!-- Directly render the field -->
+                                    {{ field }}
+                                </div>
+                                {% if field_value %}
+                                    <div class="mt-2">
+                                        <img src="{{ field_value.url }}" class="img-fluid rounded" style="max-height: 150px;">
+                                    </div>
+                                {% endif %}
+                                <div id="before-merch-preview-{{ index }}" class="image-preview mt-2" style="display: none;">
+                                    <img src="" class="img-fluid" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- After Merchandising Photos -->
+            <div class="mb-4">
+                <h6 class="fw-bold mb-3">After Merchandising</h6>
+                <div class="row g-3">
+                    {% for index, field, field_value in form.after_photos %}
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <label class="form-label">Photo {{ index }}</label>
+                                <div class="mb-2">
+                                    <!-- Directly render the field -->
+                                    {{ field }}
+                                </div>
+                                {% if field_value %}
+                                    <div class="mt-2">
+                                        <img src="{{ field_value.url }}" class="img-fluid rounded" style="max-height: 150px;">
+                                    </div>
+                                {% endif %}
+                                <div id="after-merch-preview-{{ index }}" class="image-preview mt-2" style="display: none;">
+                                    <img src="" class="img-fluid" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Merchandising Comment -->
+            <div class="mb-3">
+                <label for="{{ form.merchandising_comment.id_for_label }}" class="form-label">
+                    Merchandising Comments
+                </label>
+                {{ form.merchandising_comment }}
+                {% if form.merchandising_comment.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.merchandising_comment.errors }}
+                    </div>
+                {% endif %}
+            </div>
         </div>
-<div class="col-md-6 mb-3">
-    <label class="form-label">Stock File Photo</label>
-    {{ form.stock_file_photo }}
-    {% if form.instance.stock_file_photo %}
-        <div class="mt-2">
-            <img src="{{ form.instance.stock_file_photo.url }}" class="img-fluid rounded" style="max-height: 200px;">
-        </div>
-    {% endif %}
-  
-    {% if form.stock_file_photo.errors %}
-        <div class="invalid-feedback d-block">
-            {{ form.stock_file_photo.errors }}
-        </div>
-    {% endif %}
+    </div>
 </div>
 
-<div class="col-md-6 mb-3">
-    <label class="form-label">Discrepancy</label>
-    <input type="text" class="form-control" value="{{ form.instance.discrepancy|default:'0' }}" readonly>
-    <small class="form-text text-muted">Calculated: Stock File Quantity - Current Quantity Found</small>
-</div>
-
-<!-- PO Photo -->
-
-<div class="row image-fields">
-    {% crispy form.image_helper %}
-</div>
-<div class="col-md-6 mb-3">
-    <label class="form-label">PO Photo</label>
-    {{ form.po_photo }}
-    {% if form.instance.po_photo %}
-        <div class="mt-2">
-            <img src="{{ form.instance.po_photo.url }}" class="img-fluid rounded" style="max-height: 200px;">
-        </div>
-    {% endif %}
-    {% if form.po_photo.errors %}
-        <div class="invalid-feedback d-block">
-            {{ form.po_photo.errors }}
-        </div>
-    {% endif %}
-</div>
-
-<div class="col-md-6 mb-3">
-    <label class="form-label">Comments</label>
-    {{ form.shop_comments }}
-    <small class="form-text text-muted">{{ form.shop_comments.help_text }}</small>
-</div>
-
-                                            <script>
-                                            document.addEventListener('DOMContentLoaded', function() {
-                                                const currentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
-                                                const desiredQuantityInput = document.querySelector('[name="desired_quantity"]');
-                                                const topupQuantityInput = document.querySelector('[name="topup_quantity"]');
-                                                const needsTopupCheckbox = document.querySelector('[name="needs_topup"]');
-
-                                                function calculateTopup() {
-                                                    if (needsTopupCheckbox.checked) {
-                                                        const current = parseInt(currentQuantityInput.value) || 0;
-                                                        const desired = parseInt(desiredQuantityInput.value) || 0;
-                                                        topupQuantityInput.value = Math.max(0, desired - current);
-                                                    }
-                                                }
-
-                                                [currentQuantityInput, desiredQuantityInput, needsTopupCheckbox].forEach(input => {
-                                                    input.addEventListener('change', calculateTopup);
-                                                });
-                                            });
-                                            </script>
-
-                                            <script>
-                                                document.addEventListener('DOMContentLoaded', function() {
-                                                  const fileInputs = document.querySelectorAll('input[type="file"][accept="image/*"]');
-                                                  
-                                                  fileInputs.forEach(input => {
-                                                      input.addEventListener('change', function(e) {
-                                                          const file = e.target.files[0];
-                                                          if (file) {
-                                                              const preview = input.closest('.custom-file-input-container')
-                                                                                 .querySelector('.image-preview img');
-                                                              if (preview) {
-                                                                  preview.src = URL.createObjectURL(file);
-                                                                  preview.parentElement.style.display = 'block';
-                                                              }
-                                                          }
-                                                      });
-                                                  });
-                                              });
-                                            </script>
+{% comment %} 
+Add this JavaScript at the bottom of your page or in a separate JS file to enable image previews:
+{% endcomment %}
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const imageInputs = document.querySelectorAll('input[type="file"][accept="image/*"]');
+document.addEventListener('DOMContentLoaded', function() {
+    // For "before" photos
+    for (let i = 1; i <= 5; i++) {
+        const input = document.getElementById(`id_before_merch_photo_${i}`);
+        const preview = document.getElementById(`before-merch-preview-${i}`);
         
-        imageInputs.forEach(input => {
+        if (input && preview) {
             input.addEventListener('change', function() {
-                const file = this.files[0];
-                if (file) {
-                    let previewContainer = this.nextElementSibling;
-                    if (!previewContainer || !previewContainer.classList.contains('mt-2')) {
-                        previewContainer = document.createElement('div');
-                        previewContainer.className = 'mt-2';
-                        this.parentNode.insertBefore(previewContainer, this.nextSibling);
-                    }
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
                     
-                    let previewImg = previewContainer.querySelector('img');
-                    if (!previewImg) {
-                        previewImg = document.createElement('img');
-                        previewImg.className = 'img-fluid rounded';
-                        previewImg.style.maxHeight = '200px';
-                        previewContainer.appendChild(previewImg);
-                    }
+                    reader.onload = function(e) {
+                        preview.style.display = 'block';
+                        preview.querySelector('img').src = e.target.result;
+                    };
                     
-                    previewImg.src = URL.createObjectURL(file);
+                    reader.readAsDataURL(this.files[0]);
                 }
             });
+        }
+    }
+    
+    // For "after" photos
+    for (let i = 1; i <= 5; i++) {
+        const input = document.getElementById(`id_after_merch_photo_${i}`);
+        const preview = document.getElementById(`after-merch-preview-${i}`);
+        
+        if (input && preview) {
+            input.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        preview.style.display = 'block';
+                        preview.querySelector('img').src = e.target.result;
+                    };
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+    }
+});
+</script>
+                        <!-- Hidden input for submission type -->
+                        <input type="hidden" name="submission_type" id="submission_type" value="">
+
+                        <!-- Action buttons -->
+                        <div class="card-footer d-flex justify-content-end">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#draftModal">
+                                    Save as Draft
+                                </button>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#submitModal">
+                                    Submit Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Back to dashboard Button -->
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <form action="{% url 'reptrack_trace:home' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    Back to Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Draft Modal -->
+<div class="modal fade" id="draftModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Report as Draft</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Your report will be saved as a draft and can be edited later.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary submit-btn" name="submission_type" value="draft" form="reportForm">
+                    <span class="button-text">Save Draft</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Modal -->
+<div class="modal fade" id="submitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submit Final Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to submit this report?</p>
+                <div class="alert alert-warning">
+                    <p>This action cannot be undone.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary submit-btn" name="submission_type" value="submit" form="reportForm">
+                    <span class="button-text">Submit Report</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Simple image preview script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add preview functionality for standard file inputs
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                // Determine which preview div to use based on the input name
+                let previewId;
+                if (this.name === 'stock_file_photo') {
+                    previewId = 'stock-file-preview';
+                } else if (this.name === 'po_photo') {
+                    previewId = 'po-photo-preview';
+                } else if (this.name.startsWith('before_merch_photo_')) {
+                    const num = this.name.split('_').pop();
+                    previewId = `before-merch-preview-${num}`;
+                } else if (this.name.startsWith('after_merch_photo_')) {
+                    const num = this.name.split('_').pop();
+                    previewId = `after-merch-preview-${num}`;
+                }
+                
+                if (previewId) {
+                    const previewDiv = document.getElementById(previewId);
+                    if (previewDiv) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = previewDiv.querySelector('img');
+                            img.src = e.target.result;
+                            previewDiv.style.display = 'block';
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                }
+            }
         });
     });
-    </script>
-                                            <div class="mb-3">
-                                                <div class="col-md-6 mb-3">
-                                                <label class="form-label">Shop Comments</label>
-                                                {{ form.shop_comments }}
-                                            </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Merchandising Section -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="merchandisingSectionHeader">
-                                    <button class="accordion-button merchandising collapsed" type="button"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#merchandisingSection"
-                                            aria-expanded="false"
-                                            aria-controls="merchandisingSection">
-                                        <h5>Merchandising Photos</h5>
-                                    </button>
-                                </h2>
-                                <div id="merchandisingSection" class="accordion-collapse collapse"
-                                     aria-labelledby="merchandisingSectionHeader"
-                                     data-bs-parent="#reportSections">
-                                    <div class="accordion-body">
-                                        <!-- Before Merchandising Photos -->
-                                        <div class="mb-4">
-                                            <h6 class="fw-bold mb-3">Before Merchandising</h6>
-                                            <div class="row g-3">
-                                                {% for i in '12345'|make_list %}
-                                                <div class="col-md-4">
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <label class="form-label">Photo {{i}}</label>
-                                                            <div class="photo-input-group">
-                                                                <!-- Hidden file input -->
-                                                                {{ form.before_merch_photo_|add:i }}
-
-                                                                <!-- Photo Action Buttons -->
-                                                                <div class="d-grid gap-2">
-                                                                    <button type="button" class="btn btn-primary capture-photo"
-                                                                            data-target="before_merch_photo_{{i}}">
-                                                                        <i class="bi bi-camera-fill"></i> Take Photo
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-outline-primary upload-photo"
-                                                                            data-target="before_merch_photo_{{i}}">
-                                                                        <i class="bi bi-upload"></i> Upload Photo
-                                                                    </button>
-                                                                </div>
-
-                                                                <!-- Preview Container -->
-                                                                <div id="before-merch-preview-{{i}}" class="image-preview">
-                                                                    <span class="placeholder">No image selected</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-
-                                        <!-- After Merchandising Photos -->
-                                        <div class="mb-4">
-                                            <h6 class="fw-bold mb-3">After Merchandising</h6>
-                                            <div class="row g-3">
-                                                {% for i in '12345'|make_list %}
-                                                <div class="col-md-4">
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <label class="form-label">Photo {{i}}</label>
-                                                            <div class="photo-input-group">
-                                                                <!-- File input -->
-                                                                <input type="file"
-                                                                       name="before_merch_photo_{{i}}"
-                                                                       id="before_merch_photo_{{i}}"
-                                                                       accept="image/*"
-                                                                       class="form-control d-none"
-                                                                       data-preview="before-merch-preview-{{i}}">
-
-                                                                <!-- Photo Action Buttons -->
-                                                                <div class="d-grid gap-2">
-                                                                    <button type="button" class="btn btn-primary capture-photo"
-                                                                            data-target="before_merch_photo_{{i}}">
-                                                                        <i class="bi bi-camera-fill"></i> Take Photo
-                                                                    </button>
-                                                                    <label class="btn btn-outline-primary mb-0" for="before_merch_photo_{{i}}">
-                                                                        <i class="bi bi-upload"></i> Upload Photo
-                                                                    </label>
-                                                                </div>
-
-                                                                <!-- Preview Container -->
-                                                                <div id="before-merch-preview-{{i}}" class="image-preview mt-2">
-                                                                    <span class="placeholder">No image selected</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Camera Modal -->
-                            <div class="modal fade" id="cameraModal" tabindex="-1">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Take Photo</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <video id="video" autoplay playsinline class="img-fluid"></video>
-                                            <canvas id="canvas" style="display: none;"></canvas>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="button" class="btn btn-primary" id="captureBtn">
-                                                <i class="bi bi-camera-fill"></i> Capture
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <style>
-                                /* Hide the default file input */
-                                input[type="file"] {
-                                    display: none;
-                                }
-
-                                /* Merchandising Section Theme */
-                                .accordion-button.merchandising {
-                                    background-color: #f3f0ff;
-                                }
-                                .accordion-button.merchandising:not(.collapsed) {
-                                    background-color: #7950f2;
-                                    color: white;
-                                }
-
-                                /* Card Styles */
-                                .card {
-                                    border: 1px solid rgba(0,0,0,.125);
-                                    box-shadow: 0 2px 4px rgba(0,0,0,.05);
-                                }
-
-                                /* Photo Input Group */
-                                .photo-input-group {
-                                    display: flex;
-                                    flex-direction: column;
-                                    gap: 0.5rem;
-                                }
-
-                                /* Image Preview Styles */
-                                .image-preview {
-                                    min-height: 150px;
-                                    border: 1px dashed #dee2e6;
-                                    border-radius: 4px;
-                                    padding: 0.5rem;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    background-color: #f8f9fa;
-                                    margin-top: 0.5rem;
-                                    overflow: hidden;
-                                }
-
-                                .image-preview img {
-                                    max-width: 100%;
-                                    max-height: 150px;
-                                    object-fit: contain;
-                                }
-
-                                .image-preview .placeholder {
-                                    color: #6c757d;
-                                    font-size: 0.875rem;
-                                }
-
-                                /* Button Styles */
-                                .btn i {
-                                    margin-right: 0.25rem;
-                                }
-
-                                .photo-input-group {
-                                    margin-bottom: 1rem;
-                                }
-
-                                .image-preview {
-                                    min-height: 150px;
-                                    border: 1px dashed #dee2e6;
-                                    border-radius: 4px;
-                                    margin-top: 1rem;
-                                    padding: 0.5rem;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    background-color: #f8f9fa;
-                                }
-
-                                .image-preview img {
-                                    max-width: 100%;
-                                    max-height: 200px;
-                                    object-fit: contain;
-                                }
-
-                                .remove-photo {
-                                    z-index: 1;
-                                }
-                            </style>
-
-                            <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                let currentPhotoInput = null;
-                                let stream = null;
-
-                                // Handle upload button clicks
-                                document.querySelectorAll('.upload-photo').forEach(button => {
-                                    button.addEventListener('click', () => {
-                                        const fileInput = document.querySelector(`[name="${button.dataset.target}"]`);
-                                        fileInput.click();
-                                    });
-                                });
-
-                                // Handle camera capture button clicks
-                                document.querySelectorAll('.capture-photo').forEach(button => {
-                                    button.addEventListener('click', async () => {
-                                        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                                            alert('Camera access is not supported by your browser');
-                                            return;
-                                        }
-
-                                        currentPhotoInput = document.querySelector(`[name="${button.dataset.target}"]`);
-                                        const modal = new bootstrap.Modal(document.getElementById('cameraModal'));
-
-                                        try {
-                                            stream = await navigator.mediaDevices.getUserMedia({
-                                                video: { facingMode: 'environment' },
-                                                audio: false
-                                            });
-                                            const video = document.getElementById('video');
-                                            video.srcObject = stream;
-                                            modal.show();
-                                        } catch (err) {
-                                            alert('Error accessing camera: ' + err.message);
-                                        }
-                                    });
-                                });
-
-                                // Handle photo capture
-                                document.getElementById('captureBtn').addEventListener('click', () => {
-                                    const video = document.getElementById('video');
-                                    const canvas = document.getElementById('canvas');
-                                    const context = canvas.getContext('2d');
-
-                                    canvas.width = video.videoWidth;
-                                    canvas.height = video.videoHeight;
-                                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                                    canvas.toBlob(blob => {
-                                        const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-                                        const dataTransfer = new DataTransfer();
-                                        dataTransfer.items.add(file);
-                                        currentPhotoInput.files = dataTransfer.files;
-                                        currentPhotoInput.dispatchEvent(new Event('change'));
-
-                                        const modal = bootstrap.Modal.getInstance(document.getElementById('cameraModal'));
-                                        modal.hide();
-                                    }, 'image/jpeg', 0.8);
-                                });
-
-                                // Clean up camera when modal is closed
-                                document.getElementById('cameraModal').addEventListener('hidden.bs.modal', () => {
-                                    if (stream) {
-                                        stream.getTracks().forEach(track => track.stop());
-                                    }
-                                });
-
-                                // Handle file input changes
-                                document.querySelectorAll('input[type="file"]').forEach(input => {
-                                    input.addEventListener('change', function() {
-                                        const previewId = this.name.replace('_photo_', '-preview-');
-                                        const previewDiv = document.getElementById(previewId);
-
-                                        if (this.files && this.files[0]) {
-                                            const reader = new FileReader();
-                                            reader.onload = function(e) {
-                                                previewDiv.innerHTML = `
-                                                    <img src="${e.target.result}" class="img-fluid" alt="Preview">
-                                                    <button type="button" class="btn btn-sm btn-danger remove-photo position-absolute top-0 end-0 m-2">
-                                                        <i class="bi bi-x"></i>
-                                                    </button>
-                                                `;
-
-                                                // Add remove button functionality
-                                                previewDiv.querySelector('.remove-photo').addEventListener('click', () => {
-                                                    input.value = '';
-                                                    previewDiv.innerHTML = '<span class="placeholder">No image selected</span>';
-                                                });
-                                            };
-                                            reader.readAsDataURL(this.files[0]);
-                                        } else {
-                                            previewDiv.innerHTML = '<span class="placeholder">No image selected</span>';
-                                        }
-                                    });
-                                });
-                            });
-                            </script>
-
-                                <!-- Hidden input for submission type -->
-                               <input type="hidden" name="submission_type" id="submission_type" value="">
-
-                              <!-- Action buttons -->
-                              <div class="btn-group" role="group">
-                                  <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#draftModal">
-                                      Save as Draft
-                                  </button>
-                                  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#submitModal">
-                                      Submit Report
-                                  </button>
-                              </div>
-                          </form>
-                             </div>
-                                </div>
-                              </div>
-                         </div>
-                    </div>
-
-
-                    <!-- Back to dash board Button -->
-                    <div class="mt-4">
-                        <form action="{% url 'reptrack_trace:home' %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger w-100">
-                                <i class="bi bi-box-arrow-right me-2"></i>
-                                back to dashboard
-                            </button>
-                        </form>
-                     </div>
-
-
-                                                   <!-- Draft Modal -->
-                              <div class="modal fade" id="draftModal" tabindex="-1">
-                                  <div class="modal-dialog">
-                                      <div class="modal-content">
-                                          <div class="modal-header">
-                                              <h5 class="modal-title">Save Report as Draft</h5>
-                                              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                          </div>
-                                          <div class="modal-body">
-                                              <p>Your report will be saved as a draft and can be edited later.</p>
-                                          </div>
-                                          <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                              <button type="submit" class="btn btn-primary submit-btn" name="submission_type" value="draft" form="reportForm">
-                                                  <span class="button-text">Save Draft</span>
-                                                  <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                              </button>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-
-                              <!-- Submit Modal -->
-                              <div class="modal fade" id="submitModal" tabindex="-1">
-                                  <div class="modal-dialog">
-                                      <div class="modal-content">
-                                          <div class="modal-header">
-                                              <h5 class="modal-title">Submit Final Report</h5>
-                                              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                          </div>
-                                          <div class="modal-body">
-                                              <p>Are you sure you want to submit this report?</p>
-                                              <div class="alert alert-warning">
-                                                  <p>This action cannot be undone.</p>
-                                              </div>
-                                          </div>
-                                          <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                              <button type="submit" class="btn btn-primary submit-btn" name="submission_type" value="submit" form="reportForm">
-                                                  <span class="button-text">Submit Report</span>
-                                                  <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                              </button>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-
-                              <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const form = document.getElementById('reportForm');
-
-                                    function handleButtonState(button, isSubmitting) {
-                                        const spinner = button.querySelector('.spinner-border');
-                                        const text = button.querySelector('.button-text');
-
-                                        button.disabled = isSubmitting;
-                                        if (spinner) {
-                                            spinner.classList.toggle('d-none', !isSubmitting);
-                                        }
-                                        if (text) {
-                                            text.style.opacity = isSubmitting ? '0.5' : '1';
-                                        }
-                                    }
-
-                                    // Handle form submission
-                                    form.addEventListener('submit', async function(e) {
-                                        e.preventDefault();
-
-                                        // Get the clicked button's submission type
-                                        const submittedButton = document.activeElement;
-                                        const submissionType = submittedButton.value;
-
-                                        // Create or update hidden input for submission type
-                                        let submissionTypeInput = form.querySelector('input[name="submission_type"]');
-                                        if (!submissionTypeInput) {
-                                            submissionTypeInput = document.createElement('input');
-                                            submissionTypeInput.type = 'hidden';
-                                            submissionTypeInput.name = 'submission_type';
-                                            form.appendChild(submissionTypeInput);
-                                        }
-                                        submissionTypeInput.value = submissionType;
-
-                                        // Show loading state on all submit buttons
-                                        document.querySelectorAll('.submit-btn').forEach(button => {
-                                            handleButtonState(button, true);
-                                        });
-
-                                        try {
-                                            // Add a small delay to ensure the loading state is visible
-                                            await new Promise(resolve => setTimeout(resolve, 500));
-
-                                            // Create form data
-                                            const formData = new FormData(form);
-
-                                            // Submit the form programmatically
-                                            form.submit();
-
-                                            // Keep the modal open for a brief moment to show the loading state
-                                            setTimeout(() => {
-                                                const modal = bootstrap.Modal.getInstance(submittedButton.closest('.modal'));
-                                                if (modal) {
-                                                    modal.hide();
-                                                }
-                                            }, 800);
-                                        } catch (error) {
-                                            console.error('Submission error:', error);
-                                            // Reset button states on error
-                                            document.querySelectorAll('.submit-btn').forEach(button => {
-                                                handleButtonState(button, false);
-                                            });
-
-                                            // Optionally show an error message to the user
-                                            alert('There was an error submitting the form. Please try again.');
-                                        }
-                                    });
-
-                                    // Reset button states when modal is closed
-                                    document.querySelectorAll('.modal').forEach(modalEl => {
-                                        modalEl.addEventListener('hidden.bs.modal', function() {
-                                            document.querySelectorAll('.submit-btn').forEach(submitBtn => {
-                                                handleButtonState(submitBtn, false);
-                                            });
-                                        });
-                                    });
-                                });
-                              </script>
-
-
-
-
-
-
-                {% endblock %}
-
-
-{% block scripts %}
-
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{% static 'js/modal_handler.js' %}"></script>
-
-<script>
-        console.log('Testing script load'); // This will confirm if any JavaScript runs at all
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Debug logs
-            console.log('DOM loaded');
-
-            // Get the selects
-            const shopSelect = document.querySelector('select[name="shop"]');
-            const mainStoreSelect = document.querySelector('select[name="main_store"]');
-            const productSelect = document.querySelector('select[name="product"]');
-
-            console.log('Found selects:', { shopSelect, mainStoreSelect, productSelect });
-
-            // Simple change handlers
-            shopSelect?.addEventListener('change', async function() {
-                console.log('Shop changed:', this.value);
+    
+    // Handle submit buttons with loading state
+     // Form submission handling
+     document.querySelectorAll('.submit-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default button behavior
+            
+            const spinner = this.querySelector('.spinner-border');
+            const text = this.querySelector('.button-text');
+            
+            // Update the hidden submission_type field
+            const submissionType = this.value;
+            document.getElementById('submission_type').value = submissionType;
+            
+            // Show loading state
+            spinner.classList.remove('d-none');
+            text.style.opacity = '0.5';
+            this.disabled = true;
+            
+            // Small delay to ensure hidden field is updated before form submission
+            setTimeout(() => {
+                const form = document.getElementById('reportForm');
+                form.submit();
+            }, 100);
+        });
+    });
+    
+    // Handle form submission errors
+    const formAlerts = document.getElementById('mainFormAlerts');
+    if (formAlerts && formAlerts.innerHTML.trim()) {
+        // Scroll to the alerts section if there are errors
+        formAlerts.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Dynamic form fields calculation
+    const stockFileQuantityInput = document.querySelector('[name="stock_file_quantity"]');
+    const currentQuantityInput = document.querySelector('[name="shop_current_quantity"]');
+    const discrepancyInput = document.querySelector('input[value="0"][readonly]');
+    
+    function calculateDiscrepancy() {
+        const stockFileQty = parseInt(stockFileQuantityInput.value) || 0;
+        const currentQty = parseInt(currentQuantityInput.value) || 0;
+        const discrepancy = stockFileQty - currentQty;
+        discrepancyInput.value = discrepancy;
+    }
+    
+    if (stockFileQuantityInput && currentQuantityInput) {
+        stockFileQuantityInput.addEventListener('input', calculateDiscrepancy);
+        currentQuantityInput.addEventListener('input', calculateDiscrepancy);
+    }
+    
+    // Handle shop selection to populate shop details
+    const shopSelect = document.querySelector('select[name="shop"]');
+    if (shopSelect) {
+        shopSelect.addEventListener('change', async function() {
+            try {
                 const response = await fetch(`/track-n-trace/dynamic-fetch/?shop=${this.value}`);
                 const data = await response.json();
                 if (data.selected_shop) {
@@ -779,60 +521,31 @@
                     document.getElementById('shopManagerName').value = data.selected_shop.manager_name || '';
                     document.getElementById('shopManagerPhone').value = data.selected_shop.manager_phone || '';
                 }
-            });
-
-            mainStoreSelect?.addEventListener('change', async function() {
-                console.log('Main store changed:', this.value);
-                const response = await fetch(`/track-n-trace/dynamic-fetch/?main_store=${this.value}`);
-                const data = await response.json();
-                if (data.selected_mainstore) {
-                    document.getElementById('mainstoreAddress').value = data.selected_mainstore.location || '';
-                    document.getElementById('mainstoreManagerName').value = data.selected_mainstore.manager_name || '';
-                    document.getElementById('mainstoreManagerPhone').value = data.selected_mainstore.manager_phone || '';
-                    document.getElementById('mainstoreManagerEmail').value = data.selected_mainstore.manager_email || '';
-                }
-            });
-
-            productSelect?.addEventListener('change', async function() {
-                console.log('Product changed:', this.value);
+            } catch (error) {
+                console.error('Error fetching shop data:', error);
+            }
+        });
+    }
+    
+    // Handle product selection
+    const productSelect = document.querySelector('select[name="product"]');
+    if (productSelect) {
+        productSelect.addEventListener('change', async function() {
+            try {
                 const response = await fetch(`/track-n-trace/dynamic-fetch/?product=${this.value}`);
                 const data = await response.json();
-                if (data.selected_product) {
-                    document.getElementById('productName').value = data.selected_product.name || '';
-                }
-            });
+                // If you need to populate product details, add your code here
+            } catch (error) {
+                console.error('Error fetching product data:', error);
+            }
         });
-</script>
-<script>
-    function resetModal() {
-        const modalContent = document.getElementById('productFormContent');
-        modalContent.innerHTML = `
-            {% include 'reports/partials/product_form.html' %}
-        `;
     }
+});
 </script>
+{% endblock %}
 
-<script>
-    document.querySelectorAll('#submitModal button[type="submit"]').forEach(button => {
-        button.addEventListener('click', function () {
-            // Add spinner to the button
-            const spinner = document.createElement('span');
-            spinner.className = 'spinner-border spinner-border-sm';
-            spinner.setAttribute('role', 'status');
-            spinner.setAttribute('aria-hidden', 'true');
-
-            // Update the button UI
-            this.innerHTML = ''; // Clear the button text
-            this.appendChild(spinner); // Add the spinner
-            this.appendChild(document.createTextNode(' Processing...')); // Add processing text
-            this.disabled = true; // Disable the button to prevent multiple clicks
-
-            // Allow natural form submission
-        });
-    });
-</script>
-
-
-
-
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/modal_handler.js' %}"></script>
 {% endblock %}

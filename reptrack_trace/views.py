@@ -892,7 +892,6 @@ class ReportCreateView(FormView):
     form_class = ReportForm
     success_url = reverse_lazy('reptrack_trace:home')
     
-    
     def get_initial(self):
         initial = super().get_initial()
         # Retrieve unsaved data from session
@@ -916,13 +915,8 @@ class ReportCreateView(FormView):
             except Product.DoesNotExist:
                 pass
         return initial
-       
         
-
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Fetch selected shop data
         context = super().get_context_data(**kwargs)
         
         # Fetch selected shop data
@@ -942,7 +936,6 @@ class ReportCreateView(FormView):
                 context['selected_shop'] = None
         else:
             context['selected_shop'] = None
-
         
         # Fetch selected product data
         selected_product_id = self.request.GET.get('product') or self.request.POST.get('product')
@@ -963,20 +956,17 @@ class ReportCreateView(FormView):
             'products': Product.objects.all(),
             'shop_form': ShopForm(),
             'product_form': ProductForm(),
-            
         })
         
         return context
 
     def post(self, request, *args, **kwargs):
-        
         # Handle AJAX modal form submissions
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             form_key = request.POST.get('form_key')
             modal_forms = {
                 'shop_form': ShopForm,
                 'product_form': ProductForm,
-                
             }
     
             if form_key in modal_forms:
@@ -996,26 +986,39 @@ class ReportCreateView(FormView):
                     })
                 else:
                     return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-    
+
         # Handle main form submission
         form = self.get_form()
+        submission_type = request.POST.get('submission_type', 'draft')
+        
         if form.is_valid():
             report = form.save(commit=False)
             report.representative = request.user
-
+            
+            # Handle file uploads for main form fields
             if 'stock_file_photo' in request.FILES:
                 report.stock_file_photo = request.FILES['stock_file_photo']
             if 'po_photo' in request.FILES:
                 report.po_photo = request.FILES['po_photo']
-
+            
+            # Handle merchandising photos
+            for i in range(1, 6):  # Assuming 5 photos max
+                before_field = f'before_merch_photo_{i}'
+                after_field = f'after_merch_photo_{i}'
+                
+                if before_field in request.FILES:
+                    setattr(report, before_field, request.FILES[before_field])
+                
+                if after_field in request.FILES:
+                    setattr(report, after_field, request.FILES[after_field])
     
-            submission_type = request.POST.get('submission_type', 'draft')
             report.status = 'submitted' if submission_type == 'submit' else 'draft'
             report.submitted_at = timezone.now() if submission_type == 'submit' else None
     
             try:
                 report.save()
                 
+                # Clear session data
                 if 'unsaved_report_data' in self.request.session:
                     del self.request.session['unsaved_report_data']
     
@@ -1028,8 +1031,10 @@ class ReportCreateView(FormView):
                 messages.error(request, f'Error saving report: {str(e)}')
                 return self.form_invalid(form)
         else:
-            return self.form_invalid(form) 
-    
+            # Print form errors to console for debugging
+            print(f"Form errors: {form.errors}")
+            messages.error(request, 'There were errors in your form submission. Please check the form and try again.')
+            return self.form_invalid(form)    
 
 class ReportDetailView(DetailView):
     model = Report
@@ -1047,10 +1052,12 @@ class ReportDetailView(DetailView):
             'address': report.shop.address,
             'manager_name': report.shop.manager_name,
             'manager_phone': report.shop.manager_phone,
+            'discrepancy': report.discrepancy,
+
             'product': report.product,
             'current_quantity': report.shop_current_quantity,
             'stock_file_quantity': report.stock_file_quantity,
-            'photo': report.shop_photo,
+            'photo': report.po_photo,
             'photo_taken_at': report.shop_photo_taken_at,
             'comments': report.shop_comments,
 
@@ -1073,8 +1080,8 @@ class ReportDetailView(DetailView):
             'status': report.status,
             'created_at': localtime(report.created_at),
             'submitted_at': localtime(report.submitted_at) if report.submitted_at else "Not Submitted",
-            'final_shop_quantity': report.final_shop_quantity or 0,
-            'final_store_quantity': report.final_store_quantity or 0,
+           # 'final_shop_quantity': report.final_shop_quantity or 0,
+           # 'final_store_quantity': report.final_store_quantity or 0,
         }
 
         return context
@@ -1197,14 +1204,6 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
                 'stores_manager_phone': report.shop.store_manager_phone,
             }
         
-        # If we have a main store in the report, use it
-        if report.main_store:
-            context['selected_mainstore'] = {
-                'address': report.main_store.address,
-                'manager_name': report.main_store.manager_name,
-                'manager_phone': report.main_store.manager_phone,
-                'manager_email': report.main_store.manager_email,
-            }
         
         # If we have a product in the report, use it
         if report.product:
@@ -1216,12 +1215,8 @@ class ReportUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context.update({
             'shops': Shop.objects.all(),
             'products': Product.objects.all(),
-            'main_stores': MainStore.objects.all(),
-            'shop_stores': ShopStore.objects.all(),
             'shop_form': ShopForm(),
             'product_form': ProductForm(),
-            'main_store_form': MainStoreForm(),
-            'shop_store_form': ShopStoreForm(),
         })
         
 
@@ -1595,156 +1590,323 @@ def get_image_for_pdf(image_field, max_width=6*inch, max_height=4*inch):
         print(f"Error processing image: {str(e)}")
         return None
 
-def generate_pdf_report(report, pk=None):
-    """Generate PDF for the report"""
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    styles = getSampleStyleSheet()
-    elements = []
-
-    # Title Section
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=18,
-        spaceAfter=20
-    )
-    elements.append(Paragraph(f"Inventory Report #{report.pk}", title_style))
-    elements.append(Spacer(1, 20))
-
-    # Report metadata
-    metadata_style = ParagraphStyle(
-        'MetadataStyle',
-        parent=styles['Normal'],
-        fontSize=12,
-        spaceAfter=6
-    )
-    elements.append(Paragraph(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}", metadata_style))
-    elements.append(Paragraph(f"Shop: {report.shop}", metadata_style))
-    elements.append(Paragraph(f"Product: {report.product}", metadata_style))
-    elements.append(Spacer(1, 20))
-
-    # Shop Section
-    section_style = ParagraphStyle(
-        'SectionStyle',
-        parent=styles['Heading2'],
-        fontSize=14,
-        spaceAfter=10
-    )
-    elements.append(Paragraph("Shop Details", section_style))
-    shop_data = [
-        ["Current Quantity", str(report.shop_current_quantity)],
-        ["Needs Top-up", "Yes" if report.needs_topup else "No"],
-        ["Desired Quantity", str(report.desired_quantity)],
-        ["Top-up Quantity", str(report.topup_quantity)],
-        ["Comments", report.shop_comments or "N/A"]
+def create_status_table(report):
+    """Create status information table"""
+    status_data = [
+        ["Status", report.status],
+        ["Created At", report.created_at.strftime('%Y-%m-%d %H:%M')],
+        ["Submitted At", report.submitted_at.strftime('%Y-%m-%d %H:%M') if report.submitted_at else "Not submitted"]
     ]
-    shop_table = Table(shop_data, colWidths=[200, 300])
+    
+    status_table = Table(status_data, colWidths=[1.5*inch, 5*inch])
+    status_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+    ]))
+    
+    return status_table
+
+def create_shop_details_table(report):
+    """Create shop details table"""
+    
+    
+    shop_data = [
+        ["Shop", str(report.shop)],
+        ["Address", str(report.shop.address if hasattr(report.shop, 'address') else "N/A")],
+        ["Manager", str(report.shop.manager_name if hasattr(report.shop, 'manager_name') else "N/A")],
+        ["Phone", str(report.shop.manager_phone if hasattr(report.shop, 'manager_phone') else "N/A")],
+        ["Product", str(report.product)],
+        ["Current Quantity", str(report.shop_current_quantity)],
+        ["Discrepancy Quantity", str(report.discrepancy if hasattr(report, 'discrepancy') else "N/A")],
+        ["Stockfile Quantity", str(report.stock_file_quantity)],
+    ]
+    
+    shop_table = Table(shop_data, colWidths=[1.5*inch, 5*inch])
     shop_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
     ]))
-    elements.append(shop_table)
     
-    # Add shop photo if exists
-    shop_image = get_image_for_pdf(report.shop_photo)
-    if shop_image:
-        elements.append(Spacer(1, 10))
-        elements.append(Paragraph("Shop Photo:", metadata_style))
-        elements.append(shop_image)
-    elements.append(Spacer(1, 20))
+    return shop_table
 
-    # Shop Store Section
-    elements.append(Paragraph("Shop Store Details", section_style))
-    shop_store_data = [
-        ["Manager Confirmed", "Yes" if report.shop_store_manager_confirmed else "No"],
-        ["Current Quantity", str(report.shop_store_current_quantity)],
-        ["Quantity Taken", str(report.quantity_taken_from_shop_store)],
-        ["Remaining Quantity", str(report.remaining_shop_store_quantity)],
-        ["Comments", report.shop_store_comments or "N/A"]
-    ]
-    shop_store_table = Table(shop_store_data, colWidths=[200, 300])
-    shop_store_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    elements.append(shop_store_table)
+
+def create_merch_images_section(report, section_type="before"):
+    """Create a section for merchandising images (before or after)"""
+    elements = []
     
-    # Add shop store photo if exists
-    shop_store_image = get_image_for_pdf(report.shop_store_photo)
-    if shop_store_image:
-        elements.append(Spacer(1, 10))
-        elements.append(Paragraph("Shop Store Photo:", metadata_style))
-        elements.append(shop_store_image)
-    elements.append(Spacer(1, 20))
-
-    # Store Section
-    elements.append(Paragraph("Store Details", section_style))
-    store_data = [
-        ["Store", str(report.store)],
-        ["Current Quantity", str(report.store_current_quantity)],
-        ["Quantity Taken", str(report.quantity_taken_from_store)],
-        ["Remaining Quantity", str(report.remaining_store_quantity)],
-        ["Comments", report.store_comments or "N/A"]
-    ]
-    store_table = Table(store_data, colWidths=[200, 300])
-    store_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    elements.append(store_table)
+    photo_fields = []
+    if section_type == "before":
+        photo_fields = [
+            getattr(report, 'before_merch_photo_1', None),
+            getattr(report, 'before_merch_photo_2', None),
+            getattr(report, 'before_merch_photo_3', None),
+            getattr(report, 'before_merch_photo_4', None),
+            getattr(report, 'before_merch_photo_5', None)
+        ]
+    else:  # after
+        photo_fields = [
+            getattr(report, 'after_merch_photo_1', None),
+            getattr(report, 'after_merch_photo_2', None),
+            getattr(report, 'after_merch_photo_3', None),
+            getattr(report, 'after_merch_photo_4', None),
+            getattr(report, 'after_merch_photo_5', None)
+        ]
     
-    # Add store photo if exists
-    store_image = get_image_for_pdf(report.store_photo)
-    if store_image:
-        elements.append(Spacer(1, 10))
-        elements.append(Paragraph("Store Photo:", metadata_style))
-        elements.append(store_image)
-    elements.append(Spacer(1, 20))
-
-    # Main Store Section
-    elements.append(Paragraph("Main Store Details", section_style))
-    main_store_data = [
-        ["Main Store", str(report.main_store)],
-        ["Current Quantity", str(report.main_store_quantity)],
-        ["Quantity Taken", str(report.quantity_taken_from_main_store)],
-        ["Remaining Quantity", str(report.remaining_main_store_quantity)],
-        ["Comments", report.main_store_comments or "N/A"]
-    ]
-    main_store_table = Table(main_store_data, colWidths=[200, 300])
-    main_store_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    elements.append(main_store_table)
+    # Filter out None values
+    photo_fields = [field for field in photo_fields if field]
     
-    # Add main store photo if exists
-    main_store_image = get_image_for_pdf(report.main_store_photo)
-    if main_store_image:
-        elements.append(Spacer(1, 10))
-        elements.append(Paragraph("Main Store Photo:", metadata_style))
-        elements.append(main_store_image)
+    # Process images in pairs for layout
+    for i in range(0, len(photo_fields), 2):
+        images_row = []
+        
+        # First image in the row
+        img1 = get_image_for_pdf(photo_fields[i], max_width=3*inch, max_height=2*inch)
+        if img1:
+            images_row.append(img1)
+        else:
+            images_row.append(Paragraph("No image", ParagraphStyle('Normal')))
+            
+        # Second image in the row (if exists)
+        if i+1 < len(photo_fields):
+            img2 = get_image_for_pdf(photo_fields[i+1], max_width=3*inch, max_height=2*inch)
+            if img2:
+                images_row.append(img2)
+            else:
+                images_row.append(Paragraph("No image", ParagraphStyle('Normal')))
+        else:
+            # Empty cell for even layout
+            images_row.append(Paragraph("", ParagraphStyle('Normal')))
+        
+        # Create a table for this row of images
+        image_table = Table([images_row], colWidths=[3.25*inch, 3.25*inch])
+        image_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(image_table)
+        elements.append(Spacer(1, 0.1*inch))
+    
+    if not photo_fields:
+        elements.append(Paragraph(f"No {section_type} merchandising photos available", 
+                                 ParagraphStyle('Normal', alignment=1, textColor=colors.grey)))
+    
+    return elements
 
+def generate_pdf_report(report, pk=None):
+    """Generate professional PDF report that looks like the detail view"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, 
+                           rightMargin=0.5*inch, leftMargin=0.5*inch,
+                           topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # Define custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=20,
+        spaceAfter=10,
+        alignment=1  # Center alignment
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'Subtitle',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceBefore=15,
+        spaceAfter=10,
+        textColor=colors.white,
+        backColor=colors.HexColor("#007bff"),  # Bootstrap primary blue
+        borderPadding=8
+    )
+    
+    success_header_style = ParagraphStyle(
+        'SuccessHeader',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceBefore=15,
+        spaceAfter=10,
+        textColor=colors.white,
+        backColor=colors.HexColor("#28a745"),  # Bootstrap success green
+        borderPadding=8
+    )
+    
+    info_header_style = ParagraphStyle(
+        'InfoHeader',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceBefore=15,
+        spaceAfter=10,
+        textColor=colors.white,
+        backColor=colors.HexColor("#17a2b8"),  # Bootstrap info blue
+        borderPadding=8
+    )
+    
+    section_style = ParagraphStyle(
+        'Section',
+        parent=styles['Heading3'],
+        fontSize=12,
+        spaceBefore=10,
+        spaceAfter=6
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=10,
+        spaceAfter=6
+    )
+
+    # Title
+    elements.append(Paragraph(f"Inventory Report #{report.pk}", title_style))
+    elements.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", 
+                            ParagraphStyle('DateStyle', parent=styles['Normal'], alignment=1)))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Status Cards Section
+    elements.append(create_status_table(report))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Shop Details Section
+    elements.append(Paragraph("Shop Details", subtitle_style))
+    elements.append(Spacer(1, 0.1*inch))
+    elements.append(create_shop_details_table(report))
+    elements.append(Spacer(1, 0.1*inch))
+    
+    # Shop comments
+    if report.shop_comments:
+        elements.append(Paragraph("Comments:", section_style))
+        elements.append(Paragraph(report.shop_comments, normal_style))
+    
+    # Shop photos
+    if hasattr(report, 'stock_file_photo') and report.stock_file_photo:
+        elements.append(Paragraph("Stock File Photo:", section_style))
+        stock_image = get_image_for_pdf(report.stock_file_photo)
+        if stock_image:
+            elements.append(stock_image)
+            elements.append(Spacer(1, 0.1*inch))
+    
+    if report.po_photo:
+        elements.append(Paragraph("Po Photo:", section_style))
+        shop_image = get_image_for_pdf(report.po_photo)
+        if shop_image:
+            elements.append(shop_image)
+            elements.append(Spacer(1, 0.1*inch))
+    
+    
+    # Merchandising Before Section
+    elements.append(Paragraph("Merchandising - Before", success_header_style))
+    elements.append(Paragraph("Photos taken before merchandising actions:", normal_style))
+    elements.append(Spacer(1, 0.1*inch))
+    
+    before_elements = create_merch_images_section(report, "before")
+    elements.extend(before_elements)
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Merchandising After Section
+    elements.append(Paragraph("Merchandising - After", info_header_style))
+    elements.append(Paragraph("Photos taken after merchandising actions:", normal_style))
+    elements.append(Spacer(1, 0.1*inch))
+    
+    after_elements = create_merch_images_section(report, "after")
+    elements.extend(after_elements)
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Optional: Store and Main Store details (if applicable)
+    # Only include if the report model has these fields
+    if hasattr(report, 'store') and report.store:
+        # Store Details
+        elements.append(Paragraph("Store Details", subtitle_style))
+        elements.append(Spacer(1, 0.1*inch))
+        
+        store_data = [
+            ["Store", str(report.store)],
+            ["Current Quantity", str(report.store_current_quantity)],
+            ["Quantity Taken", str(report.quantity_taken_from_store)],
+            ["Remaining Quantity", str(report.remaining_store_quantity)]
+        ]
+        
+        store_table = Table(store_data, colWidths=[2*inch, 4.5*inch])
+        store_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+        
+        elements.append(store_table)
+        elements.append(Spacer(1, 0.1*inch))
+        
+        # Store comments
+        if report.store_comments:
+            elements.append(Paragraph("Store Comments:", section_style))
+            elements.append(Paragraph(report.store_comments, normal_style))
+        
+        # Store photo
+        if report.store_photo:
+            elements.append(Paragraph("Store Photo:", section_style))
+            store_image = get_image_for_pdf(report.store_photo)
+            if store_image:
+                elements.append(store_image)
+            elements.append(Spacer(1, 0.2*inch))
+    
+    # Main Store section (if applicable)
+    if hasattr(report, 'main_store') and report.main_store:
+        elements.append(Paragraph("Main Store Details", subtitle_style))
+        elements.append(Spacer(1, 0.1*inch))
+        
+        main_store_data = [
+            ["Main Store", str(report.main_store)],
+            ["Current Quantity", str(report.main_store_quantity)],
+            ["Quantity Taken", str(report.quantity_taken_from_main_store)],
+            ["Remaining Quantity", str(report.remaining_main_store_quantity)]
+        ]
+        
+        main_store_table = Table(main_store_data, colWidths=[2*inch, 4.5*inch])
+        main_store_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+        
+        elements.append(main_store_table)
+        elements.append(Spacer(1, 0.1*inch))
+        
+        # Main store comments
+        if report.main_store_comments:
+            elements.append(Paragraph("Main Store Comments:", section_style))
+            elements.append(Paragraph(report.main_store_comments, normal_style))
+        
+        # Main store photo
+        if report.main_store_photo:
+            elements.append(Paragraph("Main Store Photo:", section_style))
+            main_store_image = get_image_for_pdf(report.main_store_photo)
+            if main_store_image:
+                elements.append(main_store_image)
+    
     # Build PDF
     doc.build(elements)
     pdf = buffer.getvalue()
@@ -1760,11 +1922,10 @@ def download_report_pdf(request, pk):
     
     # Create response
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="report_{pk}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="inventory_report_{pk}.pdf"'
     response.write(pdf)
     
     return response
-
 # Analytics Views
 class AnalyticsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """View for displaying analytics"""
