@@ -107,6 +107,11 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = False
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://repapp-dwonb.kinsta.app"
+]
+
+
 ROOT_URLCONF = 'main_conf.urls'
 
 TEMPLATES = [
