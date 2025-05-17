@@ -227,6 +227,14 @@
                             <p class="text-muted">No after merchandising photos available</p>
                         </div>
                         {% endif %}
+
+                        {% if shop_details.merch_comment %}
+                        <div class="comments">
+                            <h6 class="info-label">Merchandising Comments</h6>
+                            <p>{{ shop_details.merch_comment }}</p>
+                        </div>
+                        {% endif %}
+
                     </div>
                 </div>
 

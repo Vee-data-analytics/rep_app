@@ -79,8 +79,9 @@ class ReportForm(forms.ModelForm):
             # Merchandising Comment
             'merchandising_comment',
             
+            # Include discrepancy field
+            'discrepancy',
         ]
-        exclude = ['discrepancy']  # Exclude discrepancy as it's calculated automatically
         widgets = {
             'shop': forms.Select(attrs={
                 'class': 'form-select',
@@ -92,6 +93,11 @@ class ReportForm(forms.ModelForm):
             'shop_comments': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'merchandising_comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'status': forms.Select(attrs={'class': 'form-select'}),
+            'discrepancy': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'readonly': 'readonly',
+                'id': 'id_discrepancy'
+            }),
             
             # Stock file and PO photos
             'stock_file_photo': forms.FileInput(attrs={
@@ -168,17 +174,28 @@ class ReportForm(forms.ModelForm):
             before_field = f'before_merch_photo_{i}'
             after_field = f'after_merch_photo_{i}'
             
+
+
             # Store field references for easier template access
             self.before_photos.append((i, self[before_field], 
                                     getattr(self.instance, before_field, None)))
             self.after_photos.append((i, self[after_field], 
                                    getattr(self.instance, after_field, None)))
+
+        # Make discrepancy field not required
+        if 'discrepancy' in self.fields:
+            self.fields['discrepancy'].required = False
+            
     
     def clean(self):
-        """Add custom validation and calculate discrepancy."""
         cleaned_data = super().clean()
-        # Note: discrepancy will be calculated in the template or view
+        # Auto-calculate discrepancy if stock_file_quantity and shop_current_quantity are provided
+        if 'stock_file_quantity' in cleaned_data and 'shop_current_quantity' in cleaned_data:
+            stock_file_qty = cleaned_data.get('stock_file_quantity') or 0
+            current_qty = cleaned_data.get('shop_current_quantity') or 0
+            cleaned_data['discrepancy'] = stock_file_qty - current_qty
         return cleaned_data
+   
         
     def clean_photo_field(self, photo):
         """Helper method to validate photo fields"""

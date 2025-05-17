@@ -1061,6 +1061,8 @@ class ReportDetailView(DetailView):
             'photo_taken_at': report.shop_photo_taken_at,
             'comments': report.shop_comments,
 
+            'merch_comment':report.merchandising_comment,
+
             'before_merch_photo_1': report.before_merch_photo_1,
             'before_merch_photo_2': report.before_merch_photo_2,
             'before_merch_photo_3': report.before_merch_photo_3,
