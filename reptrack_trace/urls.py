@@ -62,6 +62,9 @@ urlpatterns = [
     path('admin/products/<int:pk>/update/', views.AdminProductUpdateView.as_view(), name='admin-product-update'),
     path('admin/products/<int:pk>/delete/', views.AdminProductDeleteView.as_view(), name='admin-product-delete'),
 
+    path('export/shops/', views.ShopCSVExportView.as_view(), name='export_shops_csv'),
+    path('export/products/', views.ProductCSVExportView.as_view(), name='export_products_csv'),
+
 
     # API URLs
     path('api/get-shop-details/', views.get_shop_details, name='get-shop-details'),

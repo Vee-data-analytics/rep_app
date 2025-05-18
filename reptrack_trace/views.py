@@ -14,8 +14,6 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from io import BytesIO
-from PIL import Image as PILImage
 import os
 from django.http import HttpResponse
 from datetime import datetime
@@ -28,7 +26,6 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from users.forms import UserLoginForm
 from datetime import datetime, timedelta
-from django.utils import timezone
 from django.utils.timezone import localtime
 import json
 from reportlab.lib.units import inch
@@ -46,6 +43,21 @@ from django.utils import timezone
 from datetime import timedelta
 from django.views.decorators.csrf import csrf_protect,ensure_csrf_cookie
 import logging
+from django.http import HttpResponse
+import csv
+from .models import Shop, Product
+from django.views.generic import View
+from django.utils.decorators import method_decorator
+from django.contrib.admin.views.decorators import staff_member_required
+from io import BytesIO
+from PIL import Image as PILImage
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from django.shortcuts import get_object_or_404
+
 
 logger = logging.getLogger(__name__)
 
@@ -1667,6 +1679,11 @@ def create_merch_images_section(report, section_type="before"):
     # Filter out None values
     photo_fields = [field for field in photo_fields if field]
     
+    if not photo_fields:
+        elements.append(Paragraph(f"No {section_type} merchandising photos available", 
+                                 ParagraphStyle('Normal', alignment=1, textColor=colors.grey)))
+        return elements
+    
     # Process images in pairs for layout
     for i in range(0, len(photo_fields), 2):
         images_row = []
@@ -1674,9 +1691,10 @@ def create_merch_images_section(report, section_type="before"):
         # First image in the row
         img1 = get_image_for_pdf(photo_fields[i], max_width=3*inch, max_height=2*inch)
         if img1:
+            # Wrap image in a Paragraph for better containment
             images_row.append(img1)
         else:
-            images_row.append(Paragraph("No image", ParagraphStyle('Normal')))
+            images_row.append(Paragraph("Image not available", ParagraphStyle('Normal')))
             
         # Second image in the row (if exists)
         if i+1 < len(photo_fields):
@@ -1684,28 +1702,25 @@ def create_merch_images_section(report, section_type="before"):
             if img2:
                 images_row.append(img2)
             else:
-                images_row.append(Paragraph("No image", ParagraphStyle('Normal')))
+                images_row.append(Paragraph("Image not available", ParagraphStyle('Normal')))
         else:
             # Empty cell for even layout
             images_row.append(Paragraph("", ParagraphStyle('Normal')))
         
-        # Create a table for this row of images
+        # Create a table for this row of images with more padding
         image_table = Table([images_row], colWidths=[3.25*inch, 3.25*inch])
         image_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 5),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
-            ('TOPPADDING', (0, 0), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('BACKGROUND', (0, 0), (-1, -1), colors.white),  # White background for images
         ]))
         
         elements.append(image_table)
-        elements.append(Spacer(1, 0.1*inch))
-    
-    if not photo_fields:
-        elements.append(Paragraph(f"No {section_type} merchandising photos available", 
-                                 ParagraphStyle('Normal', alignment=1, textColor=colors.grey)))
+        elements.append(Spacer(1, 0.2*inch))  # More space between rows
     
     return elements
 
@@ -2016,3 +2031,85 @@ def sync_reports(request):
             }, status=400)
     return JsonResponse({'status': 'error', 'message': 'Invalid method'},
                        status=405)
+
+
+class ShopCSVExportView(View):
+    """View to export all Shop instances as CSV"""
+    
+    @method_decorator(staff_member_required)
+    def get(self, request, *args, **kwargs):
+        # Create the HttpResponse object with CSV header
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="shops_export.csv"'
+        
+        # Create CSV writer
+        writer = csv.writer(response)
+        
+        # Write header row
+        writer.writerow([
+            'ID', 
+            'Name', 
+            'Address', 
+            'Manager Name', 
+            'Manager Phone',
+            'Manager Email', 
+            'Store Manager Name', 
+            'Store Manager Phone',
+            'Store Manager Email', 
+            'Created At', 
+            'Updated At'
+        ])
+        
+        # Write data rows
+        shops = Shop.objects.all()
+        for shop in shops:
+            writer.writerow([
+                shop.id,
+                shop.name,
+                shop.address,
+                shop.manager_name,
+                shop.manager_phone,
+                shop.manager_email,
+                shop.store_manager_name,
+                shop.store_manager_phone,
+                shop.store_manager_email,
+                shop.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                shop.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+            ])
+        
+        return response
+
+
+class ProductCSVExportView(View):
+    """View to export all Product instances as CSV"""
+    
+    @method_decorator(staff_member_required)
+    def get(self, request, *args, **kwargs):
+        # Create the HttpResponse object with CSV header
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="products_export.csv"'
+        
+        # Create CSV writer
+        writer = csv.writer(response)
+        
+        # Write header row
+        writer.writerow([
+            'ID', 
+            'Name', 
+            'Description', 
+            'Created At', 
+            'Updated At'
+        ])
+        
+        # Write data rows
+        products = Product.objects.all()
+        for product in products:
+            writer.writerow([
+                product.id,
+                product.name,
+                product.description,
+                product.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                product.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+            ])
+        
+        return response
