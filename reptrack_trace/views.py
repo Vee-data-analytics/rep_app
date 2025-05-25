@@ -613,7 +613,7 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         # Apply filters
         if shop_id:
             reports = reports.filter(shop_id=shop_id)
-            inventory_items = inventory_items.filter(shop_id=shop_id)
+            
 
         if start_date and end_date:
             reports = reports.filter(
@@ -1069,7 +1069,6 @@ class ReportDetailView(DetailView):
             'product': report.product,
             'current_quantity': report.shop_current_quantity,
             'stock_file_quantity': report.stock_file_quantity,
-            'photo': report.po_photo,
             'photo_taken_at': report.shop_photo_taken_at,
             'comments': report.shop_comments,
 

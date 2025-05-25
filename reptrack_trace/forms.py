@@ -66,7 +66,7 @@ class ReportForm(forms.ModelForm):
         fields = [
             # Shop Section
             'shop', 'product', 'shop_current_quantity',
-            'stock_file_quantity', 'stock_file_photo', 'po_photo', 'shop_comments',
+            'stock_file_quantity', 'stock_file_photo',  'shop_comments',
             
             # Merchandising Section - Before Photos
             'before_merch_photo_1', 'before_merch_photo_2', 'before_merch_photo_3',
@@ -104,10 +104,7 @@ class ReportForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': 'image/*'
             }),
-            'po_photo': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/*'
-            }),
+            
             
             # Before merch photos
             'before_merch_photo_1': forms.FileInput(attrs={
@@ -214,9 +211,6 @@ class ReportForm(forms.ModelForm):
 
     def clean_stock_file_photo(self):
         return self.clean_photo_field(self.cleaned_data.get('stock_file_photo'))
-        
-    def clean_po_photo(self):
-        return self.clean_photo_field(self.cleaned_data.get('po_photo'))
         
     # Clean methods for all photo fields
     def clean_before_merch_photo_1(self):

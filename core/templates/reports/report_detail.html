@@ -102,25 +102,20 @@
 
                         
                         {% if shop_details.stock_file_quantity %}
-                        <div class="photo-evidence mb-3">
-                            <h6 class="info-label">Stock file Photo</h6>
-                            <img src="{{ shop_details.photo.url }}" class="report-img" alt="Shop Photo">
-                            {% if shop_details.photo_taken_at %}
-                            <p><small class="text-muted">Photo taken: {{ shop_details.photo_taken_at }}</small></p>
-                            {% endif %}
-                        </div>
-                        {% endif %}
+                           <div class="photo-evidence mb-3">
+                               <h6 class="info-label">Stock file Photo</h6>
+                               {% if shop_details.photo %}
+                                   <img src="{{ shop_details.photo.url }}" class="report-img" alt="Shop Photo">
+                                   {% if shop_details.photo_taken_at %}
+                                       <p><small class="text-muted">Photo taken: {{ shop_details.photo_taken_at }}</small></p>
+                                   {% endif %}
+                               {% else %}
+                                   <p><small class="text-muted">Stock image is not available</small></p>
+                               {% endif %}
+                           </div>
+                       {% endif %}
 
 
-                        {% if shop_details.photo %}
-                        <div class="photo-evidence mb-3">
-                            <h6 class="info-label">Product Po Photo</h6>
-                            <img src="{{ shop_details.photo.url }}" class="report-img" alt="Shop Photo">
-                            {% if shop_details.photo_taken_at %}
-                            <p><small class="text-muted">Photo taken: {{ shop_details.photo_taken_at }}</small></p>
-                            {% endif %}
-                        </div>
-                        {% endif %}
 
                         {% if shop_details.comments %}
                         <div class="comments">

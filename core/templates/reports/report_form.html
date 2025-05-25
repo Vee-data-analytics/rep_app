@@ -170,24 +170,7 @@
                                             <small class="form-text text-muted">Calculated: Stock File Quantity - Current Quantity Found</small>
                                         </div>
 
-                                        <!-- PO Photo - Standard Django Implementation -->
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">PO Photo</label>
-                                            {{ form.po_photo }}
-                                            {% if form.po_photo.errors %}
-                                                <div class="invalid-feedback d-block">
-                                                    {{ form.po_photo.errors }}
-                                                </div>
-                                            {% endif %}
-                                            {% if form.instance.po_photo %}
-                                                <div class="mt-2">
-                                                    <img src="{{ form.instance.po_photo.url }}" class="img-fluid rounded" style="max-height: 200px;">
-                                                </div>
-                                            {% endif %}
-                                            <div id="po-photo-preview" class="image-preview mt-2" style="display: none;">
-                                                <img src="" class="img-fluid" alt="Preview">
-                                            </div>
-                                        </div>
+                                        
 
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Comments</label>
