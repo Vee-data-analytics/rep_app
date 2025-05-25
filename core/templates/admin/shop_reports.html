@@ -1,48 +1,248 @@
 {% extends 'admin/base_admin.html' %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <!-- Filters -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header p-3">
-                    <h5 class="mb-0">Shop Reports</h5>
-                </div>
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Select Shop</label>
-                            <select name="shop" class="form-select">
-                                <option value="">All Shops</option>
+<!-- Enhanced Search Form -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Shop Reports</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <!-- Searchable Shop Dropdown -->
+                    <div class="col-md-4">
+                        <label class="form-label">Select Shop</label>
+                        <div class="dropdown-search-wrapper">
+                            <input type="text" id="shopSearch" class="form-control" placeholder="Search and select shop..." autocomplete="off">
+                            <input type="hidden" name="shop" id="selectedShopId" value="{{ selected_shop }}">
+                            <div id="shopDropdown" class="dropdown-menu" style="width: 100%; max-height: 200px; overflow-y: auto;">
+                                <div class="dropdown-item" data-shop-id="" data-shop-name="All Shops">All Shops</div>
                                 {% for shop in shops %}
-                                <option value="{{ shop.id }}" {% if shop.id|stringformat:"s" == selected_shop %}selected{% endif %}>
+                                <div class="dropdown-item" data-shop-id="{{ shop.id }}" data-shop-name="{{ shop.name }}">
                                     {{ shop.name }}
-                                </option>
+                                </div>
                                 {% endfor %}
-                            </select>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                    </div>
+
+                    <!-- Date Filters -->
+                    <div class="col-md-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">Apply Filters</button>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">End Date</label>
-                            <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary d-block w-100">Apply Filters</button>
-                        </div>
-                    </form>
+                    </div>
+                </form>
+
+                <!-- Results Summary -->
+                {% if selected_shop_obj or start_date %}
+                <div class="mt-3 p-3 bg-light rounded">
+                    <h6 class="mb-2">Active Filters:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if selected_shop_obj %}
+                            <span class="badge bg-primary">Shop: {{ selected_shop_obj.name }}</span>
+                        {% endif %}
+                        {% if start_date and end_date %}
+                            <span class="badge bg-warning text-dark">Date Range: {{ start_date }} to {{ end_date }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="mb-0 mt-2"><strong>Total Results:</strong> {{ total_reports }} reports found</p>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
+</div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('shopSearch');
+    const dropdown = document.getElementById('shopDropdown');
+    const hiddenInput = document.getElementById('selectedShopId');
+    const dropdownItems = dropdown.querySelectorAll('.dropdown-item');
+    
+    // Set initial value if shop is selected
+    const selectedShopId = hiddenInput.value;
+    if (selectedShopId) {
+        const selectedItem = dropdown.querySelector(`[data-shop-id="${selectedShopId}"]`);
+        if (selectedItem) {
+            searchInput.value = selectedItem.getAttribute('data-shop-name');
+        }
+    }
+    
+    // Show dropdown when input is focused
+    searchInput.addEventListener('focus', function() {
+        dropdown.style.display = 'block';
+        dropdown.classList.add('show');
+        filterDropdown();
+    });
+    
+    // Filter dropdown items as user types
+    searchInput.addEventListener('input', function() {
+        filterDropdown();
+    });
+    
+    // Handle dropdown item selection
+    dropdownItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const shopId = this.getAttribute('data-shop-id');
+            const shopName = this.getAttribute('data-shop-name');
+            
+            searchInput.value = shopName;
+            hiddenInput.value = shopId;
+            dropdown.style.display = 'none';
+            dropdown.classList.remove('show');
+        });
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown-search-wrapper')) {
+            dropdown.style.display = 'none';
+            dropdown.classList.remove('show');
+        }
+    });
+    
+    // Filter function
+    function filterDropdown() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let hasVisibleItems = false;
+        
+        dropdownItems.forEach(item => {
+            const shopName = item.getAttribute('data-shop-name').toLowerCase();
+            if (shopName.includes(searchTerm)) {
+                item.style.display = 'block';
+                hasVisibleItems = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Show dropdown if there are visible items
+        if (hasVisibleItems) {
+            dropdown.style.display = 'block';
+            dropdown.classList.add('show');
+        }
+    }
+    
+    // Handle keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        const visibleItems = Array.from(dropdownItems).filter(item => item.style.display !== 'none');
+        const activeItem = dropdown.querySelector('.dropdown-item.active');
+        let currentIndex = activeItem ? visibleItems.indexOf(activeItem) : -1;
+        
+        switch(e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                currentIndex = Math.min(currentIndex + 1, visibleItems.length - 1);
+                setActiveItem(visibleItems, currentIndex);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                currentIndex = Math.max(currentIndex - 1, 0);
+                setActiveItem(visibleItems, currentIndex);
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (activeItem) {
+                    activeItem.click();
+                }
+                break;
+            case 'Escape':
+                dropdown.style.display = 'none';
+                dropdown.classList.remove('show');
+                break;
+        }
+    });
+    
+    function setActiveItem(items, index) {
+        // Remove active class from all items
+        dropdownItems.forEach(item => item.classList.remove('active'));
+        
+        // Add active class to selected item
+        if (items[index]) {
+            items[index].classList.add('active');
+            items[index].scrollIntoView({ block: 'nearest' });
+        }
+    }
+});
+</script>
 
+<style>
+.dropdown-search-wrapper {
+    position: relative;
+}
 
-    <!-- Recent Reports -->
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    min-width: 100%;
+    padding: 0.5rem 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 1rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.dropdown-item:hover,
+.dropdown-item.active {
+    color: #1e2125;
+    background-color: #e9ecef;
+}
+
+.dropdown-item:first-child {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+#shopSearch {
+    background-color: #fff;
+}
+
+#shopSearch:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+</style>
 <!-- Recent Reports -->
 <div class="row">
     <div class="col-12">

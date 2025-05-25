@@ -610,16 +610,15 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         # Base querysets
         reports = Report.objects.filter(status='submitted')
         
-        # Apply filters
+        # Apply shop filter
         if shop_id:
             reports = reports.filter(shop_id=shop_id)
-            
 
+        # Apply date range filter
         if start_date and end_date:
             reports = reports.filter(
                 created_at__range=[start_date, end_date]
             )
-
         
         # Get latest reports for each product per shop
         from django.db.models import Max
@@ -639,28 +638,42 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             ).first()
             
             if latest_report:
-                # Create shop_store_details and main_store_details for each report
-                # similar to how it's done in the detail view
-                
+                # Create shop_details for each report
                 shop_details = {
                     'current_quantity': latest_report.shop_current_quantity,
                 }
                 
                 latest_report.shop_details = shop_details
-                
                 latest_reports.append(latest_report)
 
+        # Sort latest_reports by various criteria
+        sort_by = self.request.GET.get('sort_by', 'date')
+        if sort_by == 'shop_name':
+            latest_reports.sort(key=lambda x: x.shop.name.lower())
+        elif sort_by == 'quantity':
+            latest_reports.sort(key=lambda x: x.shop_current_quantity or 0, reverse=True)
+        else:  # default to date
+            latest_reports.sort(key=lambda x: x.created_at, reverse=True)
+
+        # Get selected shop object for display
+        selected_shop_obj = None
+        if shop_id:
+            try:
+                selected_shop_obj = Shop.objects.get(id=shop_id)
+            except Shop.DoesNotExist:
+                pass
+
         context.update({
-            'shops': Shop.objects.all(),
+            'shops': Shop.objects.all().order_by('name'),
             'selected_shop': shop_id,
+            'selected_shop_obj': selected_shop_obj,
             'start_date': start_date,
             'end_date': end_date,
             'reports': reports.order_by('-created_at'),
-            'latest_reports': latest_reports,  
-           
+            'latest_reports': latest_reports,
+            'total_reports': len(latest_reports),
         })
         return context
-
 
 class MainStoreReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'admin/main_store_reports.html'
