@@ -182,7 +182,9 @@ class ReportForm(forms.ModelForm):
         # Make discrepancy field not required
         if 'discrepancy' in self.fields:
             self.fields['discrepancy'].required = False
-            
+         # Make discrepancy field not required
+        if 'stock_file_photo' in self.fields:
+            self.fields['stock_file_photo'].required = False     
     
     def clean(self):
         cleaned_data = super().clean()

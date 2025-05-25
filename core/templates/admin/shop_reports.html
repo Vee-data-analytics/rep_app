@@ -181,6 +181,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const shopSelect = document.querySelector('select[name="shop"]');
+        const form = shopSelect.closest('form');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (shopSelect.value === '' || shopSelect.value === 'None') {
+                    shopSelect.value = '';  // Clear the value instead of sending 'None'
+                }
+            });
+        }
+    });
+    </script>
 
 <style>
 .dropdown-search-wrapper {

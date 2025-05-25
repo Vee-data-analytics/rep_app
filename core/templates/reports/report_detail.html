@@ -100,20 +100,20 @@
 
                
 
-                        
-                        {% if shop_details.stock_file_quantity %}
-                           <div class="photo-evidence mb-3">
-                               <h6 class="info-label">Stock file Photo</h6>
-                               {% if shop_details.photo %}
-                                   <img src="{{ shop_details.photo.url }}" class="report-img" alt="Shop Photo">
-                                   {% if shop_details.photo_taken_at %}
-                                       <p><small class="text-muted">Photo taken: {{ shop_details.photo_taken_at }}</small></p>
-                                   {% endif %}
-                               {% else %}
-                                   <p><small class="text-muted">Stock image is not available</small></p>
-                               {% endif %}
-                           </div>
-                       {% endif %}
+                        {% if shop_details.stock_file_photo %}
+                             <div class="photo-evidence mb-3">
+                                 <h6 class="info-label">Stock File Photo</h6>
+                                 <img src="{{ shop_details.stock_file_photo.url }}" class="report-img" alt="Stock File Photo">
+                                 {% if shop_details.photo_taken_at %}
+                                     <p><small class="text-muted">Photo taken: {{ shop_details.photo_taken_at }}</small></p>
+                                 {% endif %}
+                             </div>
+                         {% else %}
+                             <div class="photo-evidence mb-3">
+                                 <h6 class="info-label">Stock File Photo</h6>
+                                 <p><small class="text-muted">Stock image is not available</small></p>
+                             </div>
+                         {% endif %}
 
 
 

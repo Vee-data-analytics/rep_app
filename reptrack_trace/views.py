@@ -602,23 +602,46 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Get filters from request
+        # Get filters from request with proper validation
         shop_id = self.request.GET.get('shop')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
 
+        # Validate and clean shop_id
+        if shop_id and shop_id.lower() in ['none', 'null', '']:
+            shop_id = None
+        elif shop_id:
+            try:
+                shop_id = int(shop_id)
+            except (ValueError, TypeError):
+                shop_id = None
+
+        # Validate date inputs
+        if start_date and start_date.strip() == '':
+            start_date = None
+        if end_date and end_date.strip() == '':
+            end_date = None
+
         # Base querysets
         reports = Report.objects.filter(status='submitted')
         
-        # Apply shop filter
+        # Apply shop filter with validation
         if shop_id:
-            reports = reports.filter(shop_id=shop_id)
+            try:
+                reports = reports.filter(shop_id=shop_id)
+            except (ValueError, TypeError):
+                # If there's still an error, ignore the shop filter
+                pass
 
-        # Apply date range filter
+        # Apply date range filter with validation
         if start_date and end_date:
-            reports = reports.filter(
-                created_at__range=[start_date, end_date]
-            )
+            try:
+                reports = reports.filter(
+                    created_at__range=[start_date, end_date]
+                )
+            except (ValueError, TypeError):
+                # If date format is invalid, ignore date filter
+                pass
         
         # Get latest reports for each product per shop
         from django.db.models import Max
@@ -631,37 +654,47 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         # Then, get those specific reports and process them
         latest_reports = []
         for date_info in latest_report_dates:
-            latest_report = reports.filter(
-                shop_id=date_info['shop_id'],
-                product_id=date_info['product_id'],
-                created_at=date_info['latest_date']
-            ).first()
-            
-            if latest_report:
-                # Create shop_details for each report
-                shop_details = {
-                    'current_quantity': latest_report.shop_current_quantity,
-                }
+            try:
+                latest_report = reports.filter(
+                    shop_id=date_info['shop_id'],
+                    product_id=date_info['product_id'],
+                    created_at=date_info['latest_date']
+                ).first()
                 
-                latest_report.shop_details = shop_details
-                latest_reports.append(latest_report)
+                if latest_report:
+                    # Create shop_details for each report
+                    shop_details = {
+                        'current_quantity': latest_report.shop_current_quantity,
+                    }
+                    
+                    latest_report.shop_details = shop_details
+                    latest_reports.append(latest_report)
+            except Exception as e:
+                # Log the error if needed, but don't break the view
+                print(f"Error processing report: {e}")
+                continue
 
         # Sort latest_reports by various criteria
         sort_by = self.request.GET.get('sort_by', 'date')
-        if sort_by == 'shop_name':
-            latest_reports.sort(key=lambda x: x.shop.name.lower())
-        elif sort_by == 'quantity':
-            latest_reports.sort(key=lambda x: x.shop_current_quantity or 0, reverse=True)
-        else:  # default to date
+        try:
+            if sort_by == 'shop_name':
+                latest_reports.sort(key=lambda x: x.shop.name.lower() if x.shop and x.shop.name else '')
+            elif sort_by == 'quantity':
+                latest_reports.sort(key=lambda x: x.shop_current_quantity or 0, reverse=True)
+            else:  # default to date
+                latest_reports.sort(key=lambda x: x.created_at, reverse=True)
+        except Exception as e:
+            # If sorting fails, use default date sorting
             latest_reports.sort(key=lambda x: x.created_at, reverse=True)
 
-        # Get selected shop object for display
+        # Get selected shop object for display with error handling
         selected_shop_obj = None
         if shop_id:
             try:
                 selected_shop_obj = Shop.objects.get(id=shop_id)
-            except Shop.DoesNotExist:
-                pass
+            except (Shop.DoesNotExist, ValueError, TypeError):
+                selected_shop_obj = None
+                shop_id = None  # Reset shop_id if shop doesn't exist
 
         context.update({
             'shops': Shop.objects.all().order_by('name'),
@@ -1082,6 +1115,9 @@ class ReportDetailView(DetailView):
             'product': report.product,
             'current_quantity': report.shop_current_quantity,
             'stock_file_quantity': report.stock_file_quantity,
+
+            'stock_file_photo':report.stock_file_photo,
+
             'photo_taken_at': report.shop_photo_taken_at,
             'comments': report.shop_comments,
 
@@ -1092,6 +1128,7 @@ class ReportDetailView(DetailView):
             'before_merch_photo_3': report.before_merch_photo_3,
             'before_merch_photo_4': report.before_merch_photo_4,
             'before_merch_photo_5': report.before_merch_photo_5,
+            
             # After report 
             'after_merch_photo_1': report.after_merch_photo_1,
             'after_merch_photo_2': report.after_merch_photo_2,
