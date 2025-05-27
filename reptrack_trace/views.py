@@ -29,6 +29,7 @@ from datetime import datetime, timedelta
 from django.utils.timezone import localtime
 import json
 from reportlab.lib.units import inch
+from django.conf import settings
 
 from .models import Report, Shop, User
 from django.core.serializers.json import DjangoJSONEncoder
@@ -507,6 +508,12 @@ class MainStoreReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         })
         return context
 
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import TemplateView
+from django.db.models import Count, Q
+from datetime import datetime, timedelta
+from django.utils import timezone
+
 class RepresentativeReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'admin/representative_reports.html'
     
@@ -529,10 +536,28 @@ class RepresentativeReportsView(LoginRequiredMixin, UserPassesTestMixin, Templat
         if rep_id:
             reports = reports.filter(representative_id=rep_id)
 
-        if start_date and end_date:
-            reports = reports.filter(
-                created_at__range=[start_date, end_date]
-            )
+        # Fix date filtering to handle datetime fields properly
+        if start_date:
+            try:
+                start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+                # Convert to timezone-aware datetime if using timezone
+                if timezone.is_aware(timezone.now()):
+                    start_datetime = timezone.make_aware(start_datetime)
+                reports = reports.filter(created_at__gte=start_datetime)
+            except ValueError:
+                pass  # Invalid date format, ignore filter
+
+        if end_date:
+            try:
+                end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+                # Add one day and subtract one second to include entire end date
+                end_datetime = end_datetime + timedelta(days=1) - timedelta(seconds=1)
+                # Convert to timezone-aware datetime if using timezone
+                if timezone.is_aware(timezone.now()):
+                    end_datetime = timezone.make_aware(end_datetime)
+                reports = reports.filter(created_at__lte=end_datetime)
+            except ValueError:
+                pass  # Invalid date format, ignore filter
 
         if status:
             reports = reports.filter(status=status)
@@ -562,9 +587,13 @@ class RepresentativeReportsView(LoginRequiredMixin, UserPassesTestMixin, Templat
             
             # Calculate average reports per day
             if start_date and end_date:
-                date_range = (datetime.strptime(end_date, '%Y-%m-%d') - 
-                            datetime.strptime(start_date, '%Y-%m-%d')).days + 1
-                metrics['avg_reports_per_day'] = metrics['total_reports'] / date_range
+                try:
+                    start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+                    end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+                    date_range = (end_dt - start_dt).days + 1
+                    metrics['avg_reports_per_day'] = metrics['total_reports'] / date_range if date_range > 0 else 0
+                except ValueError:
+                    metrics['avg_reports_per_day'] = 0
             else:
                 metrics['avg_reports_per_day'] = 0
 
@@ -577,22 +606,34 @@ class RepresentativeReportsView(LoginRequiredMixin, UserPassesTestMixin, Templat
             drafts=Count('id', filter=Q(status='draft'))
         ).order_by('created_at__date')
 
+        # Calculate overall statistics for the template
+        total_reports = reports.count()
+        submitted_reports = reports.filter(status='submitted').count()
+        draft_reports = reports.filter(status='draft').count()
+        
+        stats = {
+            'total_reports': total_reports,
+            'submitted_reports': submitted_reports,
+            'draft_reports': draft_reports,
+            'submission_rate': (submitted_reports / total_reports * 100) if total_reports > 0 else 0
+        }
+
         context.update({
             'representatives': representatives,
             'selected_rep': rep_id,
             'start_date': start_date,
             'end_date': end_date,
+            'selected_status': status,
             'performance_metrics': performance_metrics,
             'reports': reports.order_by('-created_at'),
             'daily_activity': daily_activity,
-            'total_reports': reports.count(),
-            'submission_rate': (
-                reports.filter(status='submitted').count() / reports.count() * 100
-                if reports.count() > 0 else 0
-            )
+            'stats': stats,  # Added this for the template
+            'total_reports': total_reports,
+            'submission_rate': stats['submission_rate']
         })
         return context
-    
+
+
 class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'admin/shop_reports.html'
     
@@ -606,7 +647,7 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         shop_id = self.request.GET.get('shop')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
-
+    
         # Validate and clean shop_id
         if shop_id and shop_id.lower() in ['none', 'null', '']:
             shop_id = None
@@ -615,13 +656,13 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
                 shop_id = int(shop_id)
             except (ValueError, TypeError):
                 shop_id = None
-
+    
         # Validate date inputs
         if start_date and start_date.strip() == '':
             start_date = None
         if end_date and end_date.strip() == '':
             end_date = None
-
+    
         # Base querysets
         reports = Report.objects.filter(status='submitted')
         
@@ -632,22 +673,44 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             except (ValueError, TypeError):
                 # If there's still an error, ignore the shop filter
                 pass
-
+    
         # Apply date range filter with validation
+        filtered_reports = reports  # Keep original reports for context
         if start_date and end_date:
             try:
-                reports = reports.filter(
-                    created_at__range=[start_date, end_date]
+                from datetime import datetime
+                # Parse dates to ensure they're valid
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+                end_dt = datetime.strptime(end_date, '%Y-%m-%d').date()
+                
+                filtered_reports = reports.filter(
+                    created_at__date__range=[start_dt, end_dt]
                 )
+            except (ValueError, TypeError) as e:
+                # If date format is invalid, use unfiltered reports
+                print(f"Date parsing error: {e}")
+                filtered_reports = reports
+        elif start_date:  # Handle single date filters
+            try:
+                from datetime import datetime
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+                filtered_reports = reports.filter(created_at__date__gte=start_dt)
             except (ValueError, TypeError):
-                # If date format is invalid, ignore date filter
-                pass
+                filtered_reports = reports
+        elif end_date:
+            try:
+                from datetime import datetime
+                end_dt = datetime.strptime(end_date, '%Y-%m-%d').date()
+                filtered_reports = reports.filter(created_at__date__lte=end_dt)
+            except (ValueError, TypeError):
+                filtered_reports = reports
         
-        # Get latest reports for each product per shop
+        # Get latest reports for each product per shop FROM THE FILTERED DATASET
         from django.db.models import Max
         
         # First, identify the latest report date for each product-shop combination
-        latest_report_dates = reports.values('shop_id', 'product_id').annotate(
+        # within the filtered dataset
+        latest_report_dates = filtered_reports.values('shop_id', 'product_id').annotate(
             latest_date=Max('created_at')
         )
         
@@ -655,7 +718,8 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         latest_reports = []
         for date_info in latest_report_dates:
             try:
-                latest_report = reports.filter(
+                # Query from the filtered_reports, not the base reports
+                latest_report = filtered_reports.filter(
                     shop_id=date_info['shop_id'],
                     product_id=date_info['product_id'],
                     created_at=date_info['latest_date']
@@ -673,7 +737,7 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
                 # Log the error if needed, but don't break the view
                 print(f"Error processing report: {e}")
                 continue
-
+    
         # Sort latest_reports by various criteria
         sort_by = self.request.GET.get('sort_by', 'date')
         try:
@@ -686,7 +750,7 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         except Exception as e:
             # If sorting fails, use default date sorting
             latest_reports.sort(key=lambda x: x.created_at, reverse=True)
-
+    
         # Get selected shop object for display with error handling
         selected_shop_obj = None
         if shop_id:
@@ -695,16 +759,23 @@ class ShopReportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             except (Shop.DoesNotExist, ValueError, TypeError):
                 selected_shop_obj = None
                 shop_id = None  # Reset shop_id if shop doesn't exist
-
+    
         context.update({
             'shops': Shop.objects.all().order_by('name'),
             'selected_shop': shop_id,
             'selected_shop_obj': selected_shop_obj,
             'start_date': start_date,
             'end_date': end_date,
-            'reports': reports.order_by('-created_at'),
+            'reports': filtered_reports.order_by('-created_at'),  # Use filtered reports
             'latest_reports': latest_reports,
             'total_reports': len(latest_reports),
+            # Add some debug info to help troubleshooting
+            'debug_info': {
+                'total_base_reports': reports.count(),
+                'total_filtered_reports': filtered_reports.count(),
+                'has_date_filter': bool(start_date and end_date),
+                'has_shop_filter': bool(shop_id),
+            } if settings.DEBUG else None,
         })
         return context
 
@@ -1875,6 +1946,10 @@ def generate_pdf_report(report, pk=None):
             elements.append(shop_image)
             elements.append(Spacer(1, 0.1*inch))
     
+    if report.merchandising_comment:
+        elements.append(Paragraph("Comments:", section_style))
+        elements.append(Paragraph(report.merchandising_comment, normal_style))
+    
     
     # Merchandising Before Section
     elements.append(Paragraph("Merchandising - Before", success_header_style))
@@ -1894,84 +1969,14 @@ def generate_pdf_report(report, pk=None):
     elements.extend(after_elements)
     elements.append(Spacer(1, 0.2*inch))
     
-    # Optional: Store and Main Store details (if applicable)
-    # Only include if the report model has these fields
-    if hasattr(report, 'store') and report.store:
-        # Store Details
-        elements.append(Paragraph("Store Details", subtitle_style))
-        elements.append(Spacer(1, 0.1*inch))
-        
-        store_data = [
-            ["Store", str(report.store)],
-            ["Current Quantity", str(report.store_current_quantity)],
-            ["Quantity Taken", str(report.quantity_taken_from_store)],
-            ["Remaining Quantity", str(report.remaining_store_quantity)]
-        ]
-        
-        store_table = Table(store_data, colWidths=[2*inch, 4.5*inch])
-        store_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
-        ]))
-        
-        elements.append(store_table)
-        elements.append(Spacer(1, 0.1*inch))
-        
-        # Store comments
-        if report.store_comments:
-            elements.append(Paragraph("Store Comments:", section_style))
-            elements.append(Paragraph(report.store_comments, normal_style))
-        
-        # Store photo
-        if report.store_photo:
-            elements.append(Paragraph("Store Photo:", section_style))
-            store_image = get_image_for_pdf(report.store_photo)
-            if store_image:
-                elements.append(store_image)
-            elements.append(Spacer(1, 0.2*inch))
+
+
+    if report.merchandising_comment:
+        elements.append(Paragraph("Comments:", section_style))
+        elements.append(Paragraph(report.merchandising_comment, normal_style))
     
-    # Main Store section (if applicable)
-    if hasattr(report, 'main_store') and report.main_store:
-        elements.append(Paragraph("Main Store Details", subtitle_style))
-        elements.append(Spacer(1, 0.1*inch))
-        
-        main_store_data = [
-            ["Main Store", str(report.main_store)],
-            ["Current Quantity", str(report.main_store_quantity)],
-            ["Quantity Taken", str(report.quantity_taken_from_main_store)],
-            ["Remaining Quantity", str(report.remaining_main_store_quantity)]
-        ]
-        
-        main_store_table = Table(main_store_data, colWidths=[2*inch, 4.5*inch])
-        main_store_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
-        ]))
-        
-        elements.append(main_store_table)
-        elements.append(Spacer(1, 0.1*inch))
-        
-        # Main store comments
-        if report.main_store_comments:
-            elements.append(Paragraph("Main Store Comments:", section_style))
-            elements.append(Paragraph(report.main_store_comments, normal_style))
-        
-        # Main store photo
-        if report.main_store_photo:
-            elements.append(Paragraph("Main Store Photo:", section_style))
-            main_store_image = get_image_for_pdf(report.main_store_photo)
-            if main_store_image:
-                elements.append(main_store_image)
+    
+    
     
     # Build PDF
     doc.build(elements)
