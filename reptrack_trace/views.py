@@ -1946,10 +1946,6 @@ def generate_pdf_report(report, pk=None):
             elements.append(shop_image)
             elements.append(Spacer(1, 0.1*inch))
     
-    if report.merchandising_comment:
-        elements.append(Paragraph("Comments:", section_style))
-        elements.append(Paragraph(report.merchandising_comment, normal_style))
-    
     
     # Merchandising Before Section
     elements.append(Paragraph("Merchandising - Before", success_header_style))
@@ -1969,14 +1965,85 @@ def generate_pdf_report(report, pk=None):
     elements.extend(after_elements)
     elements.append(Spacer(1, 0.2*inch))
     
-
-
-    if report.merchandising_comment:
-        elements.append(Paragraph("Comments:", section_style))
-        elements.append(Paragraph(report.merchandising_comment, normal_style))
     
+    # Optional: Store and Main Store details (if applicable)
+    # Only include if the report model has these fields
+    if hasattr(report, 'store') and report.store:
+        # Store Details
+        elements.append(Paragraph("Store Details", subtitle_style))
+        elements.append(Spacer(1, 0.1*inch))
+        
+        store_data = [
+            ["Store", str(report.store)],
+            ["Current Quantity", str(report.store_current_quantity)],
+            ["Quantity Taken", str(report.quantity_taken_from_store)],
+            ["Remaining Quantity", str(report.remaining_store_quantity)]
+        ]
+        
+        store_table = Table(store_data, colWidths=[2*inch, 4.5*inch])
+        store_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+        
+        elements.append(store_table)
+        elements.append(Spacer(1, 0.1*inch))
+        
+        # Store comments
+        if report.store_comments:
+            elements.append(Paragraph("Store Comments:", section_style))
+            elements.append(Paragraph(report.store_comments, normal_style))
+        
+        # Store photo
+        if report.store_photo:
+            elements.append(Paragraph("Store Photo:", section_style))
+            store_image = get_image_for_pdf(report.store_photo)
+            if store_image:
+                elements.append(store_image)
+            elements.append(Spacer(1, 0.2*inch))
     
-    
+    # Main Store section (if applicable)
+    if hasattr(report, 'main_store') and report.main_store:
+        elements.append(Paragraph("Main Store Details", subtitle_style))
+        elements.append(Spacer(1, 0.1*inch))
+        
+        main_store_data = [
+            ["Main Store", str(report.main_store)],
+            ["Current Quantity", str(report.main_store_quantity)],
+            ["Quantity Taken", str(report.quantity_taken_from_main_store)],
+            ["Remaining Quantity", str(report.remaining_main_store_quantity)]
+        ]
+        
+        main_store_table = Table(main_store_data, colWidths=[2*inch, 4.5*inch])
+        main_store_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+        
+        elements.append(main_store_table)
+        elements.append(Spacer(1, 0.1*inch))
+        
+        # Main store comments
+        if report.main_store_comments:
+            elements.append(Paragraph("Main Store Comments:", section_style))
+            elements.append(Paragraph(report.main_store_comments, normal_style))
+        
+        # Main store photo
+        if report.main_store_photo:
+            elements.append(Paragraph("Main Store Photo:", section_style))
+            main_store_image = get_image_for_pdf(report.main_store_photo)
+            if main_store_image:
+                elements.append(main_store_image)
     
     # Build PDF
     doc.build(elements)
