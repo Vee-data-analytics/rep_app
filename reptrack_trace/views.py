@@ -960,7 +960,7 @@ class AdminShopCreateView(AdminRequiredMixin, CreateView):
 class AdminShopUpdateView(AdminRequiredMixin, UpdateView):
     model = Shop
     form_class = ShopForm
-    template_name = 'admin/update.html'
+    template_name = 'admin/update_shop.html'
     success_url = reverse_lazy('reptrack_trace:admin-shop-list')
 
     def form_valid(self, form):
